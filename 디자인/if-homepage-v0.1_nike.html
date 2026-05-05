@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>I.F Homepage v0.1 Nike Direction</title>
+    <style>
+      :root {
+        --ink: #111111;
+        --canvas: #ffffff;
+        --soft: #f5f5f5;
+        --hairline: #cacacb;
+        --hairline-soft: #e5e5e5;
+        --mute: #707072;
+        --ash: #4b4b4d;
+        --sale: #d30005;
+        --success: #007d48;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--canvas);
+        font-family:
+          Inter, "Helvetica Neue", Arial, system-ui, -apple-system,
+          BlinkMacSystemFont, sans-serif;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .utility {
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 14px;
+        padding: 0 clamp(18px, 4vw, 56px);
+        background: var(--soft);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .primary-nav {
+        position: sticky;
+        z-index: 20;
+        top: 0;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        min-height: 64px;
+        padding: 0 clamp(18px, 4vw, 56px);
+        background: var(--canvas);
+        box-shadow: inset 0 -1px 0 var(--hairline-soft);
+      }
+
+      .brand {
+        font-size: 28px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .nav-center {
+        display: flex;
+        gap: 28px;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .nav-center a:first-child {
+        box-shadow: inset 0 -2px 0 var(--ink);
+      }
+
+      .nav-right {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .search-pill {
+        width: min(220px, 22vw);
+        height: 40px;
+        border: 0;
+        border-radius: 24px;
+        padding: 0 18px;
+        background: var(--soft);
+        color: var(--ink);
+      }
+
+      .icon-button {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 999px;
+        background: var(--soft);
+        color: var(--ink);
+        font-weight: 800;
+      }
+
+      .hero {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 48px clamp(18px, 4vw, 56px) 0;
+      }
+
+      .campaign {
+        position: relative;
+        min-height: min(74vh, 760px);
+        display: grid;
+        align-items: end;
+        overflow: hidden;
+        background:
+          linear-gradient(0deg, rgba(0, 0, 0, 0.42), transparent 58%),
+          url("https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1800&q=84")
+            center / cover;
+      }
+
+      .campaign-lockup {
+        position: relative;
+        z-index: 1;
+        padding: clamp(24px, 4vw, 56px);
+        color: var(--canvas);
+      }
+
+      .campaign-label {
+        margin: 0 0 10px;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 980px;
+        font-family: Impact, "Arial Black", Inter, sans-serif;
+        font-size: clamp(58px, 11vw, 148px);
+        font-weight: 500;
+        line-height: 0.88;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .hero-copy {
+        max-width: 500px;
+        margin: 18px 0 22px;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .pill {
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 999px;
+        padding: 0 28px;
+        background: var(--ink);
+        color: var(--canvas);
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .pill.on-image {
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      .pill.soft {
+        background: var(--soft);
+        color: var(--ink);
+      }
+
+      .section {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 48px clamp(18px, 4vw, 56px);
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 24px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(24px, 3vw, 32px);
+        line-height: 1.2;
+        font-weight: 800;
+      }
+
+      .section-head p {
+        max-width: 420px;
+        margin: 0;
+        color: var(--mute);
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .prompt-strip {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 18px;
+        background: var(--soft);
+      }
+
+      .prompt-input {
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        border-radius: 30px;
+        padding: 0 24px;
+        background: var(--canvas);
+        color: var(--ink);
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .chip-row {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 16px 0 0;
+      }
+
+      .chip {
+        flex: 0 0 auto;
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--hairline);
+        border-radius: 999px;
+        padding: 0 16px;
+        background: var(--canvas);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .chip.active {
+        background: var(--ink);
+        color: var(--canvas);
+        border-color: var(--ink);
+      }
+
+      .look-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .look-card {
+        background: var(--canvas);
+      }
+
+      .look-image {
+        aspect-ratio: 4 / 5;
+        background: var(--soft);
+        overflow: hidden;
+      }
+
+      .look-image img {
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .look-meta {
+        padding: 12px 0 0;
+        display: grid;
+        gap: 4px;
+      }
+
+      .look-meta strong {
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .look-meta span {
+        color: var(--mute);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .editorial-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .editorial-tile {
+        position: relative;
+        min-height: 560px;
+        display: grid;
+        align-items: end;
+        overflow: hidden;
+        background: var(--soft);
+      }
+
+      .editorial-tile.office {
+        background:
+          linear-gradient(0deg, rgba(0, 0, 0, 0.46), transparent 58%),
+          url("https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1100&q=82")
+            center / cover;
+      }
+
+      .editorial-tile.running {
+        background:
+          linear-gradient(0deg, rgba(0, 0, 0, 0.46), transparent 58%),
+          url("https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1100&q=82")
+            center / cover;
+      }
+
+      .tile-copy {
+        padding: 24px;
+        color: var(--canvas);
+      }
+
+      .tile-copy h3 {
+        margin: 0 0 18px;
+        font-family: Impact, "Arial Black", Inter, sans-serif;
+        font-size: clamp(48px, 6vw, 96px);
+        font-weight: 500;
+        line-height: 0.9;
+        text-transform: uppercase;
+      }
+
+      .commerce-layout {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 24px;
+      }
+
+      .filters {
+        display: grid;
+        align-content: start;
+        gap: 18px;
+        padding-top: 4px;
+      }
+
+      .filter-group {
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .filter-group strong {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 16px;
+      }
+
+      .filter-group span {
+        display: block;
+        margin: 8px 0;
+        color: var(--ash);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .product-card {
+        min-width: 0;
+      }
+
+      .product-image {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        background: var(--soft);
+        overflow: hidden;
+      }
+
+      .product-image img {
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 12px;
+        border: 1px solid var(--hairline);
+        border-radius: 999px;
+        background: var(--canvas);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .swatches {
+        display: flex;
+        gap: 6px;
+        padding-top: 10px;
+      }
+
+      .swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: var(--ink);
+      }
+
+      .swatch.gray {
+        background: #d8d8d8;
+        outline: 1px solid var(--hairline);
+      }
+
+      .swatch.rose {
+        background: #b94a62;
+      }
+
+      .swatch.green {
+        background: #007d48;
+      }
+
+      .product-meta {
+        padding: 8px 0 0;
+        display: grid;
+        gap: 4px;
+      }
+
+      .product-meta strong {
+        font-size: 16px;
+      }
+
+      .product-meta span {
+        color: var(--mute);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .price {
+        color: var(--ink);
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      .sale {
+        color: var(--sale);
+      }
+
+      .mobile-campaign {
+        display: grid;
+        grid-template-columns: 0.72fr 1fr;
+        gap: 8px;
+        align-items: stretch;
+      }
+
+      .phone {
+        padding: 12px;
+        background: var(--ink);
+      }
+
+      .phone-screen {
+        min-height: 640px;
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        background: var(--canvas);
+      }
+
+      .phone-nav {
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        box-shadow: inset 0 -1px 0 var(--hairline-soft);
+        font-weight: 900;
+      }
+
+      .phone-prompt {
+        margin: 12px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        border-radius: 24px;
+        padding: 0 16px;
+        background: var(--soft);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .phone-look {
+        margin: 0 12px;
+        background: var(--soft);
+        overflow: hidden;
+      }
+
+      .phone-look img {
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .bottom-sheet {
+        padding: 18px 12px 14px;
+        background: var(--canvas);
+      }
+
+      .bottom-sheet h3 {
+        margin: 0 0 4px;
+        font-size: 24px;
+      }
+
+      .bottom-sheet p {
+        margin: 0 0 14px;
+        color: var(--mute);
+        font-weight: 600;
+        line-height: 1.5;
+      }
+
+      .mobile-copy {
+        min-height: 640px;
+        display: grid;
+        align-content: end;
+        padding: 24px;
+        background:
+          linear-gradient(0deg, rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0.06)),
+          url("https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1100&q=82")
+            center / cover;
+        color: var(--canvas);
+      }
+
+      .mobile-copy h2 {
+        max-width: 740px;
+        margin-bottom: 16px;
+        font-family: Impact, "Arial Black", Inter, sans-serif;
+        font-size: clamp(48px, 7vw, 100px);
+        font-weight: 500;
+        line-height: 0.9;
+        text-transform: uppercase;
+      }
+
+      .footer-cta {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 48px clamp(18px, 4vw, 56px) 72px;
+        text-align: center;
+      }
+
+      .footer-cta h2 {
+        margin: 0 auto 18px;
+        max-width: 920px;
+        font-family: Impact, "Arial Black", Inter, sans-serif;
+        font-size: clamp(54px, 9vw, 132px);
+        font-weight: 500;
+        line-height: 0.88;
+        text-transform: uppercase;
+      }
+
+      .footer {
+        border-top: 1px solid var(--hairline);
+        padding: 32px clamp(18px, 4vw, 56px);
+        color: var(--mute);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      @media (max-width: 1023px) {
+        .nav-center {
+          display: none;
+        }
+
+        .primary-nav {
+          grid-template-columns: 1fr auto;
+        }
+
+        .nav-right {
+          gap: 8px;
+        }
+
+        .search-pill {
+          width: 40px;
+          padding: 0;
+          color: transparent;
+        }
+
+        .look-grid,
+        .product-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .commerce-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .filters {
+          display: flex;
+          overflow-x: auto;
+          padding-bottom: 8px;
+        }
+
+        .filter-group {
+          min-width: 180px;
+          border-bottom: 0;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .utility {
+          display: none;
+        }
+
+        .hero {
+          padding-top: 24px;
+        }
+
+        .campaign {
+          min-height: 76vh;
+          background-position: 58% center;
+        }
+
+        .campaign-lockup {
+          padding: 18px;
+        }
+
+        .hero-copy {
+          font-size: 16px;
+        }
+
+        .section {
+          padding-top: 32px;
+          padding-bottom: 32px;
+        }
+
+        .section-head {
+          display: grid;
+        }
+
+        .prompt-strip {
+          grid-template-columns: 1fr;
+        }
+
+        .prompt-input {
+          font-size: 15px;
+        }
+
+        .look-grid,
+        .product-grid,
+        .editorial-row,
+        .mobile-campaign {
+          grid-template-columns: 1fr;
+        }
+
+        .editorial-tile {
+          min-height: 460px;
+        }
+
+        .phone-screen,
+        .mobile-copy {
+          min-height: 560px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="utility">
+      <a href="#">Help</a>
+      <span>|</span>
+      <a href="#">Join Us</a>
+      <span>|</span>
+      <a href="#">Sign In</a>
+    </div>
+
+    <nav class="primary-nav" aria-label="Primary navigation">
+      <a class="brand" href="#">I.F</a>
+      <div class="nav-center">
+        <a href="#new">New & Featured</a>
+        <a href="#looks">Women</a>
+        <a href="#products">Looks</a>
+        <a href="#mobile">Mobile</a>
+      </div>
+      <div class="nav-right">
+        <input class="search-pill" aria-label="Search" value="Search" readonly />
+        <button class="icon-button" aria-label="Saved looks">♡</button>
+        <button class="icon-button" aria-label="Menu">☰</button>
+      </div>
+    </nav>
+
+    <main>
+      <section class="hero" id="new">
+        <div class="campaign">
+          <div class="campaign-lockup">
+            <p class="campaign-label">I.F STYLE ENGINE</p>
+            <h1>TYPE YOUR DAY. WEAR THE LOOK.</h1>
+            <p class="hero-copy">
+              상황을 입력하면 AI가 룩을 만들고, 실제 구매 가능한 아이템으로 연결합니다.
+            </p>
+            <div class="pill-row">
+              <a class="pill on-image" href="#prompt">Start Styling</a>
+              <a class="pill on-image" href="#looks">Shop Looks</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="prompt">
+        <div class="section-head">
+          <h2>What are you dressing for?</h2>
+          <p>
+            나이키 방향의 v0.1은 서비스 설명을 길게 하지 않고, 큰 캠페인 이미지와
+            단순한 프롬프트 조작으로 바로 행동을 유도합니다.
+          </p>
+        </div>
+
+        <div class="prompt-strip">
+          <div class="prompt-input">퇴근 후 한강에서 가볍게 러닝할래</div>
+          <a class="pill" href="#looks">Generate</a>
+        </div>
+        <div class="chip-row" aria-label="Prompt filters">
+          <span class="chip active">Running</span>
+          <span class="chip">Office</span>
+          <span class="chip">Date</span>
+          <span class="chip">Travel</span>
+          <span class="chip">Minimal</span>
+          <span class="chip">Under 100k</span>
+        </div>
+      </section>
+
+      <section class="section" id="looks">
+        <div class="section-head">
+          <h2>Generated Looks</h2>
+          <p>룩 카드는 그림자 없이, 사진과 타이포만으로 제품처럼 단단하게 배치합니다.</p>
+        </div>
+
+        <div class="look-grid">
+          <article class="look-card">
+            <div class="look-image">
+              <img
+                alt="Office look"
+                src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=82"
+              />
+            </div>
+            <div class="look-meta">
+              <strong>Office Edit</strong>
+              <span>Clean tailored styling</span>
+            </div>
+          </article>
+          <article class="look-card">
+            <div class="look-image">
+              <img
+                alt="Running look"
+                src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=800&q=82"
+              />
+            </div>
+            <div class="look-meta">
+              <strong>River Run</strong>
+              <span>Lightweight after-work layers</span>
+            </div>
+          </article>
+          <article class="look-card">
+            <div class="look-image">
+              <img
+                alt="Weekend date look"
+                src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=82"
+              />
+            </div>
+            <div class="look-meta">
+              <strong>Weekend Bright</strong>
+              <span>Soft feminine city look</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="editorial-row">
+          <article class="editorial-tile office">
+            <div class="tile-copy">
+              <h3>OFFICE READY</h3>
+              <a class="pill on-image" href="#products">Shop the Look</a>
+            </div>
+          </article>
+          <article class="editorial-tile running">
+            <div class="tile-copy">
+              <h3>AFTER WORK RUN</h3>
+              <a class="pill on-image" href="#products">Shop the Look</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="products">
+        <div class="section-head">
+          <h2>Recommended Products</h2>
+          <p>상품 영역은 나이키식 PLP처럼 필터 레일과 3열 상품 그리드로 정리합니다.</p>
+        </div>
+
+        <div class="commerce-layout">
+          <aside class="filters" aria-label="Product filters">
+            <div class="filter-group">
+              <strong>Situation</strong>
+              <span>Office</span>
+              <span>Running</span>
+              <span>Date</span>
+            </div>
+            <div class="filter-group">
+              <strong>Mood</strong>
+              <span>Minimal</span>
+              <span>Clean</span>
+              <span>Sporty</span>
+            </div>
+            <div class="filter-group">
+              <strong>Budget</strong>
+              <span>Under 50k</span>
+              <span>Under 100k</span>
+              <span>Under 200k</span>
+            </div>
+          </aside>
+
+          <div class="product-grid">
+            <article class="product-card">
+              <div class="product-image">
+                <span class="badge">Just In</span>
+                <img
+                  alt="Cream blouse"
+                  src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=700&q=80"
+                />
+              </div>
+              <div class="swatches">
+                <span class="swatch gray"></span>
+                <span class="swatch"></span>
+                <span class="swatch rose"></span>
+              </div>
+              <div class="product-meta">
+                <strong>Cream Linen Blouse</strong>
+                <span>Women's Top</span>
+                <div class="price">KRW 49,000</div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-image">
+                <img
+                  alt="Track pants"
+                  src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=700&q=80"
+                />
+              </div>
+              <div class="swatches">
+                <span class="swatch"></span>
+                <span class="swatch gray"></span>
+                <span class="swatch green"></span>
+              </div>
+              <div class="product-meta">
+                <strong>Semi-Wide Track Pants</strong>
+                <span>Women's Bottom</span>
+                <div class="price sale">KRW 58,000</div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-image">
+                <span class="badge">Matched</span>
+                <img
+                  alt="Light jacket"
+                  src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=700&q=80"
+                />
+              </div>
+              <div class="swatches">
+                <span class="swatch gray"></span>
+                <span class="swatch"></span>
+              </div>
+              <div class="product-meta">
+                <strong>Light Wind Jacket</strong>
+                <span>Women's Outer</span>
+                <div class="price">KRW 89,000</div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="mobile">
+        <div class="mobile-campaign">
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="phone-nav">
+                <span>I.F</span>
+                <span>☰</span>
+              </div>
+              <div class="phone-prompt">주말 데이트룩 추천</div>
+              <div class="phone-look">
+                <img
+                  alt="Mobile generated look"
+                  src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=700&q=82"
+                />
+              </div>
+              <div class="bottom-sheet">
+                <h3>Weekend Bright</h3>
+                <p>선택한 룩을 실제 상품 조합으로 확인하세요.</p>
+                <a class="pill" href="#">View Products</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="mobile-copy">
+            <h2>MOBILE FIRST FLOW</h2>
+            <a class="pill on-image" href="#">Try on Web</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="footer-cta">
+        <h2>IF YOU CAN IMAGINE, YOU CAN WEAR IT.</h2>
+        <div class="pill-row" style="justify-content: center">
+          <a class="pill" href="#">Start Styling</a>
+          <a class="pill soft" href="#">View Demo</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      I.F v0.1_nike direction · Photography-first commerce system · Prompt to look to product
+    </footer>
+  </body>
+</html>

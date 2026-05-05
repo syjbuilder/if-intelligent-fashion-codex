@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>I.F Homepage v0.3.1 Brunello Flow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --surface: #f7f4ef;
+        --surface-soft: #fbfaf7;
+        --ink: #171514;
+        --muted: #76716a;
+        --line: #e4ded6;
+        --rose: #b94a62;
+        --rose-dark: #8d3045;
+        --white: #fffaf2;
+        --glass: rgba(255, 255, 255, 0.62);
+        --shadow: 0 30px 90px rgba(31, 28, 24, 0.16);
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--surface);
+        font-family: Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .toggle {
+        position: fixed;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .site {
+        min-height: 100vh;
+      }
+
+      .topbar {
+        position: absolute;
+        z-index: 50;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        min-height: 74px;
+        padding: 0 34px;
+        color: var(--white);
+        mix-blend-mode: difference;
+      }
+
+      .nav-left,
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .nav-right {
+        justify-content: flex-end;
+      }
+
+      .menu-mark {
+        display: inline-grid;
+        gap: 6px;
+        width: 28px;
+      }
+
+      .menu-mark span {
+        height: 1px;
+        background: currentColor;
+      }
+
+      .brand {
+        display: inline-grid;
+        justify-items: center;
+        gap: 2px;
+        font-family: "Playfair Display", Georgia, serif;
+      }
+
+      .brand strong {
+        font-size: 28px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+      }
+
+      .brand span {
+        font-family: Manrope, sans-serif;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.22em;
+      }
+
+      .landing {
+        position: relative;
+        min-height: 100vh;
+        overflow: hidden;
+        color: var(--white);
+        background: #171514;
+      }
+
+      .landing-media {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+      }
+
+      .landing-media::before {
+        content: "";
+        position: absolute;
+        inset: -2%;
+        background:
+          linear-gradient(90deg, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.05) 52%, rgba(0, 0, 0, 0.24)),
+          linear-gradient(0deg, rgba(0, 0, 0, 0.62), transparent 45%, rgba(0, 0, 0, 0.18)),
+          url("https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2200&q=88")
+            center / cover;
+        animation: heroDrift 18s var(--ease) infinite alternate;
+      }
+
+      .landing-content {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: 1fr auto;
+        padding: 120px 52px 44px;
+      }
+
+      .hero-title {
+        align-self: center;
+        justify-self: center;
+        margin: 0;
+        max-width: 1120px;
+        text-align: center;
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: clamp(54px, 7.4vw, 118px);
+        font-weight: 500;
+        line-height: 0.96;
+        letter-spacing: -0.025em;
+        transform: scaleX(0.94);
+        text-shadow: 0 28px 80px rgba(0, 0, 0, 0.25);
+        animation: titleIn 1300ms var(--ease) both;
+      }
+
+      .landing-bottom {
+        display: grid;
+        grid-template-columns: minmax(180px, 330px) 1fr auto;
+        gap: 28px;
+        align-items: end;
+      }
+
+      .bottom-copy {
+        margin: 0;
+        color: rgba(255, 250, 242, 0.72);
+        font-size: 13px;
+        line-height: 1.75;
+        animation: fadeUp 1100ms var(--ease) 260ms both;
+      }
+
+      .bottom-copy b {
+        display: block;
+        margin-bottom: 8px;
+        color: rgba(255, 250, 242, 0.94);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .hero-sub {
+        justify-self: center;
+        margin: 0;
+        color: rgba(255, 250, 242, 0.86);
+        font-size: clamp(16px, 1.6vw, 23px);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        animation: fadeUp 1100ms var(--ease) 380ms both;
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 164px;
+        min-height: 48px;
+        padding: 0 24px;
+        border: 1px solid rgba(255, 250, 242, 0.44);
+        border-radius: 999px;
+        color: var(--white);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(14px);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        transition:
+          background 240ms ease,
+          transform 240ms ease,
+          border-color 240ms ease;
+        animation: fadeUp 1100ms var(--ease) 500ms both;
+      }
+
+      .cta:hover {
+        border-color: rgba(255, 250, 242, 0.76);
+        background: rgba(255, 255, 255, 0.18);
+        transform: translateY(-2px);
+      }
+
+      .atelier {
+        min-height: 100vh;
+        padding: 96px 28px 28px;
+        background:
+          linear-gradient(180deg, #f7f4ef, #f0ebe4),
+          var(--surface);
+      }
+
+      .workspace {
+        min-height: calc(100vh - 124px);
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr) 386px;
+        gap: 1px;
+        border: 1px solid var(--line);
+        background: var(--line);
+        box-shadow: var(--shadow);
+      }
+
+      .sidebar,
+      .stage,
+      .panel {
+        min-width: 0;
+        background: rgba(251, 250, 247, 0.9);
+      }
+
+      .sidebar {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        padding: 26px 22px;
+      }
+
+      .side-kicker,
+      .panel-kicker,
+      .section-label {
+        margin: 0;
+        color: var(--rose);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .side-title,
+      .panel-title {
+        margin: 8px 0 0;
+        font-family: "Playfair Display", Georgia, serif;
+        font-weight: 500;
+        letter-spacing: -0.035em;
+        transform: scaleX(0.94);
+        transform-origin: left;
+      }
+
+      .side-title {
+        font-size: 28px;
+      }
+
+      .side-nav {
+        display: grid;
+        align-content: start;
+        gap: 7px;
+        margin-top: 34px;
+      }
+
+      .side-nav a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 46px;
+        padding: 0 2px;
+        border-bottom: 1px solid rgba(228, 222, 214, 0.8);
+        color: #36312d;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .new-look {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        color: #fff;
+        background: var(--ink);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .stage {
+        position: relative;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        padding: 34px;
+        overflow: hidden;
+      }
+
+      .prompt-shell {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        gap: 16px;
+      }
+
+      .prompt-input {
+        display: grid;
+        grid-template-columns: 1fr 54px;
+        align-items: center;
+        min-height: 72px;
+        border: 1px solid rgba(23, 21, 20, 0.1);
+        background: rgba(255, 255, 255, 0.68);
+        backdrop-filter: blur(16px);
+      }
+
+      .prompt-input input {
+        min-width: 0;
+        height: 70px;
+        border: 0;
+        outline: 0;
+        padding: 0 24px;
+        color: var(--ink);
+        background: transparent;
+        font-size: clamp(17px, 1.7vw, 24px);
+        font-weight: 500;
+      }
+
+      .prompt-input input::placeholder {
+        color: #a6a098;
+      }
+
+      .generate {
+        width: 54px;
+        height: 54px;
+        margin-right: 9px;
+        border: 0;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: var(--ink);
+        cursor: pointer;
+        transition:
+          background 220ms ease,
+          transform 220ms ease;
+      }
+
+      .generate:hover {
+        background: var(--rose-dark);
+        transform: translateY(-1px);
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        border: 1px solid rgba(23, 21, 20, 0.1);
+        border-radius: 999px;
+        padding: 9px 13px;
+        color: #5f5850;
+        background: rgba(255, 255, 255, 0.54);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .empty-state {
+        display: grid;
+        place-items: center;
+        min-height: 460px;
+        text-align: center;
+      }
+
+      .empty-state h2 {
+        margin: 0;
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: clamp(42px, 4.7vw, 72px);
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        transform: scaleX(0.94);
+      }
+
+      .empty-state p {
+        max-width: 480px;
+        margin: 20px auto 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .result-board {
+        display: none;
+        align-content: start;
+        gap: 20px;
+        padding-top: 30px;
+      }
+
+      #workspace-result:checked ~ .site .empty-state {
+        display: none;
+      }
+
+      #workspace-result:checked ~ .site .result-board {
+        display: grid;
+      }
+
+      .look-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .look-card {
+        min-width: 0;
+        border: 1px solid rgba(23, 21, 20, 0.1);
+        background: #fff;
+        opacity: 0;
+        transform: translateY(22px);
+      }
+
+      #workspace-result:checked ~ .site .look-card {
+        animation: cardIn 760ms var(--ease) both;
+      }
+
+      #workspace-result:checked ~ .site .look-card:nth-child(2) {
+        animation-delay: 90ms;
+      }
+
+      #workspace-result:checked ~ .site .look-card:nth-child(3) {
+        animation-delay: 180ms;
+      }
+
+      .look-card.selected {
+        outline: 2px solid var(--ink);
+        outline-offset: -2px;
+      }
+
+      .look-card figure {
+        margin: 0;
+        aspect-ratio: 3 / 4.25;
+        overflow: hidden;
+        background: #ddd6cf;
+      }
+
+      .look-card img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        transition: transform 820ms var(--ease);
+      }
+
+      .look-card:hover img {
+        transform: scale(1.055);
+      }
+
+      .look-meta {
+        padding: 14px;
+      }
+
+      .look-meta b,
+      .look-meta span {
+        display: block;
+      }
+
+      .look-meta b {
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .look-meta span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .panel {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        padding: 28px;
+      }
+
+      .panel-title {
+        font-size: 36px;
+      }
+
+      .panel-empty,
+      .panel-result {
+        display: grid;
+        align-content: center;
+      }
+
+      .panel-empty {
+        text-align: center;
+      }
+
+      .panel-empty .ring {
+        width: 106px;
+        height: 106px;
+        margin: 0 auto 24px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: #b8b0a8;
+      }
+
+      .panel-empty p,
+      .panel-result p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      .panel-result {
+        display: none;
+        align-content: start;
+        gap: 18px;
+        padding-top: 24px;
+      }
+
+      #workspace-result:checked ~ .site .panel-empty {
+        display: none;
+      }
+
+      #workspace-result:checked ~ .site .panel-result {
+        display: grid;
+      }
+
+      .quote {
+        padding: 20px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .quote p {
+        margin: 0;
+        color: #4c4741;
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 22px;
+        line-height: 1.4;
+        letter-spacing: -0.02em;
+      }
+
+      .product-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .product {
+        display: grid;
+        grid-template-columns: 68px 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid rgba(23, 21, 20, 0.09);
+        background: rgba(255, 255, 255, 0.68);
+      }
+
+      .product img {
+        width: 68px;
+        height: 78px;
+        object-fit: cover;
+      }
+
+      .product b,
+      .product span {
+        display: block;
+      }
+
+      .product b {
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
+
+      .product span {
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      .price {
+        font-size: 12px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .panel-actions {
+        display: grid;
+        grid-template-columns: 1fr 52px;
+        gap: 10px;
+        padding-top: 22px;
+      }
+
+      .buy,
+      .save {
+        border: 0;
+        min-height: 52px;
+        color: #fff;
+        background: var(--ink);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .save {
+        display: grid;
+        place-items: center;
+      }
+
+      @keyframes heroDrift {
+        from {
+          transform: scale(1.02);
+        }
+
+        to {
+          transform: scale(1.07) translate3d(-1.2%, -0.6%, 0);
+        }
+      }
+
+      @keyframes titleIn {
+        from {
+          opacity: 0;
+          filter: blur(10px);
+          transform: translateY(24px) scaleX(0.9);
+        }
+
+        to {
+          opacity: 1;
+          filter: blur(0);
+          transform: translateY(0) scaleX(0.94);
+        }
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          filter: blur(7px);
+          transform: translateY(18px);
+        }
+
+        to {
+          opacity: 1;
+          filter: blur(0);
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes cardIn {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 1100px) {
+        .workspace {
+          grid-template-columns: 220px minmax(0, 1fr);
+        }
+
+        .panel {
+          grid-column: 1 / -1;
+          min-height: 420px;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .topbar {
+          padding: 0 18px;
+          min-height: 62px;
+        }
+
+        .nav-left a,
+        .nav-right a:not(:last-child) {
+          display: none;
+        }
+
+        .brand strong {
+          font-size: 22px;
+        }
+
+        .landing-content {
+          padding: 94px 22px 26px;
+        }
+
+        .landing-bottom {
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+
+        .hero-sub,
+        .cta {
+          justify-self: start;
+        }
+
+        .atelier {
+          padding: 78px 12px 12px;
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          min-height: auto;
+          gap: 18px;
+        }
+
+        .side-nav {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          margin-top: 12px;
+        }
+
+        .stage,
+        .panel {
+          padding: 22px;
+        }
+
+        .look-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .product {
+          grid-template-columns: 60px 1fr;
+        }
+
+        .price {
+          grid-column: 2;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+          transition-duration: 1ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <input class="toggle" type="checkbox" id="workspace-result" />
+
+    <div class="site">
+      <header class="topbar">
+        <nav class="nav-left" aria-label="Primary">
+          <a class="menu-mark" href="#studio" aria-label="Studio menu">
+            <span></span><span></span><span></span>
+          </a>
+          <a href="#studio">Menu</a>
+        </nav>
+
+        <a class="brand" href="#top" aria-label="I.F home">
+          <strong>I.F</strong>
+          <span>INTELLIGENT FASHION</span>
+        </a>
+
+        <nav class="nav-right" aria-label="Account">
+          <a href="#studio">Login</a>
+        </nav>
+      </header>
+
+      <main id="top">
+        <section class="landing" aria-label="I.F landing page">
+          <div class="landing-media" aria-hidden="true"></div>
+          <div class="landing-content">
+            <h1 class="hero-title">Wear what you imagine.</h1>
+
+            <div class="landing-bottom">
+              <p class="bottom-copy">
+                <b>Intelligent process</b>
+                I.F turns a situation, place, and mood into visual looks before connecting them to wearable product edits.
+              </p>
+              <p class="hero-sub">A fashion AI studio for every scene of your day.</p>
+              <a class="cta" href="#studio">Get Started</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="atelier" id="studio" aria-label="I.F main workspace">
+          <div class="workspace">
+            <aside class="sidebar" aria-label="Workspace navigation">
+              <div>
+                <p class="side-kicker">Intelligent Fashion</p>
+                <h2 class="side-title">Style Director</h2>
+              </div>
+
+              <nav class="side-nav">
+                <a href="#studio"><span>Workspace</span><span>01</span></a>
+                <a href="#studio"><span>History</span><span>02</span></a>
+                <a href="#studio"><span>Saved Looks</span><span>03</span></a>
+                <a href="#studio"><span>Settings</span><span>04</span></a>
+              </nav>
+
+              <a class="new-look" href="#studio">New Look</a>
+            </aside>
+
+            <section class="stage" aria-label="Prompt and generated looks">
+              <div class="prompt-shell">
+                <div>
+                  <p class="section-label">Prompt Workspace</p>
+                </div>
+                <div class="prompt-input">
+                  <input value="Curate a minimalist office look for a warm spring morning." aria-label="Prompt" />
+                  <label class="generate" for="workspace-result" aria-label="Generate looks">
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                      <path d="M12 19V5M6.5 10.5 12 5l5.5 5.5" fill="none" stroke="currentColor" stroke-linecap="round" />
+                    </svg>
+                  </label>
+                </div>
+                <div class="chip-row" aria-label="Prompt suggestions">
+                  <span class="chip">Situation · Office</span>
+                  <span class="chip">Mood · Minimal</span>
+                  <span class="chip">Budget · Under 300k</span>
+                  <span class="chip">Fit · Clean line</span>
+                </div>
+              </div>
+
+              <div class="empty-state">
+                <div>
+                  <h2>Curate<br />Your Style</h2>
+                  <p>
+                    Start with a place, mood, and small constraint. I.F will turn it into visual outfit directions and a shoppable edit.
+                  </p>
+                </div>
+              </div>
+
+              <div class="result-board" aria-label="Generated looks">
+                <div class="section-label">Generated Looks</div>
+                <div class="look-grid">
+                  <article class="look-card selected">
+                    <figure>
+                      <img
+                        src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=800&q=82"
+                        alt="Minimal office look with ivory tone"
+                      />
+                    </figure>
+                    <div class="look-meta">
+                      <b>Look A · The Architect</b>
+                      <span>ivory jacket · black column · polished detail</span>
+                    </div>
+                  </article>
+
+                  <article class="look-card">
+                    <figure>
+                      <img
+                        src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=800&q=82"
+                        alt="Soft office look"
+                      />
+                    </figure>
+                    <div class="look-meta">
+                      <b>Look B · Soft Structure</b>
+                      <span>tonal knit · fluid skirt · low contrast</span>
+                    </div>
+                  </article>
+
+                  <article class="look-card">
+                    <figure>
+                      <img
+                        src="https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=82"
+                        alt="Modern commute look"
+                      />
+                    </figure>
+                    <div class="look-meta">
+                      <b>Look C · Modern Commute</b>
+                      <span>light coat · dark base · practical bag</span>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </section>
+
+            <aside class="panel" aria-label="Product panel">
+              <div>
+                <p class="panel-kicker">Product Panel</p>
+                <h2 class="panel-title">Awaiting Vision</h2>
+              </div>
+
+              <div class="panel-empty">
+                <div>
+                  <div class="ring" aria-hidden="true">
+                    <svg width="42" height="42" viewBox="0 0 24 24">
+                      <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor" stroke-linecap="round" />
+                    </svg>
+                  </div>
+                  <p>When a prompt is generated, this panel becomes the selected look summary and product edit.</p>
+                </div>
+              </div>
+
+              <div class="panel-result">
+                <div class="quote">
+                  <p>A clean office look that feels polished, calm, and wearable through the whole day.</p>
+                </div>
+
+                <div>
+                  <p class="section-label">Curated Pieces</p>
+                  <div class="product-list">
+                    <article class="product">
+                      <img
+                        src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=360&q=82"
+                        alt="Ivory single blazer"
+                      />
+                      <div>
+                        <b>Ivory Single Blazer</b>
+                        <span>Texture for a softer office silhouette.</span>
+                      </div>
+                      <strong class="price">KRW 149k</strong>
+                    </article>
+
+                    <article class="product">
+                      <img
+                        src="https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=360&q=82"
+                        alt="Black midi skirt"
+                      />
+                      <div>
+                        <b>Fluid Black Midi</b>
+                        <span>Long vertical line without heaviness.</span>
+                      </div>
+                      <strong class="price">KRW 82k</strong>
+                    </article>
+
+                    <article class="product">
+                      <img
+                        src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=360&q=82"
+                        alt="Leather loafer"
+                      />
+                      <div>
+                        <b>Soft Leather Loafer</b>
+                        <span>Grounded enough for commuting.</span>
+                      </div>
+                      <strong class="price">KRW 118k</strong>
+                    </article>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel-actions">
+                <button class="buy" type="button">Buy Full Look</button>
+                <button class="save" type="button" aria-label="Save look">
+                  <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path d="M20.2 5.2a5.1 5.1 0 0 0-7.2 0L12 6.2l-1-1a5.1 5.1 0 0 0-7.2 7.2l1 1L12 20.6l7.2-7.2 1-1a5.1 5.1 0 0 0 0-7.2Z" fill="none" stroke="currentColor" stroke-linecap="round" />
+                  </svg>
+                </button>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script>
+      window.addEventListener("load", () => {
+        if (!window.location.hash) return;
+        const target = document.querySelector(window.location.hash);
+        if (target) target.scrollIntoView({ block: "start" });
+      });
+    </script>
+  </body>
+</html>

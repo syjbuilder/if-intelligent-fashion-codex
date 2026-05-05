@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>I.F Homepage v0.2 Nike Workspace</title>
+    <style>
+      :root {
+        --ink: #111111;
+        --canvas: #ffffff;
+        --soft: #f5f5f5;
+        --hairline: #cacacb;
+        --hairline-soft: #e5e5e5;
+        --mute: #707072;
+        --ash: #4b4b4d;
+        --sale: #d30005;
+        --success: #007d48;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--canvas);
+        font-family:
+          Inter, "Helvetica Neue", Arial, system-ui, -apple-system,
+          BlinkMacSystemFont, sans-serif;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+      }
+
+      .utility {
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 14px;
+        padding: 0 clamp(18px, 4vw, 56px);
+        background: var(--soft);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        min-height: 64px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        padding: 0 clamp(18px, 4vw, 56px);
+        background: var(--canvas);
+        box-shadow: inset 0 -1px 0 var(--hairline-soft);
+      }
+
+      .brand {
+        font-size: 28px;
+        line-height: 1;
+        font-weight: 900;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 28px;
+        font-weight: 800;
+      }
+
+      .nav-links a:first-child {
+        box-shadow: inset 0 -2px 0 var(--ink);
+      }
+
+      .nav-tools {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+
+      .search {
+        height: 40px;
+        width: min(220px, 22vw);
+        display: flex;
+        align-items: center;
+        border-radius: 24px;
+        padding: 0 18px;
+        background: var(--soft);
+        color: var(--mute);
+        font-weight: 700;
+      }
+
+      .icon {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: var(--soft);
+        font-weight: 900;
+      }
+
+      .hero {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 48px clamp(18px, 4vw, 56px) 0;
+      }
+
+      .campaign {
+        min-height: min(72vh, 760px);
+        display: grid;
+        align-items: end;
+        background:
+          linear-gradient(0deg, rgba(0, 0, 0, 0.46), rgba(0, 0, 0, 0.04) 58%),
+          url("https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1800&q=84")
+            center / cover;
+        color: var(--canvas);
+      }
+
+      .campaign-copy {
+        padding: clamp(24px, 4vw, 56px);
+      }
+
+      .campaign-copy p {
+        margin: 0 0 10px;
+        font-weight: 800;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 980px;
+        font-family: Impact, "Arial Black", Inter, sans-serif;
+        font-size: clamp(58px, 11vw, 148px);
+        font-weight: 500;
+        line-height: 0.88;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .hero-desc {
+        max-width: 560px;
+        margin: 18px 0 22px;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.45;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .pill {
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0 28px;
+        background: var(--ink);
+        color: var(--canvas);
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      .pill.on-image,
+      .pill.light {
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      .pill.soft {
+        background: var(--soft);
+        color: var(--ink);
+      }
+
+      .section {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 48px clamp(18px, 4vw, 56px);
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 24px;
+        margin-bottom: 24px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(26px, 3.2vw, 36px);
+        line-height: 1.12;
+        font-weight: 900;
+      }
+
+      .section-head p {
+        max-width: 470px;
+        margin: 0;
+        color: var(--mute);
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1.5;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 224px minmax(0, 1fr) 340px;
+        min-height: 780px;
+        border-top: 1px solid var(--hairline);
+        border-bottom: 1px solid var(--hairline);
+        background: var(--canvas);
+      }
+
+      .sidebar,
+      .center,
+      .panel {
+        min-width: 0;
+      }
+
+      .sidebar {
+        padding: 24px 18px;
+        border-right: 1px solid var(--hairline);
+        background: var(--canvas);
+      }
+
+      .side-brand {
+        margin-bottom: 42px;
+        font-size: 28px;
+        font-weight: 900;
+      }
+
+      .side-section {
+        padding: 18px 0;
+        border-top: 1px solid var(--hairline-soft);
+      }
+
+      .side-section:first-of-type {
+        border-top: 0;
+      }
+
+      .side-title {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 12px;
+        color: var(--mute);
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .side-link {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 10px 0;
+        font-size: 15px;
+        font-weight: 800;
+      }
+
+      .side-link span:last-child {
+        color: var(--mute);
+      }
+
+      .token-box {
+        padding: 16px;
+        background: var(--soft);
+      }
+
+      .token-box strong {
+        display: block;
+        font-size: 24px;
+      }
+
+      .token-box span {
+        color: var(--mute);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .center {
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        gap: 18px;
+        padding: 24px;
+        background: var(--canvas);
+      }
+
+      .prompt-bar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        padding: 18px;
+        background: var(--soft);
+      }
+
+      .prompt {
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        border-radius: 30px;
+        padding: 0 24px;
+        background: var(--canvas);
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .chips {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+      }
+
+      .chip {
+        flex: 0 0 auto;
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--hairline);
+        border-radius: 999px;
+        padding: 0 16px;
+        background: var(--canvas);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .chip.active {
+        background: var(--ink);
+        color: var(--canvas);
+        border-color: var(--ink);
+      }
+
+      .look-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        min-height: 0;
+      }
+
+      .look {
+        display: grid;
+        grid-template-rows: 1fr auto;
+        min-width: 0;
+      }
+
+      .look-image {
+        min-height: 0;
+        background: var(--soft);
+        overflow: hidden;
+      }
+
+      .look-image img {
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .look-info {
+        padding: 12px 0 0;
+      }
+
+      .look-info strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .look-info span {
+        display: block;
+        color: var(--mute);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .follow-up {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        padding-top: 18px;
+        border-top: 1px solid var(--hairline-soft);
+      }
+
+      .follow-up-input {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        border-radius: 24px;
+        padding: 0 18px;
+        background: var(--soft);
+        color: var(--mute);
+        font-weight: 700;
+      }
+
+      .panel {
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        border-left: 1px solid var(--hairline);
+        background: var(--canvas);
+      }
+
+      .panel-hero {
+        aspect-ratio: 4 / 5;
+        background: var(--soft);
+        overflow: hidden;
+      }
+
+      .panel-hero img {
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .panel-summary {
+        padding: 18px;
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .panel-summary h3 {
+        margin: 0 0 6px;
+        font-size: 24px;
+        line-height: 1.2;
+      }
+
+      .panel-summary p {
+        margin: 0;
+        color: var(--mute);
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.5;
+      }
+
+      .products {
+        display: grid;
+        align-content: start;
+        gap: 1px;
+        background: var(--hairline-soft);
+      }
+
+      .product {
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        gap: 12px;
+        padding: 14px;
+        background: var(--canvas);
+      }
+
+      .product img {
+        height: 96px;
+        object-fit: cover;
+        background: var(--soft);
+      }
+
+      .product strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 15px;
+      }
+
+      .product span {
+        display: block;
+        color: var(--mute);
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+
+      .product .price {
+        margin-top: 7px;
+        color: var(--ink);
+        font-weight: 900;
+      }
+
+      .panel-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 14px;
+        border-top: 1px solid var(--hairline);
+      }
+
+      .panel-actions .pill {
+        min-height: 44px;
+        padding: 0 12px;
+      }
+
+      .campaign-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .campaign-tile {
+        min-height: 540px;
+        display: grid;
+        align-items: end;
+        background: var(--soft);
+        color: var(--canvas);
+      }
+
+      .campaign-tile.date {
+        background:
+          linear-gradient(0deg, rgba(0, 0, 0, 0.46), transparent 58%),
+          url("https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1100&q=82")
+            center / cover;
+      }
+
+      .campaign-tile.run {
+        background:
+          linear-gradient(0deg, rgba(0, 0, 0, 0.46), transparent 58%),
+          url("https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1100&q=82")
+            center / cover;
+      }
+
+      .tile-copy {
+        padding: 24px;
+      }
+
+      .tile-copy h3 {
+        margin: 0 0 18px;
+        font-family: Impact, "Arial Black", Inter, sans-serif;
+        font-size: clamp(48px, 7vw, 96px);
+        line-height: 0.9;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      .mobile-section {
+        display: grid;
+        grid-template-columns: 0.68fr 1fr;
+        gap: 8px;
+      }
+
+      .phone {
+        padding: 12px;
+        background: var(--ink);
+      }
+
+      .phone-screen {
+        min-height: 640px;
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        background: var(--canvas);
+      }
+
+      .phone-nav {
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        box-shadow: inset 0 -1px 0 var(--hairline-soft);
+        font-weight: 900;
+      }
+
+      .phone-prompt {
+        margin: 12px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        border-radius: 24px;
+        padding: 0 16px;
+        background: var(--soft);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .phone-image {
+        margin: 0 12px;
+        background: var(--soft);
+        overflow: hidden;
+      }
+
+      .phone-image img {
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .bottom-sheet {
+        padding: 18px 12px 14px;
+      }
+
+      .bottom-sheet h3 {
+        margin: 0 0 4px;
+        font-size: 24px;
+      }
+
+      .bottom-sheet p {
+        margin: 0 0 14px;
+        color: var(--mute);
+        font-weight: 700;
+        line-height: 1.45;
+      }
+
+      .mobile-copy {
+        min-height: 640px;
+        display: grid;
+        align-content: end;
+        padding: 24px;
+        background:
+          linear-gradient(0deg, rgba(0, 0, 0, 0.5), transparent 62%),
+          url("https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1100&q=82")
+            center / cover;
+        color: var(--canvas);
+      }
+
+      .mobile-copy h2 {
+        margin-bottom: 18px;
+        font-family: Impact, "Arial Black", Inter, sans-serif;
+        font-size: clamp(48px, 7vw, 100px);
+        line-height: 0.9;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      .final {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 48px clamp(18px, 4vw, 56px) 72px;
+        text-align: center;
+      }
+
+      .final h2 {
+        max-width: 1020px;
+        margin: 0 auto 18px;
+        font-family: Impact, "Arial Black", Inter, sans-serif;
+        font-size: clamp(54px, 9vw, 132px);
+        font-weight: 500;
+        line-height: 0.88;
+        text-transform: uppercase;
+      }
+
+      .footer {
+        border-top: 1px solid var(--hairline);
+        padding: 32px clamp(18px, 4vw, 56px);
+        color: var(--mute);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      @media (max-width: 1180px) {
+        .workspace {
+          grid-template-columns: 190px minmax(0, 1fr);
+        }
+
+        .panel {
+          grid-column: 1 / -1;
+          grid-template-columns: 220px 1fr;
+          grid-template-rows: auto auto;
+          border-left: 0;
+          border-top: 1px solid var(--hairline);
+        }
+
+        .panel-hero {
+          grid-row: 1 / 3;
+          aspect-ratio: auto;
+        }
+
+        .panel-actions {
+          grid-column: 2;
+        }
+      }
+
+      @media (max-width: 960px) {
+        .nav {
+          grid-template-columns: 1fr auto;
+        }
+
+        .nav-links {
+          display: none;
+        }
+
+        .search {
+          width: 40px;
+          padding: 0;
+          color: transparent;
+        }
+
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          display: none;
+        }
+
+        .look-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .panel {
+          grid-template-columns: 180px 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .utility {
+          display: none;
+        }
+
+        .hero {
+          padding-top: 24px;
+        }
+
+        .campaign {
+          min-height: 76vh;
+          background-position: 58% center;
+        }
+
+        .campaign-copy {
+          padding: 18px;
+        }
+
+        .section {
+          padding-top: 32px;
+          padding-bottom: 32px;
+        }
+
+        .section-head,
+        .prompt-bar,
+        .follow-up,
+        .campaign-row,
+        .mobile-section {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        .workspace {
+          min-height: 0;
+        }
+
+        .center {
+          padding: 18px;
+        }
+
+        .look-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .look-image {
+          aspect-ratio: 4 / 5;
+        }
+
+        .panel {
+          grid-template-columns: 1fr;
+        }
+
+        .panel-hero {
+          aspect-ratio: 4 / 5;
+        }
+
+        .panel-actions {
+          grid-column: auto;
+        }
+
+        .campaign-tile,
+        .phone-screen,
+        .mobile-copy {
+          min-height: 560px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="utility">
+      <a href="#">Help</a>
+      <span>|</span>
+      <a href="#">Join Us</a>
+      <span>|</span>
+      <a href="#">Sign In</a>
+    </div>
+
+    <nav class="nav" aria-label="Primary navigation">
+      <a class="brand" href="#">I.F</a>
+      <div class="nav-links">
+        <a href="#workspace">Workspace</a>
+        <a href="#looks">Looks</a>
+        <a href="#mobile">Mobile</a>
+      </div>
+      <div class="nav-tools">
+        <div class="search">Search</div>
+        <a class="icon" href="#">♡</a>
+        <a class="icon" href="#">☰</a>
+      </div>
+    </nav>
+
+    <main>
+      <section class="hero">
+        <div class="campaign">
+          <div class="campaign-copy">
+            <p>I.F STYLE WORKSPACE</p>
+            <h1>TYPE YOUR DAY. BUILD YOUR LOOK.</h1>
+            <div class="hero-desc">
+              프롬프트로 룩을 만들고, 선택한 룩을 실제 구매 가능한 상품 패널로 연결합니다.
+            </div>
+            <div class="pill-row">
+              <a class="pill on-image" href="#workspace">Open Workspace</a>
+              <a class="pill on-image" href="#mobile">Mobile Flow</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="workspace">
+        <div class="section-head">
+          <h2>Three-panel styling workspace</h2>
+          <p>
+            Nike식 시각 언어는 유지하되, I.F의 핵심 구조인 사이드바, 생성 영역,
+            상품 패널을 첫 번째 주요 섹션으로 크게 배치합니다.
+          </p>
+        </div>
+
+        <div class="workspace">
+          <aside class="sidebar">
+            <div class="side-brand">I.F</div>
+
+            <div class="side-section">
+              <span class="side-title">Create</span>
+              <a class="side-link" href="#"><span>New prompt</span><span>+</span></a>
+              <a class="side-link" href="#"><span>Demo prompt</span><span>1</span></a>
+            </div>
+
+            <div class="side-section">
+              <span class="side-title">Library</span>
+              <a class="side-link" href="#"><span>History</span><span>12</span></a>
+              <a class="side-link" href="#"><span>Saved looks</span><span>4</span></a>
+              <a class="side-link" href="#"><span>Public</span><span>0</span></a>
+            </div>
+
+            <div class="side-section">
+              <span class="side-title">Plan</span>
+              <div class="token-box">
+                <strong>12</strong>
+                <span>tokens available</span>
+              </div>
+            </div>
+          </aside>
+
+          <section class="center" id="looks">
+            <div class="prompt-bar">
+              <div class="prompt">키 162cm, 하체 커버되는 여름 출근룩</div>
+              <a class="pill" href="#">Generate</a>
+            </div>
+
+            <div class="chips">
+              <span class="chip active">Office</span>
+              <span class="chip">Summer</span>
+              <span class="chip">Clean</span>
+              <span class="chip">Lower-body cover</span>
+              <span class="chip">Under 200k</span>
+            </div>
+
+            <div class="look-grid">
+              <article class="look">
+                <div class="look-image">
+                  <img
+                    alt="Minimal office look"
+                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=700&q=82"
+                  />
+                </div>
+                <div class="look-info">
+                  <strong>Look A · Minimal Office</strong>
+                  <span>clean, tailored, semi-wide</span>
+                </div>
+              </article>
+
+              <article class="look">
+                <div class="look-image">
+                  <img
+                    alt="Soft office look"
+                    src="https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=700&q=82"
+                  />
+                </div>
+                <div class="look-info">
+                  <strong>Look B · Soft Office</strong>
+                  <span>cream, light, feminine</span>
+                </div>
+              </article>
+
+              <article class="look">
+                <div class="look-image">
+                  <img
+                    alt="City smart look"
+                    src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=700&q=82"
+                  />
+                </div>
+                <div class="look-info">
+                  <strong>Look C · City Smart</strong>
+                  <span>neutral, modern, relaxed</span>
+                </div>
+              </article>
+            </div>
+
+            <div class="follow-up">
+              <div class="follow-up-input">조금 더 미니멀하게 바꿔줘</div>
+              <a class="pill soft" href="#">Refine</a>
+            </div>
+          </section>
+
+          <aside class="panel">
+            <div class="panel-hero">
+              <img
+                alt="Selected generated look"
+                src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=700&q=82"
+              />
+            </div>
+
+            <div class="panel-summary">
+              <h3>Look A products</h3>
+              <p>
+                린넨 질감과 세미와이드 핏이 출근 상황과 하체 커버 요청에 잘 맞아요.
+              </p>
+            </div>
+
+            <div class="products">
+              <article class="product">
+                <img
+                  alt="Cream blouse"
+                  src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=300&q=80"
+                />
+                <div>
+                  <strong>Cream linen blouse</strong>
+                  <span>Women's Top · Brand A</span>
+                  <span class="price">KRW 49,000</span>
+                </div>
+              </article>
+
+              <article class="product">
+                <img
+                  alt="Charcoal trousers"
+                  src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=300&q=80"
+                />
+                <div>
+                  <strong>Semi-wide trousers</strong>
+                  <span>Women's Bottom · Brand B</span>
+                  <span class="price">KRW 72,000</span>
+                </div>
+              </article>
+
+              <article class="product">
+                <img
+                  alt="Light blazer"
+                  src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=300&q=80"
+                />
+                <div>
+                  <strong>Light summer blazer</strong>
+                  <span>Women's Outer · Brand C</span>
+                  <span class="price">KRW 98,000</span>
+                </div>
+              </article>
+            </div>
+
+            <div class="panel-actions">
+              <a class="pill soft" href="#">Save</a>
+              <a class="pill" href="#">Shop</a>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="campaign-row">
+          <article class="campaign-tile date">
+            <div class="tile-copy">
+              <h3>WEEKEND DATE</h3>
+              <a class="pill on-image" href="#workspace">Generate</a>
+            </div>
+          </article>
+          <article class="campaign-tile run">
+            <div class="tile-copy">
+              <h3>AFTER WORK RUN</h3>
+              <a class="pill on-image" href="#workspace">Generate</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="mobile">
+        <div class="section-head">
+          <h2>Mobile turns the panel into a sheet</h2>
+          <p>
+            데스크톱의 우측 상품 패널은 모바일에서 하단 바텀시트로 전환됩니다.
+          </p>
+        </div>
+
+        <div class="mobile-section">
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="phone-nav">
+                <span>I.F</span>
+                <span>☰</span>
+              </div>
+              <div class="phone-prompt">주말 데이트룩 추천</div>
+              <div class="phone-image">
+                <img
+                  alt="Mobile date look"
+                  src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=700&q=82"
+                />
+              </div>
+              <div class="bottom-sheet">
+                <h3>Weekend Bright</h3>
+                <p>선택한 룩을 실제 상품 조합으로 확인하세요.</p>
+                <a class="pill" href="#">View Products</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="mobile-copy">
+            <h2>PROMPT. LOOK. PRODUCTS.</h2>
+            <a class="pill on-image" href="#workspace">Open Workspace</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="final">
+        <h2>IF YOU CAN IMAGINE, YOU CAN WEAR IT.</h2>
+        <div class="pill-row" style="justify-content: center">
+          <a class="pill" href="#workspace">Start Styling</a>
+          <a class="pill soft" href="#">View Demo</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      I.F v0.2_nike_workspace · Nike-inspired visual system with I.F three-panel product core
+    </footer>
+  </body>
+</html>

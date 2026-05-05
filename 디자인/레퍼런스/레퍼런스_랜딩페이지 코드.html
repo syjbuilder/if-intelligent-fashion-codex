@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>I.F - Wear what you imagine.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@300;400;500;700;900&amp;family=Manrope:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#484645",
+                      "frosted-overlay": "rgba(255, 255, 255, 0.6)",
+                      "surface-container-high": "#ebe7e6",
+                      "on-surface": "#1c1b1b",
+                      "tertiary": "#000000",
+                      "on-error-container": "#93000a",
+                      "base-surface": "#F7F4EF",
+                      "on-secondary-fixed-variant": "#83213b",
+                      "accent-rose": "#B94A62",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed-dim": "#ffb2bd",
+                      "accent-lime": "#D7E36A",
+                      "surface": "#fdf8f8",
+                      "primary-container": "#1c1b1b",
+                      "on-surface-variant": "#444748",
+                      "secondary-container": "#ff8199",
+                      "on-secondary-fixed": "#400014",
+                      "outline": "#747878",
+                      "sub-text": "#76716A",
+                      "background": "#fdf8f8",
+                      "tertiary-container": "#1c1b1a",
+                      "secondary-fixed": "#ffd9dd",
+                      "on-tertiary-fixed": "#1c1b1a",
+                      "tertiary-fixed-dim": "#cac6c4",
+                      "primary-fixed": "#e5e2e1",
+                      "inverse-on-surface": "#f4f0ef",
+                      "product-surface": "#FFFFFF",
+                      "surface-variant": "#e5e2e1",
+                      "primary-fixed-dim": "#c8c6c5",
+                      "surface-bright": "#fdf8f8",
+                      "on-secondary-container": "#771632",
+                      "inverse-surface": "#313030",
+                      "tertiary-fixed": "#e6e2df",
+                      "primary": "#000000",
+                      "surface-dim": "#ddd9d8",
+                      "on-primary-fixed": "#1c1b1b",
+                      "surface-tint": "#5f5e5e",
+                      "on-tertiary-container": "#868382",
+                      "line-stroke": "#E4DED6",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#e5e2e1",
+                      "surface-container-low": "#f7f3f2",
+                      "on-background": "#1c1b1b",
+                      "on-primary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "inverse-primary": "#c8c6c5",
+                      "on-primary-container": "#858383",
+                      "error": "#ba1a1a",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed-variant": "#474746",
+                      "surface-container": "#f1edec",
+                      "secondary": "#a33951",
+                      "outline-variant": "#c4c7c7",
+                      "error-container": "#ffdad6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px",
+                      "sidebar-width": "260px",
+                      "margin-desktop": "40px",
+                      "panel-width": "380px"
+              },
+              "fontFamily": {
+                      "h1-editorial": [
+                              "Noto Serif"
+                      ],
+                      "label-caps": [
+                              "Manrope"
+                      ],
+                      "body-main": [
+                              "Manrope"
+                      ],
+                      "prompt-text": [
+                              "Manrope"
+                      ],
+                      "h2-section": [
+                              "Noto Serif"
+                      ]
+              },
+              "fontSize": {
+                      "h1-editorial": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "300"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-main": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "prompt-text": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "300"
+                              }
+                      ],
+                      "h2-section": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(247, 244, 239, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(228, 222, 214, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-base-surface text-on-surface font-body-main antialiased min-h-screen flex flex-col selection:bg-accent-lime selection:text-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 border-b border-[#E4DED6] dark:border-[#2A2A2A] bg-[#F7F4EF]/80 dark:bg-[#171717]/80 backdrop-blur-md">
+<div class="flex justify-between items-center px-8 h-16 w-full max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-8">
+<a class="text-2xl font-black text-[#171717] dark:text-[#F7F4EF] tracking-tighter" href="#">I.F</a>
+<nav class="hidden md:flex gap-6">
+<a class="font-['Noto_Serif'] uppercase tracking-widest text-sm text-[#171717]/60 dark:text-[#F7F4EF]/60 hover:text-[#171717] dark:hover:text-white transition-colors duration-300 cursor-pointer active:opacity-70" href="#">Studio</a>
+<a class="font-['Noto_Serif'] uppercase tracking-widest text-sm text-[#171717]/60 dark:text-[#F7F4EF]/60 hover:text-[#171717] dark:hover:text-white transition-colors duration-300 cursor-pointer active:opacity-70" href="#">Gallery</a>
+<a class="font-['Noto_Serif'] uppercase tracking-widest text-sm text-[#171717]/60 dark:text-[#F7F4EF]/60 hover:text-[#171717] dark:hover:text-white transition-colors duration-300 cursor-pointer active:opacity-70" href="#">Magazine</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="font-['Noto_Serif'] uppercase tracking-widest text-sm text-[#171717]/60 dark:text-[#F7F4EF]/60 hover:text-[#171717] dark:hover:text-white transition-colors duration-300 cursor-pointer active:opacity-70 flex items-center justify-center">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+<button class="bg-primary text-on-primary font-label-caps text-label-caps px-6 py-2 rounded-full hover:bg-tertiary-container transition-colors hidden md:block">로그인</button>
+</div>
+</div>
+</header>
+<main class="flex-grow flex flex-col w-full max-w-screen-2xl mx-auto pt-16">
+<!-- Hero Section -->
+<section class="relative min-h-[921px] flex items-center justify-center overflow-hidden">
+<!-- Background Image -->
+<div class="absolute inset-0 w-full h-full">
+<img alt="Hero Fashion" class="w-full h-full object-cover object-top opacity-90" data-alt="A high-end, cinematic fashion editorial photograph serving as a hero background. A model wearing a striking, avant-garde oversized coat stands in a minimalist, light-drenched studio space. The lighting is soft and diffused, creating a serene, modern light-mode aesthetic. The color palette revolves around off-whites, warm creams, and deep charcoal contrasts, perfectly matching the UI's editorial minimalism. The overall mood is sophisticated, evocative, and conceptually focused on 'the look' rather than just clothing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPXYAowl12f31BISQ7oom25amtOX719UNg8fWn32ouUf69Uy1IEUBq1OnEgVtCdyJSNIjPsz05ySkjxy3C8Sv3BQdwJDEKI8a3OzzPr5u7npavh0-8GAQlCcwM80PzuM0vcjr_iWb9s1dErgh-PaZE6FnaFumWtnsn73LcuU66iEUHio1x-UAMeI27GQ7LAITQQcalbA2zxpwcl3cT2brv5vdapQBzFd3NKJg98ZWyUqGYtSqMJqmrZeIkCRG1EvEHtSQNL5MyNm8"/>
+<!-- Subtle Gradient Overlay for Text Readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-base-surface/80 via-transparent to-base-surface/30 mix-blend-multiply"></div>
+</div>
+<!-- Hero Content -->
+<div class="relative z-10 flex flex-col items-center text-center px-6 max-w-4xl mx-auto mt-20"><div class="flex flex-col items-center mb-12">
+<span class="font-h1-editorial text-5xl md:text-6xl text-primary tracking-tight mb-2">I.F</span>
+<span class="font-label-caps text-label-caps tracking-[0.3em] text-on-surface-variant uppercase">Intelligent Fashion</span>
+</div>
+<h1 class="font-h1-editorial text-h1-editorial text-primary mb-6 drop-shadow-sm sm:text-6xl md:text-7xl">
+                    Wear what you imagine.
+                </h1>
+<!-- Prompt Bar Concept -->
+<button class="bg-accent-rose text-white font-label-caps text-label-caps px-8 py-4 rounded-full uppercase tracking-wider hover:bg-on-secondary-container transition-colors shadow-sm">
+                    Get Started
+                </button>
+</div>
+<div class="absolute bottom-20 left-12 z-20 max-w-md">
+<p class="font-label-caps text-label-caps text-primary/80 uppercase tracking-[0.2em] mb-2">The Intelligent Process</p>
+<h2 class="font-h1-editorial text-2xl md:text-3xl text-primary leading-tight">
+        Articulate your vision.<br/>
+        AI curates the look.<br/>
+        Shop the reality.
+    </h2>
+</div></section>
+<!-- Process/Flow Section -->
+<section class="py-24 px-6 md:px-12 bg-base-surface">
+<div class="text-center mb-16">
+<h2 class="font-h2-section text-h2-section text-primary mb-4">The Atelier Process</h2>
+<p class="font-body-main text-body-main text-sub-text">From imagination to reality in three steps.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+<!-- Step 1 -->
+<div class="flex flex-col items-center text-center group">
+<div class="w-full aspect-[4/5] bg-surface-container-low rounded-xl mb-6 relative overflow-hidden flex items-center justify-center border border-line-stroke group-hover:shadow-md transition-shadow">
+<div class="absolute inset-0 p-6 flex flex-col justify-center items-center">
+<div class="w-full max-w-[200px] border-b border-line-stroke pb-2 mb-4">
+<p class="font-prompt-text text-prompt-text text-sub-text text-left text-sm">Describe the mood...</p>
+</div>
+<div class="flex gap-2 flex-wrap justify-center">
+<span class="px-3 py-1 border border-outline rounded-full font-label-caps text-[10px] text-on-surface-variant">Minimal</span>
+<span class="px-3 py-1 border border-outline rounded-full font-label-caps text-[10px] text-on-surface-variant">Structured</span>
+<span class="px-3 py-1 border border-outline rounded-full font-label-caps text-[10px] text-on-surface-variant">Monochrome</span>
+</div>
+</div>
+</div>
+<h3 class="font-h2-section text-xl mb-2 text-primary">1. Prompt</h3>
+<p class="font-body-main text-sm text-sub-text max-w-[240px]">Articulate your vision using natural language or style tags.</p>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center text-center group">
+<div class="w-full aspect-[4/5] bg-surface-container-low rounded-xl mb-6 relative overflow-hidden group-hover:shadow-md transition-shadow">
+<img alt="AI Look" class="w-full h-full object-cover mix-blend-luminosity opacity-80 group-hover:mix-blend-normal group-hover:opacity-100 transition-all duration-500" data-alt="A fashion editorial style image showing an AI-generated outfit concept. A person stands outdoors wearing a highly structured, minimalist monochromatic coat. The lighting is crisp and natural, highlighting the textures of the fabric. The image sits within a frosted glass container UI, representing the 'AI Look' generation step. The aesthetic is clean, sophisticated, and aligns with high-end magazine photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoRH2tskd6mayaR2iwki4zQu-zukK85pMjI7ZSEo7V0AKCuEYgh38qIxPRN25in-SJu4LkQ6SAWsJsnkWHw5Na430re-g5w5gYtq9M1W3xy3RNvHv2X6D1GKHCtHAav03UcW0fiCC167koP4XbEcaVSWA_0J_T059sY3hFaNX3T6lmo5miesphFLD0B12TOWRpIP5Ro4qqN3g6hNxfpDhT-y0kdP4aVnIkDdp6xGGo_21pVaiggFMNmHWSLp3SfZ0bZCBgc_7wxNc"/>
+<div class="absolute bottom-4 left-4 right-4 glass-panel rounded-lg p-3 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="font-label-caps text-[10px] text-primary uppercase">Look 01</span>
+<span class="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
+</div>
+</div>
+<h3 class="font-h2-section text-xl mb-2 text-primary">2. AI Look</h3>
+<p class="font-body-main text-sm text-sub-text max-w-[240px]">The AI acts as your Style Director, generating cinematic inspiration.</p>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center text-center group">
+<div class="w-full aspect-[4/5] bg-surface-container-low rounded-xl mb-6 relative overflow-hidden flex flex-col justify-end p-4 border border-line-stroke group-hover:shadow-md transition-shadow">
+<img alt="Product Background" class="absolute inset-0 w-full h-1/2 object-cover opacity-30 object-top" data-alt="A close-up, high-quality shot of a specific clothing item, like a structured white shirt or coat, isolated on a light background. This represents the 'Product' step, focusing on tangible, buyable items rather than full editorial scenes. The lighting is flat and practical, suitable for e-commerce, yet maintains a premium feel through high contrast and sharp details." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBifFsQkk-cHnlPEk7CVI_F8FMiqf2_HWsIxVq7MvrtRQmBdaB_V1_iXYiUETQTMCcECj8XhhcHiQuAWMvz2n6c_t9VWFMyifElzgY_G9rojTaKOSmNzgZkZYn6DjwoWQiAVZiNlVaOY4tGeJ5_pxx1Feok4Dg5JIf8qDfkI2-3l2-LQGA2zIL60HV8fNPtO5WLITqn4Lx_lZPC_ehWv1aIQ5iT-g4v-ZwAr7qr4gN1IvwLVZWK694pXi90lxeqVJxzyYiqYigb-vA"/>
+<!-- Product Card Mockup -->
+<div class="bg-product-surface rounded-lg p-4 shadow-sm w-full relative z-10 border border-line-stroke"><div class="flex flex-col items-center mb-12">
+<span class="font-h1-editorial text-5xl md:text-6xl text-primary tracking-tight mb-2">I.F</span>
+<span class="font-label-caps text-label-caps tracking-[0.3em] text-on-surface-variant uppercase">Intelligent Fashion</span>
+</div>
+<div class="w-full h-32 bg-surface-container-highest rounded-md mb-3 overflow-hidden">
+<img alt="Jacket" class="w-full h-full object-cover" data-alt="A clean, e-commerce style photograph of a minimalist jacket on a white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVObRsPYNHzZjT6GP1gw9lnAQwpD7WERCaltrTbrfEakuNO_y-1ylZ1n99B89fX2gxh8jhBfKN1GNWHBQZJDcdzQL1wJXs3dwGqzXR4fO3jc9xakdx4DmHIw1rQzLidKxmv4rv3w_Kjm9G6v3gf4lat3yvg0pY2hHBOS6cuD14EQF-1RYqWPaj64i5BWV7OcDTk0JXvRHwxwJSbLl1He7dTHFrW2j2TsyB0qA_4S5omkPkH0bibJCkanAPwmJAKpvSPna3QPCqRr0"/>
+</div>
+<div class="flex justify-between items-start mb-2">
+<div class="text-left">
+<h4 class="font-label-caps text-[10px] text-sub-text uppercase">Studio C</h4>
+<p class="font-body-main text-sm text-primary font-medium">Structured Coat</p>
+</div>
+<span class="font-body-main text-sm text-primary">$450</span>
+</div>
+<button class="w-full py-2 border border-outline rounded text-sm font-label-caps text-primary hover:bg-surface-container-high transition-colors">
+                                View Item
+                            </button>
+</div>
+</div>
+<h3 class="font-h2-section text-xl mb-2 text-primary">3. Product</h3>
+<p class="font-body-main text-sm text-sub-text max-w-[240px]">Curated, tangible pieces matched to your vision, ready to purchase.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full border-t border-[#E4DED6] dark:border-[#2A2A2A] bg-[#F7F4EF] dark:bg-[#171717] mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 py-12 gap-4 w-full max-w-screen-2xl mx-auto">
+<div class="font-black text-lg text-[#171717] dark:text-[#F7F4EF]">I.F</div>
+<div class="font-['Noto_Serif'] text-[10px] tracking-tight text-[#171717] dark:text-[#F7F4EF]">
+                © 2024 I.F Editorial AI Studio. All rights reserved.
+            </div>
+<div class="flex gap-4">
+<a class="font-['Noto_Serif'] text-[10px] tracking-tight text-[#171717] dark:text-[#F7F4EF] opacity-60 hover:opacity-100 transition-opacity" href="#">Privacy Policy</a>
+<a class="font-['Noto_Serif'] text-[10px] tracking-tight text-[#171717] dark:text-[#F7F4EF] opacity-60 hover:opacity-100 transition-opacity" href="#">Terms of Service</a>
+<a class="font-['Noto_Serif'] text-[10px] tracking-tight text-[#171717] dark:text-[#F7F4EF] opacity-60 hover:opacity-100 transition-opacity" href="#">Contact</a>
+</div>
+</div>
+</footer>
+</body></html>

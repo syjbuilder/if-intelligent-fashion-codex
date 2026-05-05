@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>I.F Homepage v0.3 Brunello Direction</title>
+    <style>
+      :root {
+        --white: #f6f3ee;
+        --ink: #171514;
+        --glass: rgba(43, 43, 40, 0.62);
+        --glass-strong: rgba(26, 25, 23, 0.82);
+        --line: rgba(246, 243, 238, 0.22);
+        --muted: rgba(246, 243, 238, 0.68);
+        --panel: rgba(247, 244, 238, 0.94);
+        --panel-line: rgba(23, 21, 20, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        overflow: hidden;
+        color: var(--white);
+        background: #111;
+        font-family:
+          "Helvetica Neue", Helvetica, Arial, system-ui, -apple-system,
+          BlinkMacSystemFont, sans-serif;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .toggle {
+        position: fixed;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .app {
+        position: relative;
+        min-height: 100vh;
+        isolation: isolate;
+        background:
+          linear-gradient(90deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.08) 44%, rgba(0, 0, 0, 0.28)),
+          linear-gradient(0deg, rgba(0, 0, 0, 0.56), rgba(0, 0, 0, 0.02) 48%, rgba(0, 0, 0, 0.26)),
+          url("https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=2200&q=88")
+            center / cover;
+      }
+
+      .grain {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        opacity: 0.16;
+        background-image:
+          radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px),
+          radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.1) 0 1px, transparent 1px);
+        background-size: 42px 42px, 58px 58px;
+        mix-blend-mode: soft-light;
+      }
+
+      .topbar {
+        position: fixed;
+        z-index: 20;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: start;
+        padding: 58px 42px 0;
+      }
+
+      .menu-trigger,
+      .icon-button,
+      .prompt-action,
+      .prompt-plus {
+        cursor: pointer;
+      }
+
+      .menu-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        width: fit-content;
+        color: var(--white);
+        font-size: 17px;
+        font-weight: 700;
+      }
+
+      .hamburger {
+        width: 28px;
+        height: 22px;
+        display: grid;
+        align-content: space-between;
+      }
+
+      .hamburger span {
+        height: 1px;
+        background: currentColor;
+      }
+
+      .brand-lockup {
+        display: grid;
+        justify-items: center;
+        gap: 9px;
+        text-align: center;
+      }
+
+      .crest {
+        width: 38px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.68);
+        color: var(--white);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 19px;
+        line-height: 1;
+      }
+
+      .brand-name {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 20px;
+        letter-spacing: 0.34em;
+        transform: scaleX(0.9);
+        transform-origin: center;
+        white-space: nowrap;
+      }
+
+      .top-icons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 26px;
+      }
+
+      .icon-button {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        opacity: 0.94;
+      }
+
+      .icon-button svg {
+        width: 30px;
+        height: 30px;
+        stroke: currentColor;
+        stroke-width: 1.45;
+        fill: none;
+      }
+
+      .hero-copy {
+        position: fixed;
+        z-index: 4;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+        text-align: center;
+      }
+
+      .headline {
+        margin: 0;
+        font-family:
+          Didot, "Bodoni 72", "Bodoni MT", Georgia, "Times New Roman", serif;
+        font-size: clamp(64px, 9vw, 156px);
+        font-weight: 400;
+        line-height: 0.92;
+        letter-spacing: -0.02em;
+        transform: scaleX(0.9);
+        transform-origin: center;
+        text-shadow: 0 18px 70px rgba(0, 0, 0, 0.18);
+      }
+
+      .subtitle {
+        margin-top: 26px;
+        color: rgba(246, 243, 238, 0.86);
+        font-size: clamp(16px, 1.4vw, 23px);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+      }
+
+      .prompt-dock {
+        position: fixed;
+        z-index: 22;
+        left: 50%;
+        bottom: 36px;
+        transform: translateX(-50%);
+        width: min(620px, calc(100vw - 40px));
+        height: 92px;
+        display: grid;
+        grid-template-columns: 76px 1fr 76px;
+        align-items: center;
+        padding: 10px;
+        border-radius: 999px;
+        background: var(--glass);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.12),
+          0 18px 60px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(22px);
+      }
+
+      .prompt-plus,
+      .prompt-action {
+        width: 72px;
+        height: 72px;
+        border: 0;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--white);
+      }
+
+      .prompt-plus svg,
+      .prompt-action svg {
+        width: 28px;
+        height: 28px;
+        stroke: currentColor;
+        stroke-width: 1.25;
+        fill: none;
+      }
+
+      .prompt-field {
+        min-width: 0;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        padding: 0 18px;
+        color: rgba(246, 243, 238, 0.78);
+        font-size: clamp(15px, 1.55vw, 21px);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .prompt-field span {
+        color: rgba(246, 243, 238, 0.46);
+      }
+
+      .side-panel,
+      .result-panel {
+        position: fixed;
+        z-index: 24;
+        top: 0;
+        bottom: 0;
+        color: var(--ink);
+        background: var(--panel);
+        backdrop-filter: blur(24px);
+        transition:
+          transform 480ms cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 320ms ease;
+      }
+
+      .side-panel {
+        left: 0;
+        width: min(420px, 86vw);
+        transform: translateX(-102%);
+        border-right: 1px solid var(--panel-line);
+      }
+
+      .result-panel {
+        right: 0;
+        width: min(560px, 92vw);
+        transform: translateX(102%);
+        border-left: 1px solid var(--panel-line);
+      }
+
+      #menu-toggle:checked ~ .side-panel {
+        transform: translateX(0);
+      }
+
+      #result-toggle:checked ~ .result-panel {
+        transform: translateX(0);
+      }
+
+      .panel-head {
+        height: 112px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 28px;
+        border-bottom: 1px solid var(--panel-line);
+      }
+
+      .panel-title {
+        font-family:
+          Didot, "Bodoni 72", "Bodoni MT", Georgia, "Times New Roman", serif;
+        font-size: 28px;
+        line-height: 1;
+        letter-spacing: 0.02em;
+        transform: scaleX(0.92);
+        transform-origin: left;
+      }
+
+      .close {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background: #ebe6de;
+        cursor: pointer;
+      }
+
+      .close svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        stroke-width: 1.4;
+      }
+
+      .side-content {
+        padding: 28px;
+      }
+
+      .side-nav {
+        display: grid;
+        gap: 4px;
+        margin-bottom: 36px;
+      }
+
+      .side-nav a {
+        display: flex;
+        justify-content: space-between;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--panel-line);
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .side-small {
+        display: grid;
+        gap: 14px;
+        color: #6c665e;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .result-content {
+        height: calc(100vh - 112px);
+        overflow: auto;
+        padding: 22px;
+      }
+
+      .result-kicker {
+        margin: 2px 0 14px;
+        color: #776f66;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .look-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 22px;
+      }
+
+      .look-card {
+        background: #fff;
+      }
+
+      .look-card img {
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        object-fit: cover;
+      }
+
+      .look-meta {
+        padding: 12px 0 2px;
+      }
+
+      .look-meta strong {
+        display: block;
+        font-size: 15px;
+        margin-bottom: 5px;
+      }
+
+      .look-meta span {
+        display: block;
+        color: #777168;
+        font-size: 12px;
+      }
+
+      .product-section {
+        border-top: 1px solid var(--panel-line);
+        padding-top: 20px;
+      }
+
+      .product-section h3 {
+        margin: 0 0 14px;
+        font-family:
+          Didot, "Bodoni 72", "Bodoni MT", Georgia, "Times New Roman", serif;
+        font-size: 28px;
+        font-weight: 400;
+        transform: scaleX(0.92);
+        transform-origin: left;
+      }
+
+      .product {
+        display: grid;
+        grid-template-columns: 82px 1fr auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 0;
+        border-top: 1px solid var(--panel-line);
+      }
+
+      .product:first-of-type {
+        border-top: 0;
+      }
+
+      .product img {
+        width: 82px;
+        height: 104px;
+        object-fit: cover;
+        background: #ebe6de;
+      }
+
+      .product strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 14px;
+      }
+
+      .product span {
+        display: block;
+        color: #777168;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .price {
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .panel-actions {
+        position: sticky;
+        bottom: -22px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 24px -22px -22px;
+        padding: 14px 22px 18px;
+        background: rgba(247, 244, 238, 0.94);
+        border-top: 1px solid var(--panel-line);
+        backdrop-filter: blur(18px);
+      }
+
+      .panel-button {
+        min-height: 48px;
+        border: 1px solid var(--ink);
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .panel-button.primary {
+        background: var(--ink);
+        color: var(--white);
+      }
+
+      .ambient-note {
+        position: fixed;
+        z-index: 3;
+        left: 42px;
+        bottom: 42px;
+        max-width: 260px;
+        color: rgba(246, 243, 238, 0.54);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      @media (max-width: 860px) {
+        .topbar {
+          grid-template-columns: 1fr auto 1fr;
+          padding: 28px 20px 0;
+        }
+
+        .menu-trigger span:last-child {
+          display: none;
+        }
+
+        .brand-name {
+          font-size: 14px;
+          letter-spacing: 0.24em;
+        }
+
+        .crest {
+          width: 32px;
+          height: 40px;
+        }
+
+        .top-icons {
+          gap: 14px;
+        }
+
+        .top-icons .icon-button:first-child {
+          display: none;
+        }
+
+        .headline {
+          max-width: 92vw;
+          font-size: clamp(60px, 16vw, 104px);
+        }
+
+        .subtitle {
+          max-width: 82vw;
+          margin: 18px auto 0;
+          font-size: 16px;
+        }
+
+        .prompt-dock {
+          bottom: 22px;
+          height: 76px;
+          grid-template-columns: 58px 1fr 58px;
+          padding: 8px;
+        }
+
+        .prompt-plus,
+        .prompt-action {
+          width: 56px;
+          height: 56px;
+        }
+
+        .prompt-field {
+          height: 56px;
+          padding: 0 12px;
+          font-size: 14px;
+        }
+
+        .ambient-note {
+          display: none;
+        }
+
+        .look-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .product {
+          grid-template-columns: 72px 1fr;
+        }
+
+        .price {
+          grid-column: 2;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <input class="toggle" type="checkbox" id="menu-toggle" />
+    <input class="toggle" type="checkbox" id="result-toggle" />
+
+    <main class="app">
+      <div class="grain" aria-hidden="true"></div>
+
+      <header class="topbar">
+        <label class="menu-trigger" for="menu-toggle" aria-label="Open menu">
+          <span class="hamburger" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <span>Menu</span>
+        </label>
+
+        <a class="brand-lockup" href="#">
+          <span class="crest">IF</span>
+          <span class="brand-name">IMAGINED FIT</span>
+        </a>
+
+        <nav class="top-icons" aria-label="Quick actions">
+          <a class="icon-button" href="#" aria-label="History">
+            <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6" /><path d="M4 4v5h5" /></svg>
+          </a>
+          <a class="icon-button" href="#" aria-label="Saved">
+            <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.4 5.4 0 0 0-7.6 0L12 5.8l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.8a5.4 5.4 0 0 0 0-7.6Z" /></svg>
+          </a>
+          <a class="icon-button" href="#" aria-label="Account">
+            <svg viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8Z" /><path d="M9 8a3 3 0 0 1 6 0" /></svg>
+          </a>
+        </nav>
+      </header>
+
+      <section class="hero-copy" aria-label="Hero">
+        <div>
+          <h1 class="headline">Wear What You Imagine</h1>
+          <div class="subtitle">A visual styling workspace for every situation.</div>
+        </div>
+      </section>
+
+      <div class="ambient-note">
+        Prompt the occasion. Open the result panel. Refine the look. Connect it to real products.
+      </div>
+
+      <section class="prompt-dock" aria-label="Prompt input">
+        <button class="prompt-plus" aria-label="Add detail">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
+        <div class="prompt-field">
+          <span>I am looking for&nbsp;</span>an outfit for a quiet summer dinner
+        </div>
+        <label class="prompt-action" for="result-toggle" aria-label="Generate results">
+          <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+        </label>
+      </section>
+    </main>
+
+    <aside class="side-panel" aria-label="Menu panel">
+      <div class="panel-head">
+        <div class="panel-title">I.F Menu</div>
+        <label class="close" for="menu-toggle" aria-label="Close menu">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </label>
+      </div>
+      <div class="side-content">
+        <nav class="side-nav">
+          <a href="#"><span>New Prompt</span><span>+</span></a>
+          <a href="#"><span>Generated History</span><span>12</span></a>
+          <a href="#"><span>Saved Looks</span><span>4</span></a>
+          <a href="#"><span>Public Moodboard</span><span>0</span></a>
+          <a href="#"><span>Tokens</span><span>12</span></a>
+        </nav>
+        <div class="side-small">
+          <p>
+            I.F starts with the user prompt, then turns it into visual looks and
+            product combinations. This menu stays quiet until the user needs memory,
+            saved looks, or account controls.
+          </p>
+          <p>Default save setting: private.</p>
+        </div>
+      </div>
+    </aside>
+
+    <aside class="result-panel" aria-label="Generated result panel">
+      <div class="panel-head">
+        <div class="panel-title">Generated Looks</div>
+        <label class="close" for="result-toggle" aria-label="Close results">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </label>
+      </div>
+
+      <div class="result-content">
+        <div class="result-kicker">Prompt · quiet summer dinner · elegant · wearable</div>
+
+        <div class="look-grid">
+          <article class="look-card">
+            <img
+              alt="Generated elegant dinner look"
+              src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=700&q=84"
+            />
+            <div class="look-meta">
+              <strong>Look A · Soft Dinner</strong>
+              <span>cream, satin, relaxed elegance</span>
+            </div>
+          </article>
+          <article class="look-card">
+            <img
+              alt="Generated clean evening look"
+              src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=700&q=84"
+            />
+            <div class="look-meta">
+              <strong>Look B · Clean Evening</strong>
+              <span>minimal, tailored, muted tone</span>
+            </div>
+          </article>
+        </div>
+
+        <section class="product-section">
+          <h3>Shop The Feeling</h3>
+
+          <article class="product">
+            <img
+              alt="Silk blouse product"
+              src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=300&q=80"
+            />
+            <div>
+              <strong>Soft draped blouse</strong>
+              <span>Brand A · top · warm ivory</span>
+            </div>
+            <div class="price">KRW 59,000</div>
+          </article>
+
+          <article class="product">
+            <img
+              alt="Midi skirt product"
+              src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=300&q=80"
+            />
+            <div>
+              <strong>Fluid midi skirt</strong>
+              <span>Brand B · bottom · soft movement</span>
+            </div>
+            <div class="price">KRW 72,000</div>
+          </article>
+
+          <article class="product">
+            <img
+              alt="Light jacket product"
+              src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=300&q=80"
+            />
+            <div>
+              <strong>Light evening jacket</strong>
+              <span>Brand C · outer · quiet structure</span>
+            </div>
+            <div class="price">KRW 98,000</div>
+          </article>
+        </section>
+
+        <div class="panel-actions">
+          <a class="panel-button" href="#">Refine Look</a>
+          <a class="panel-button primary" href="#">Open Products</a>
+        </div>
+      </div>
+    </aside>
+  </body>
+</html>

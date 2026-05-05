@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>I.F Homepage Concept v0.0</title>
+    <style>
+      :root {
+        --ink: #151515;
+        --muted: #6d6861;
+        --paper: #faf8f3;
+        --wash: #eee8df;
+        --line: rgba(27, 25, 23, 0.14);
+        --rose: #ad4158;
+        --lime: #d4dd64;
+        --moss: #53624a;
+        --white: rgba(255, 255, 255, 0.82);
+        --shadow: 0 24px 80px rgba(28, 25, 21, 0.18);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        overflow: hidden;
+      }
+
+      .nav {
+        position: fixed;
+        z-index: 20;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px clamp(20px, 4vw, 56px);
+        color: #fff;
+        mix-blend-mode: difference;
+      }
+
+      .brand {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 28px;
+        letter-spacing: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        font-size: 13px;
+      }
+
+      .hero {
+        min-height: 92vh;
+        position: relative;
+        display: grid;
+        align-items: end;
+        background: #171514;
+        color: #fff;
+        isolation: isolate;
+      }
+
+      .hero-media {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        opacity: 0.88;
+      }
+
+      .hero-shot {
+        min-height: 100%;
+        background-position: center;
+        background-size: cover;
+        filter: saturate(0.82) contrast(0.96);
+      }
+
+      .hero-shot:nth-child(1) {
+        background-image:
+          linear-gradient(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.42)),
+          url("https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=82");
+      }
+
+      .hero-shot:nth-child(2) {
+        background-image:
+          linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.48)),
+          url("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=82");
+      }
+
+      .hero-shot:nth-child(3) {
+        background-image:
+          linear-gradient(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.54)),
+          url("https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1200&q=82");
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background:
+          linear-gradient(90deg, rgba(12, 11, 10, 0.68), transparent 54%),
+          linear-gradient(0deg, rgba(13, 12, 11, 0.78), transparent 48%);
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: minmax(0, 0.92fr) minmax(360px, 0.62fr);
+        gap: clamp(28px, 5vw, 72px);
+        align-items: end;
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 130px 0 72px;
+      }
+
+      .eyebrow {
+        color: rgba(255, 255, 255, 0.76);
+        font-size: 13px;
+        margin: 0 0 18px;
+      }
+
+      h1 {
+        max-width: 760px;
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(64px, 10vw, 148px);
+        font-weight: 400;
+        line-height: 0.9;
+        letter-spacing: 0;
+      }
+
+      .hero-copy {
+        max-width: 520px;
+        margin: 22px 0 34px;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: clamp(17px, 2vw, 22px);
+        line-height: 1.55;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0 22px;
+        border: 1px solid rgba(255, 255, 255, 0.34);
+        border-radius: 6px;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.13);
+        backdrop-filter: blur(18px);
+      }
+
+      .button.primary {
+        border-color: transparent;
+        background: #fff;
+        color: var(--ink);
+      }
+
+      .prompt-panel {
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 8px;
+        background: rgba(250, 248, 243, 0.7);
+        color: var(--ink);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(22px);
+      }
+
+      .prompt-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 18px 18px 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .prompt-line {
+        margin: 18px;
+        padding: 18px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.68);
+        border: 1px solid rgba(21, 21, 21, 0.08);
+        font-size: 18px;
+        line-height: 1.45;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 0 18px 18px;
+      }
+
+      .chip {
+        border: 1px solid rgba(21, 21, 21, 0.12);
+        border-radius: 999px;
+        padding: 8px 11px;
+        background: rgba(255, 255, 255, 0.54);
+        color: #3d3934;
+        font-size: 12px;
+      }
+
+      .look-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 0 18px 18px;
+      }
+
+      .look-thumb {
+        overflow: hidden;
+        border-radius: 6px;
+        aspect-ratio: 3 / 4;
+        background: var(--wash);
+      }
+
+      .look-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .below-peek {
+        height: 8vh;
+        min-height: 52px;
+        background: var(--paper);
+      }
+
+      .section {
+        padding: clamp(72px, 9vw, 124px) clamp(20px, 4vw, 56px);
+      }
+
+      .section-inner {
+        width: min(1180px, 100%);
+        margin: 0 auto;
+      }
+
+      .section-kicker {
+        color: var(--rose);
+        font-size: 13px;
+        margin: 0 0 18px;
+      }
+
+      .section-title {
+        max-width: 790px;
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(34px, 5vw, 72px);
+        font-weight: 400;
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: 0.95fr 1.05fr;
+        gap: clamp(30px, 6vw, 84px);
+        align-items: center;
+        margin-top: 46px;
+      }
+
+      .flow-copy {
+        display: grid;
+        gap: 22px;
+      }
+
+      .flow-item {
+        border-top: 1px solid var(--line);
+        padding-top: 20px;
+      }
+
+      .flow-item h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .flow-item p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .studio-preview {
+        display: grid;
+        grid-template-columns: 0.72fr 1fr;
+        min-height: 520px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 22px 70px rgba(30, 27, 23, 0.1);
+      }
+
+      .preview-left {
+        padding: 22px;
+        border-right: 1px solid var(--line);
+        background: #f6f2ea;
+      }
+
+      .mini-nav {
+        display: grid;
+        gap: 10px;
+        margin-top: 32px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .mini-nav span:first-child {
+        color: var(--ink);
+      }
+
+      .preview-main {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 22px;
+        padding: 22px;
+      }
+
+      .workspace-prompt {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 16px;
+        color: var(--muted);
+        background: #fff;
+      }
+
+      .result-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        min-height: 0;
+      }
+
+      .result-card {
+        overflow: hidden;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .result-card img {
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+      }
+
+      .result-meta {
+        padding: 13px;
+      }
+
+      .result-meta strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .result-meta span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .commerce {
+        background: #191816;
+        color: #fff;
+      }
+
+      .commerce .section-kicker,
+      .commerce .flow-item p {
+        color: rgba(255, 255, 255, 0.68);
+      }
+
+      .commerce .flow-item {
+        border-top-color: rgba(255, 255, 255, 0.18);
+      }
+
+      .product-panel {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .product-look {
+        height: 260px;
+        background:
+          linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.52)),
+          url("https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1100&q=82")
+            center / cover;
+      }
+
+      .product-list {
+        display: grid;
+        gap: 1px;
+        background: rgba(255, 255, 255, 0.14);
+      }
+
+      .product-row {
+        display: grid;
+        grid-template-columns: 72px 1fr auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px;
+        background: #24221f;
+      }
+
+      .product-row img {
+        width: 72px;
+        height: 86px;
+        border-radius: 6px;
+        object-fit: cover;
+      }
+
+      .product-row strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+
+      .product-row span {
+        color: rgba(255, 255, 255, 0.62);
+        font-size: 12px;
+      }
+
+      .price {
+        color: var(--lime);
+        font-size: 13px;
+      }
+
+      .final-cta {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 24px;
+        align-items: center;
+        padding: 52px clamp(20px, 4vw, 56px);
+        background: var(--moss);
+        color: #fff;
+      }
+
+      .final-cta h2 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(34px, 5vw, 64px);
+        font-weight: 400;
+        letter-spacing: 0;
+      }
+
+      @media (max-width: 900px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero {
+          min-height: 96vh;
+        }
+
+        .hero-media {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-shot:nth-child(2),
+        .hero-shot:nth-child(3) {
+          display: none;
+        }
+
+        .hero-content,
+        .flow,
+        .final-cta {
+          grid-template-columns: 1fr;
+        }
+
+        .prompt-panel {
+          max-width: 520px;
+        }
+
+        .studio-preview {
+          grid-template-columns: 1fr;
+        }
+
+        .preview-left {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .result-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .hero-content {
+          width: min(100% - 28px, 1180px);
+          padding-bottom: 44px;
+        }
+
+        .prompt-line {
+          font-size: 15px;
+        }
+
+        .look-strip {
+          grid-template-columns: repeat(3, minmax(72px, 1fr));
+        }
+
+        .product-row {
+          grid-template-columns: 58px 1fr;
+        }
+
+        .price {
+          grid-column: 2;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <nav class="nav" aria-label="Primary">
+        <a class="brand" href="#">I.F</a>
+        <div class="nav-links">
+          <a href="#studio">Studio</a>
+          <a href="#looks">Looks</a>
+          <a href="#products">Products</a>
+        </div>
+      </nav>
+
+      <section class="hero" aria-label="I.F landing hero">
+        <div class="hero-media" aria-hidden="true">
+          <div class="hero-shot"></div>
+          <div class="hero-shot"></div>
+          <div class="hero-shot"></div>
+        </div>
+
+        <div class="hero-content">
+          <div>
+            <p class="eyebrow">AI style director for the way your day changes</p>
+            <h1>Wear what you imagine.</h1>
+            <p class="hero-copy">
+              상황을 말하면, I.F가 룩으로 보여주고 실제 살 수 있는 옷으로 연결합니다.
+            </p>
+            <div class="actions">
+              <a class="button primary" href="#studio">Get Started</a>
+              <a class="button" href="#looks">View Looks</a>
+            </div>
+          </div>
+
+          <aside class="prompt-panel" aria-label="Prompt preview">
+            <div class="prompt-head">
+              <span>I.F Prompt</span>
+              <span>Today</span>
+            </div>
+            <div class="prompt-line">
+              상황을 말하면<br />
+              입을 수 있는 룩으로.
+            </div>
+            <div class="chips">
+              <span class="chip">office</span>
+              <span class="chip">running</span>
+              <span class="chip">date</span>
+              <span class="chip">sport</span>
+            </div>
+            <div class="look-strip">
+              <div class="look-thumb">
+                <img
+                  alt="Office outfit preview"
+                  src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&q=80"
+                />
+              </div>
+              <div class="look-thumb">
+                <img
+                  alt="Running outfit preview"
+                  src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=500&q=80"
+                />
+              </div>
+              <div class="look-thumb">
+                <img
+                  alt="Date outfit preview"
+                  src="https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=500&q=80"
+                />
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <div class="below-peek" aria-hidden="true"></div>
+
+      <section class="section" id="studio">
+        <div class="section-inner">
+          <p class="section-kicker">Quiet AI, editorial flow</p>
+          <h2 class="section-title">
+            프롬프트는 조용하게, 결과는 룩 보드처럼.
+          </h2>
+
+          <div class="flow">
+            <div class="flow-copy">
+              <div class="flow-item">
+                <h3>상황을 입력</h3>
+                <p>출근, 한강 러닝, 주말 데이트처럼 사용자의 하루 언어를 그대로 받습니다.</p>
+              </div>
+              <div class="flow-item">
+                <h3>룩을 먼저 제안</h3>
+                <p>상품 리스트보다 먼저 입고 싶은 장면과 스타일을 보여줍니다.</p>
+              </div>
+              <div class="flow-item">
+                <h3>상품으로 연결</h3>
+                <p>선택한 룩을 실제 구매 가능한 아이템 조합으로 정리합니다.</p>
+              </div>
+            </div>
+
+            <div class="studio-preview" id="looks">
+              <div class="preview-left">
+                <div class="brand">I.F</div>
+                <div class="mini-nav">
+                  <span>New prompt</span>
+                  <span>History</span>
+                  <span>Saved looks</span>
+                  <span>Tokens 12</span>
+                </div>
+              </div>
+              <div class="preview-main">
+                <div class="workspace-prompt">
+                  여름 저녁 약속에 입을 수 있는 미니멀한 데이트룩
+                </div>
+                <div class="result-grid">
+                  <article class="result-card">
+                    <img
+                      alt="Minimal date look"
+                      src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=700&q=82"
+                    />
+                    <div class="result-meta">
+                      <strong>Minimal Date</strong>
+                      <span>soft, clean, summer</span>
+                    </div>
+                  </article>
+                  <article class="result-card">
+                    <img
+                      alt="Clean casual look"
+                      src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=700&q=82"
+                    />
+                    <div class="result-meta">
+                      <strong>Clean Casual</strong>
+                      <span>light, relaxed, city</span>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section commerce" id="products">
+        <div class="section-inner">
+          <p class="section-kicker">From look to products</p>
+          <h2 class="section-title">감성적인 룩 뒤에는 명확한 상품 패널.</h2>
+
+          <div class="flow">
+            <div class="product-panel" aria-label="Product recommendation preview">
+              <div class="product-look"></div>
+              <div class="product-list">
+                <div class="product-row">
+                  <img
+                    alt="Blouse product"
+                    src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=300&q=80"
+                  />
+                  <div>
+                    <strong>Soft linen blouse</strong>
+                    <span>clean tone, summer texture</span>
+                  </div>
+                  <div class="price">KRW 49,000</div>
+                </div>
+                <div class="product-row">
+                  <img
+                    alt="Skirt product"
+                    src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=300&q=80"
+                  />
+                  <div>
+                    <strong>Flowing midi skirt</strong>
+                    <span>soft silhouette, date mood</span>
+                  </div>
+                  <div class="price">KRW 62,000</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flow-copy">
+              <div class="flow-item">
+                <h3>룩 요약</h3>
+                <p>선택한 결과가 어떤 상황과 무드를 해석했는지 짧게 보여줍니다.</p>
+              </div>
+              <div class="flow-item">
+                <h3>아이템 조합</h3>
+                <p>상의, 하의, 아우터, 원피스 중심으로 실제 구매 가능한 선택지를 정리합니다.</p>
+              </div>
+              <div class="flow-item">
+                <h3>외부 링크</h3>
+                <p>가격, 브랜드, 판매처가 명확한 카드로 쇼핑몰 이동을 돕습니다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="final-cta">
+        <h2>If you can imagine, you can wear it.</h2>
+        <a class="button primary" href="#">Start Styling</a>
+      </section>
+    </main>
+  </body>
+</html>
