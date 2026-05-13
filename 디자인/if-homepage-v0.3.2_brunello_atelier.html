@@ -251,7 +251,7 @@
 
       .landing-bottom {
         display: grid;
-        grid-template-columns: minmax(210px, 360px) 1fr auto;
+        grid-template-columns: minmax(210px, 360px) 1fr minmax(210px, 360px);
         gap: 30px;
         align-items: end;
       }
@@ -273,14 +273,8 @@
         text-transform: uppercase;
       }
 
-      .hero-sub {
+      .landing-cta-wrap {
         justify-self: center;
-        margin: 0;
-        color: rgba(255, 250, 242, 0.86);
-        font-size: clamp(16px, 1.5vw, 22px);
-        font-weight: 500;
-        letter-spacing: -0.02em;
-        animation: fadeUp 900ms var(--ease-out-expo) 520ms both;
       }
 
       .cta {
@@ -300,7 +294,7 @@
         letter-spacing: 0.14em;
         text-transform: uppercase;
         transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
-        animation: fadeUp 900ms var(--ease-out-expo) 660ms both;
+        animation: fadeUp 900ms var(--ease-out-expo) 520ms both;
       }
 
       .cta:hover {
@@ -458,13 +452,15 @@
         transform: scaleX(0.95);
       }
 
-      .skyline {
+      .fashion-lines {
         width: min(820px, 90vw);
         margin-top: 46px;
       }
 
-      .skyline path,
-      .skyline circle {
+      .fashion-lines path,
+      .fashion-lines circle,
+      .fashion-lines rect,
+      .fashion-lines line {
         fill: none;
         stroke: var(--ink);
         stroke-width: 1.1;
@@ -474,8 +470,14 @@
         stroke-dashoffset: 2200;
       }
 
-      .scene-loading.active .skyline path,
-      .scene-loading.active .skyline circle {
+      .fashion-lines .swatch {
+        fill: rgba(26, 24, 21, 0.035);
+      }
+
+      .scene-loading.active .fashion-lines path,
+      .scene-loading.active .fashion-lines circle,
+      .scene-loading.active .fashion-lines rect,
+      .scene-loading.active .fashion-lines line {
         animation: lineDraw 2400ms 200ms var(--ease) forwards;
       }
 
@@ -484,12 +486,13 @@
         justify-items: center;
         color: var(--ink);
         background: var(--paper);
-        padding: 102px 28px 132px;
+        padding: 98px 28px 132px;
         overflow: auto;
+        overflow-x: hidden;
       }
 
       .results-head {
-        width: min(940px, 92vw);
+        width: min(1120px, 92vw);
         text-align: center;
       }
 
@@ -498,6 +501,7 @@
         font-size: clamp(36px, 5vw, 70px);
         line-height: 1.04;
         transform: scaleX(0.94);
+        overflow-wrap: anywhere;
       }
 
       .results-copy {
@@ -508,12 +512,21 @@
         line-height: 1.7;
       }
 
-      .look-grid {
-        width: min(1420px, 94vw);
+      .results-layout {
+        width: min(1480px, 94vw);
         margin-top: 38px;
         display: grid;
-        grid-template-columns: 1.25fr 1fr 1fr 1.25fr;
-        gap: 8px;
+        grid-template-columns: minmax(0, 1fr) minmax(310px, 380px);
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .look-grid {
+        width: 100%;
+        margin-top: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
         min-height: min(56vh, 620px);
       }
 
@@ -538,12 +551,7 @@
         animation-delay: 180ms;
       }
 
-      .scene-results.active .look-card:nth-child(4) {
-        animation-delay: 270ms;
-      }
-
-      .look-card:nth-child(1),
-      .look-card:nth-child(4) {
+      .look-card:nth-child(1) {
         grid-row: span 2;
       }
 
@@ -585,6 +593,80 @@
         display: block;
         color: rgba(255, 250, 242, 0.72);
         font-size: 12px;
+      }
+
+      .product-panel {
+        display: flex;
+        min-height: min(56vh, 620px);
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 26px;
+        border: 1px solid var(--line);
+        background: rgba(255, 250, 242, 0.68);
+      }
+
+      .panel-label {
+        margin: 0 0 20px;
+        color: var(--rose);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .product-panel h3 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(30px, 3vw, 48px);
+        font-weight: 500;
+        letter-spacing: -0.025em;
+        line-height: 1.02;
+        transform: scaleX(0.95);
+        transform-origin: left center;
+      }
+
+      .panel-copy {
+        margin: 18px 0 0;
+        color: #776f66;
+        font-size: 13px;
+        line-height: 1.75;
+      }
+
+      .product-list {
+        display: grid;
+        gap: 12px;
+        margin: 32px 0;
+      }
+
+      .product-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .product-item b {
+        font-size: 13px;
+        letter-spacing: 0.03em;
+      }
+
+      .product-item span,
+      .product-item small {
+        color: #7b746b;
+        font-size: 12px;
+      }
+
+      .panel-cta {
+        width: 100%;
+        min-height: 62px;
+        border: 0;
+        color: var(--white);
+        background: var(--ink);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
       }
 
       .dock {
@@ -719,6 +801,32 @@
         border-top-color: var(--white);
         border-radius: 50%;
         animation: spin 1s linear infinite;
+      }
+
+      .toast {
+        position: fixed;
+        z-index: 190;
+        top: 92px;
+        right: 28px;
+        padding: 12px 16px;
+        color: var(--ink);
+        background: rgba(255, 250, 242, 0.9);
+        border: 1px solid rgba(26, 24, 21, 0.12);
+        border-radius: 999px;
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.16);
+        backdrop-filter: blur(14px);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-8px);
+        transition: opacity 260ms ease, transform 260ms ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
       }
 
       .drawer-overlay,
@@ -1151,9 +1259,12 @@
       }
 
       @media (max-width: 900px) {
-        .nav-left a:not(.menu-mark),
-        .nav-right a {
+        .nav-left button:not(.menu-mark) {
           display: none;
+        }
+
+        .nav-right {
+          gap: 14px;
         }
 
         .landing-content {
@@ -1165,9 +1276,13 @@
           gap: 18px;
         }
 
-        .hero-sub,
-        .cta {
+        .landing-cta-wrap {
           justify-self: start;
+        }
+
+        .results-layout {
+          grid-template-columns: 1fr;
+          width: 100%;
         }
 
         .look-grid {
@@ -1176,10 +1291,19 @@
         }
 
         .look-card,
-        .look-card:nth-child(1),
-        .look-card:nth-child(4) {
+        .look-card:nth-child(1) {
           grid-row: auto;
           min-height: 420px;
+        }
+
+        .product-panel {
+          min-height: auto;
+        }
+
+        .dock {
+          width: calc(100vw - 42px);
+          bottom: 20px;
+          gap: 12px;
         }
 
         .chips {
@@ -1222,8 +1346,10 @@
             <b>Intelligent Fashion</b>
             I.F turns situation, place, and mood into wearable visual directions.
           </p>
-          <p class="hero-sub">From uncertainty to intention.</p>
-          <button class="cta" id="btnGetStarted" type="button">Get Started</button>
+          <div class="landing-cta-wrap">
+            <button class="cta" id="btnGetStarted" type="button">Get Started</button>
+          </div>
+          <span aria-hidden="true"></span>
         </div>
       </div>
     </section>
@@ -1250,8 +1376,7 @@
         <p>Studio Menu</p>
         <button class="menu-action" id="btnMenuHistory" type="button"><span>History</span><span>01</span></button>
         <button class="menu-action" id="btnMenuWishlist" type="button"><span>Saved Looks</span><span>02</span></button>
-        <button class="menu-action" id="btnRestart" type="button"><span>Restart Atelier</span><span>03</span></button>
-        <button class="menu-action" id="btnNewPromptTop" type="button"><span>New Prompt</span><span>04</span></button>
+        <button class="menu-action" id="btnNewPromptTop" type="button"><span>New Prompt</span><span>03</span></button>
       </aside>
 
       <section class="scene scene-intro active" data-scene="intro">
@@ -1274,39 +1399,60 @@
       <section class="scene scene-loading" data-scene="loading">
         <div class="loading-wrap">
           <svg class="knot" viewBox="0 0 80 36" aria-hidden="true"><path d="M2 18 C12 4 28 32 40 18 C52 4 68 32 78 18" /></svg>
-          <h2 class="loading-title" id="loadingTitle">Gathering <em>in</em>spiration</h2>
-          <svg class="skyline" viewBox="0 0 800 220" aria-hidden="true">
-            <circle cx="185" cy="74" r="14" />
-            <path d="M252 60 q8 -8 16 0 q8 -8 16 0" />
-            <path d="M540 70 q8 -8 16 0 q8 -8 16 0" />
-            <path d="M40 170 L80 170 L80 130 L110 130 L110 100 L130 100 L130 130 L160 130 L160 170 L200 170 L200 112 L222 92 L244 112 L244 170 L284 170 L284 92 L304 72 L324 92 L324 170 L360 170 L360 120 L382 100 L404 100 L404 64 L424 64 L424 100 L464 100 L464 132 L486 132 L486 170 L532 170 L532 112 L560 112 L560 82 L602 82 L602 112 L624 112 L624 170 L660 170 L682 150 L724 150 L724 170 L760 170" />
-            <path d="M20 182 C210 176 430 186 780 178" />
+          <h2 class="loading-title" id="loadingTitle">Reading the <em>silhouette</em></h2>
+          <svg class="fashion-lines" viewBox="0 0 820 260" aria-hidden="true">
+            <path d="M120 220 C160 178 186 118 190 62 C224 80 270 80 304 62 C308 118 334 178 374 220" />
+            <path d="M190 62 C206 38 288 38 304 62" />
+            <path d="M178 104 C220 124 274 124 316 104" />
+            <path d="M246 84 L246 220" />
+            <path d="M246 128 C226 146 214 172 210 204" />
+            <path d="M246 128 C266 146 278 172 282 204" />
+            <rect class="swatch" x="462" y="66" width="72" height="92" rx="2" />
+            <rect class="swatch" x="552" y="92" width="72" height="92" rx="2" />
+            <rect class="swatch" x="642" y="54" width="72" height="92" rx="2" />
+            <path d="M468 186 C520 166 568 216 620 194 C654 180 680 176 718 188" />
+            <path d="M456 208 L728 208" />
+            <line x1="470" y1="72" x2="528" y2="152" />
+            <line x1="558" y1="98" x2="618" y2="178" />
+            <line x1="648" y1="60" x2="708" y2="140" />
           </svg>
         </div>
       </section>
 
       <section class="scene scene-results" data-scene="results">
         <div class="results-head">
-          <h2 class="results-title" id="resultsTitle">A quiet <em>edit</em> for your day</h2>
-          <p class="results-copy">Three directions shaped by the place, mood, and movement inside your prompt.</p>
+          <h2 class="results-title" id="resultsTitle">A Korean daily <em>edit</em></h2>
+          <p class="results-copy">Three wearable directions for Seoul office hours, warm evenings, and clean movement.</p>
         </div>
-        <div class="look-grid" aria-label="Generated looks">
-          <article class="look-card">
-            <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=900&q=82" alt="Office look" />
-            <div class="look-meta"><div><b>Office</b><span>quiet structure</span></div><span>01</span></div>
-          </article>
-          <article class="look-card">
-            <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=800&q=82" alt="Date look" />
-            <div class="look-meta"><div><b>Date</b><span>soft presence</span></div><span>02</span></div>
-          </article>
-          <article class="look-card">
-            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=82" alt="Sport look" />
-            <div class="look-meta"><div><b>Sport</b><span>clean momentum</span></div><span>03</span></div>
-          </article>
-          <article class="look-card">
-            <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=82" alt="Final style direction" />
-            <div class="look-meta"><div><b>Full Day</b><span>intention carried through</span></div><span>04</span></div>
-          </article>
+        <div class="results-layout">
+          <div class="look-grid" aria-label="Generated looks">
+            <article class="look-card">
+              <img src="https://images.unsplash.com/photo-1699635818038-e73ff22e617b?auto=format&fit=crop&w=900&q=82" alt="Korean office daily look" />
+              <div class="look-meta"><div><b>Office</b><span>clean Seoul daily</span></div><span>01</span></div>
+            </article>
+            <article class="look-card">
+              <img src="https://images.unsplash.com/photo-1641713268428-ce5d55fae9fc?auto=format&fit=crop&w=900&q=82" alt="Korean date daily look" />
+              <div class="look-meta"><div><b>Date</b><span>warm evening ease</span></div><span>02</span></div>
+            </article>
+            <article class="look-card">
+              <img src="https://images.unsplash.com/photo-1777923311935-1a08085002da?auto=format&fit=crop&w=900&q=82" alt="Korean sport athleisure look" />
+              <div class="look-meta"><div><b>Sport</b><span>soft active line</span></div><span>03</span></div>
+            </article>
+          </div>
+          <aside class="product-panel" aria-label="Selected look product panel">
+            <div>
+              <p class="panel-label">Selected Look</p>
+              <h3>Office · Clean Seoul Daily</h3>
+              <p class="panel-copy">A restrained daily edit for Korean city life: light outerwear, structured knit, relaxed trouser, and low-profile shoes.</p>
+              <div class="product-list">
+                <div class="product-item"><div><b>Outer</b><span>Light tailored jacket</span></div><small>₩129,000</small></div>
+                <div class="product-item"><div><b>Top</b><span>Fine rib knit</span></div><small>₩49,000</small></div>
+                <div class="product-item"><div><b>Bottom</b><span>Relaxed straight trouser</span></div><small>₩79,000</small></div>
+                <div class="product-item"><div><b>Shoes</b><span>Minimal leather sneaker</span></div><small>₩89,000</small></div>
+              </div>
+            </div>
+            <button class="panel-cta" type="button">Buy Full Look</button>
+          </aside>
         </div>
       </section>
 
@@ -1332,6 +1478,7 @@
       </div>
     </section>
 
+    <div class="toast" id="toast" aria-live="polite">Login coming soon</div>
     <div class="drawer-overlay" id="drawerOverlay"></div>
     <div class="bag-bg" id="bagBg"></div>
 
@@ -1398,7 +1545,9 @@
         const modalDelete = $("#modalDelete");
         const studio = $("#studio");
         const menuTray = $("#menuTray");
+        const toast = $("#toast");
         const body = document.body;
+        let toastTimer = null;
 
         const drawers = {
           history: $("#drawerHistory"),
@@ -1496,6 +1645,13 @@
           loadingPill.classList.remove("show");
         }
 
+        function showToast(message) {
+          toast.textContent = message;
+          toast.classList.add("show");
+          window.clearTimeout(toastTimer);
+          toastTimer = window.setTimeout(() => toast.classList.remove("show"), 1400);
+        }
+
         function escapeHtml(text) {
           return text.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
         }
@@ -1510,7 +1666,7 @@
           chips.classList.add("hide");
           pushHistory(prompt);
 
-          showLoading("Understanding the occasion");
+          showLoading("Reading daily context");
           await wait(1000);
 
           showScene("quote");
@@ -1518,15 +1674,15 @@
           await wait(2200);
 
           showScene("loading");
-          loadingTitle.innerHTML = "Gathering <em>in</em>spiration";
-          showLoading("Gathering inspiration");
+          loadingTitle.innerHTML = "Reading the <em>silhouette</em>";
+          showLoading("Reading the silhouette");
           await wait(2500);
 
-          loadingTitle.innerHTML = "Curating <em>su</em>ggestions";
-          showLoading("Curating suggestions");
+          loadingTitle.innerHTML = "Balancing <em>tex</em>ture";
+          showLoading("Curating Korean daily looks");
           await wait(1500);
 
-          resultsTitle.innerHTML = `For ${escapeHtml(shortPrompt(prompt))}, a quiet <em>edit</em>`;
+          resultsTitle.innerHTML = `For ${escapeHtml(shortPrompt(prompt))}, a Korean daily <em>edit</em>`;
           showScene("results");
           hideLoading();
           studio.classList.remove("process-running");
@@ -1637,26 +1793,15 @@
           });
         });
 
-        function restartAtelier() {
-          if (busy) return;
-          body.classList.add("atelier-ready");
-          closeMenu();
-          chips.classList.remove("hide");
-          dockInput.value = "";
-          hideLoading();
-          showScene("intro");
-          studio.classList.remove("process-running");
-        }
-
         $("#btnLandingMenu").addEventListener("click", toggleMenu);
         $("#btnLandingMenuText").addEventListener("click", toggleMenu);
         $("#btnLandingHome").addEventListener("click", returnHome);
-        $("#btnLandingLogin").addEventListener("click", () => {});
+        $("#btnLandingLogin").addEventListener("click", () => showToast("Login coming soon"));
         $("#btnGetStarted").addEventListener("click", () => enterAtelier());
         $("#btnStudioHome").addEventListener("click", returnHome);
         $("#btnMenu").addEventListener("click", toggleMenu);
         $("#btnFocus").addEventListener("click", toggleMenu);
-        $("#btnRestart").addEventListener("click", restartAtelier);
+        $(".account-link").addEventListener("click", () => showToast("Login coming soon"));
         $("#btnNewPromptTop").addEventListener("click", () => {
           body.classList.add("atelier-ready");
           closeMenu();

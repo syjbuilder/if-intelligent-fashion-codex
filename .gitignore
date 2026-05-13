@@ -30,3 +30,16 @@ venv/
 # Local generated files
 *.tmp
 *.bak
+
+# Media (large files / not appropriate for git)
+*.mp4
+*.mov
+*.webm
+*.avi
+*.mkv
+
+# Specific large assets
+기획/서비스 개발 전체 과정.png
+
+# Per-user Claude/IDE state (broken symlinks on cross-platform)
+**/.claude/skills/
