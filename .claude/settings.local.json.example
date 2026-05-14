@@ -1,0 +1,4 @@
+{
+  "_comment": "초기 프로토타이핑 단계에서 TDD 가드 훅을 일시 비활성화하려면 이 파일을 settings.local.json 으로 복사하세요. settings.local.json 은 .gitignore 처리되며 settings.json 의 hooks 를 덮어씁니다. 코드베이스가 안정되면 파일을 삭제해 다시 TDD 가드를 켜세요.",
+  "hooks": {}
+}

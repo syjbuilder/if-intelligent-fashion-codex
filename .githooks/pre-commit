@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+if [ ! -f package.json ]; then
+  echo "pre-commit: package.json not found; skipping npm lint/build/test."
+  exit 0
+fi
+
+run() {
+  echo "pre-commit: running $*"
+  "$@"
+}
+
+run npm run lint
+run npm run build
+run npm run test
