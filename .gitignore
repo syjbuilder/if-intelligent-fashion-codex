@@ -30,3 +30,25 @@ venv/
 # Local generated files
 *.tmp
 *.bak
+
+# Media (large files / not appropriate for git)
+*.mp4
+*.mov
+*.webm
+*.avi
+*.mkv
+
+# Specific large assets
+기획/서비스 개발 전체 과정.png
+
+# Per-user Claude settings (개인별 권한·실행 모드)
+.claude/settings.local.json
+
+# 하위 프로젝트의 .claude/skills/ 는 cross-platform에서 깨진 심볼릭 링크라 무시한다.
+# 단, 루트 harness 스킬(.claude/skills/)은 추적한다.
+**/.claude/skills/
+!/.claude/skills/
+
+# Harness phase 실행 산출물
+phases/**/phase*-output.json
+phases/**/step*-output.json
