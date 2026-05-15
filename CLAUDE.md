@@ -35,6 +35,8 @@
 
 ## 문서 참조 우선순위
 
+**원칙:** `docs/`가 공식 기준(single source of truth). 한글 폴더(`기획/`, `기술/`, `디자인/`, `문서_모두의 창업/`)는 원본 보관소이며 `docs/`로 부족할 때만 참조한다. 저장소 전반 안내는 [`README.md`](./README.md).
+
 - 운영 가이드 (매 작업 시): `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/ADR.md`, `docs/UI_GUIDE.md`
 - 상세 원본 (필요 시): `기획/I.F V0 PRD.md`, `기술/I.F V0 TRD.md`, `디자인/I.F 디자인 계획 v0.0.md`
 - 최신 디자인 시안: `디자인/if-homepage-v0.4.1.html`
