@@ -38,6 +38,9 @@ venv/
 *.avi
 *.mkv
 
+# Reference docs (large) — 기존에 추적 중인 PDF는 그대로 두고, 새로 들어오는 PDF만 차단
+*.pdf
+
 # Specific large assets
 기획/서비스 개발 전체 과정.png
 
