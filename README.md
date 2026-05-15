@@ -59,6 +59,41 @@
    (`CLAUDE.md`가 그렇게 시킴).
 4. 작업이 끝나면 PR을 열어 검토 후 `main`에 합칩니다.
 
+## 에이전트와 일하는 법
+
+이 저장소는 사용자가 직접 git/터미널 명령을 치지 않고, **한국어로 의도를 말하면
+AI 에이전트(Claude·Codex)가 git·파일 편집·PR을 대신 실행**하는 방식으로 운영합니다.
+
+### 말하기 ↔ 에이전트가 뒤에서 하는 일
+
+| 사용자가 하는 말 | 에이전트가 실행 |
+|------------------|----------------|
+| "feat/뭐뭐 브랜치 만들어줘" | `git switch main && git pull && git switch -c feat/뭐뭐` |
+| "이거 작업해줘" | 해당 파일 편집 |
+| "커밋하고 PR 올려줘" | `git add -A && git commit -m "..." && git push -u origin <브랜치>` + PR 생성 |
+| "main 최신으로 맞춰줘" | `git switch main && git pull` |
+| "이 브랜치 정리해줘" | 머지된 로컬·원격 브랜치 삭제 |
+
+### 기억할 한 가지
+
+에이전트는 **시키지 않으면 커밋·푸시·머지를 자동으로 안 합니다.** "이거 작업해줘"
+만 하면 파일이 바뀐 상태에서 멈춥니다. 작업이 마음에 들면 마지막에
+
+> "이거 커밋하고 PR 올려줘"
+
+한 마디를 더 해주세요.
+
+### 비상시 (AI 없이) — 풀버전 명령어
+
+```bash
+git switch main && git pull                       # main 최신화
+git switch -c feat/무슨작업                       # 작업 브랜치
+# (여기서 작업)
+git add -A && git commit -m "feat: 한 줄 요약"   # 커밋
+git push -u origin feat/무슨작업                  # 푸시 → GitHub 웹에서 PR
+git switch main && git pull                       # 머지 후 다시 동기화
+```
+
 ## 자동화 (Harness)
 
 큰 작업(3단계 이상, 여러 파일 동시 변경, 인증/DB/AI/결제 같은 위험한 영역)은
