@@ -23,6 +23,8 @@
 - CRITICAL: 핵심 기능(로그인, 프롬프트 처리, AI 룩 생성, 상품 추천, 저장, 토큰 차감)은 API-first로 설계하고 특정 웹 화면에 종속시키지 않는다. 외부 API(OpenAI, Supabase)는 `src/app/api/` 라우트 핸들러 또는 서버 영역에서만 호출한다 — 클라이언트 컴포넌트에서 직접 호출 금지(API 키 노출 방지).
 - CRITICAL: V0 범위 밖 기능은 구현하지 않는다 — 사용자 이미지 업로드, 얼굴 합성, 가상 피팅, 셀럽/인플루언서 이미지 기반 생성, 자체 결제 기반 구매, 전체 쇼핑몰 자동 크롤링. (`docs/PRD.md` Non-Goals, `docs/ADR.md` ADR-004/006 참조)
 - CRITICAL: AI 룩 이미지는 한국 20-30대 여성 데일리 패션, 전체 착장 가시성(상의/하의 또는 원피스/아우터), 국내 온라인몰 상품 매칭 가능성을 품질 기준으로 한다. 상반신 클로즈업·하의 잘림·런웨이/코스튬 결과는 실패로 본다.
+- CRITICAL: AI 룩 생성 결과 정제는 mini-action 3개 패턴으로만 처리한다 — (1) 다시 생성 (2) 정제 칩 = 새 conversation turn (3) More Like This. 풀 멀티턴 채팅 UI는 V0에서 도입하지 않으며, 도입 검토는 V1 사용자 피드백 데이터 분석 후. (`docs/ADR.md` ADR-009 참조)
+- CRITICAL: AI 룩 생성 파이프라인은 curated look DB 검색(B-path, 약 90%) 우선 + AI 실시간 생성(A-path, fallback) 하이브리드. 데이터 자산(상품 태그·캡션·역프롬프트·멀티모달 임베딩·피드백)이 모델 파인튜닝보다 먼저. (`docs/AI_PIPELINE.md` 참조)
 - 컴포넌트는 `src/components/`, 타입은 `src/types/`, 외부 API 래퍼는 `src/services/`, 유틸·클라이언트는 `src/lib/`로 분리한다. 향후 `apps/`+`packages/` 모노레포 분리 가능성을 막지 않는다 (`docs/ARCHITECTURE.md` 참조).
 - 디자인 원칙: "AI는 조용하게, 룩은 감각적으로, 상품은 명확하게." UI는 `docs/UI_GUIDE.md`의 AI 슬롭 안티패턴을 위반하지 않는다.
 
@@ -38,9 +40,13 @@
 **원칙:** `docs/`가 공식 기준(single source of truth). 한글 폴더(`기획/`, `기술/`, `디자인/`, `문서_모두의 창업/`)는 원본 보관소이며 `docs/`로 부족할 때만 참조한다. 저장소 전반 안내는 [`README.md`](./README.md).
 
 - 운영 가이드 (매 작업 시): `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/ADR.md`, `docs/UI_GUIDE.md`
-- 상세 원본 (필요 시): `기획/I.F V0 PRD.md`, `기술/I.F V0 TRD.md`, `디자인/I.F 디자인 계획 v0.0.md`
-- 최신 디자인 시안: `디자인/if-homepage-v0.4.1.html`
+- 데이터·API·AI 설계: `docs/DATA_MODEL.md`, `docs/API_CONTRACTS.md`, `docs/AI_PIPELINE.md`
+- 상세 원본 (필요 시): `기획/I.F V0 PRD.md`, `기술/I.F V0 TRD.md`
+- 디자인 문서 역할 분리: `docs/UI_GUIDE.md` = **현행 운영 디자인 스펙(단일 출처)**, `디자인/I.F 디자인 계획 v0.0.md` = 디자인 탐색·의사결정 archive(버전 히스토리 기록용).
+- 최신 디자인 시안: `디자인/if-homepage-v0.6.html` (Landing Long-form, 디자인 기준선)
 - 개발 착수 준비 현황: `개발_전_진행_체크리스트.md`
+- docs/ 변경 시 `기술/I.F V0 TRD.md`도 동시 sync (디퍼 금지). PRD/ADR 변경 시 `기획/I.F V0 PRD.md`도 동시 sync.
+- 디자인 변경 시 `docs/UI_GUIDE.md`를 갱신한다. `디자인/I.F 디자인 계획 v0.0.md`에는 버전 히스토리만 기록하며 운영 값은 UI_GUIDE에만 둔다 (이중 업데이트 금지).
 
 ## 명령어
 
