@@ -3,6 +3,12 @@
 작성일: 2026-05-02
 기준 문서: `../기획/I.F V0 PRD.md`
 
+> **이 문서는 디자인 탐색·의사결정 기록(archive)이다.** v0.0~v0.6 시안이 어떻게
+> 발전해 왔는지, 무엇을 왜 결정했는지를 narrative로 남긴다.
+> **현행 운영 디자인 기준은 `docs/UI_GUIDE.md`다** — 디자인이 바뀌면 UI_GUIDE를 갱신하고,
+> 이 문서에는 버전 히스토리(17장)와 해당 버전 섹션만 추가한다. 운영 값(토큰·컴포넌트 수치)의
+> 단일 출처는 UI_GUIDE이며, 이 문서와 충돌하면 UI_GUIDE가 우선한다.
+
 ## 1. 문서 목적
 
 이 문서는 I.F V0 웹 MVP의 초기 디자인 방향을 정의한다.
@@ -485,6 +491,97 @@ v0.4.1 액션 위치 스왑:
 - 슬라이드 진입 모션(가먼트가 좌→우로 슬라이드 인, 텍스트가 시차로 페이드 인 등)을 추가할지 검토한다.
 - 결과 페이지의 chips/예시 프롬프트가 다시 나타나지 않는 동선을 개선할지 결정한다 (현재는 `New Prompt` 액션을 통해서만 chips로 복귀).
 
+### v0.5 Fashion Discovery Layer 시안
+
+신규 시안:
+
+- `if-homepage-v0.5.html`
+
+v0.4.1 freeze 직전 zany-doodling-rainbow 플랜 + V0.5 디자인 브리프(2026-05-17)를 반영해 단일 워크스페이스를 **4-tier routing** 구조로 확장한다. `body[data-page]` 어트리뷰트로 `landing / studio / auth / history` 4개 화면을 토글하고, studio 내부는 기존 scene 시스템(`explore / loading / results`)을 그대로 활용한다.
+
+신규 화면 3개 (필수):
+
+- **로그인/회원가입 화면 (`.auth-screen`)** — 다크 워밍 그라디언트 배경 + 중앙 카드. Google·Kakao·Naver 3개 소셜 버튼, 브랜드 색 정확 적용(Kakao `#FEE500`, Naver `#03C75A`). 모든 Login 버튼·`Save 버튼(비로그인 상태)`·`히스토리 게이트 CTA`가 이 화면으로 합류한다. mock 동작: 클릭 시 `body.is-logged-in` 토글 + studio Explore 진입.
+- **히스토리/저장 화면 (`.history-page`)** — 로그인 시 `saved-grid` 6개 룩 카드(썸네일+프롬프트+상대 날짜+hover trash). 비로그인 시 `history-gate`(Daydream 약점 회피: 빈 리스트 X) — "내 룩 컬렉션을 만들려면 로그인" 헤드라인 + sample 룩 3개 흐림 처리 + Sign in CTA. 기존 `drawer-wishlist`는 제거하고 이 페이지로 흡수.
+- **모바일 워크스페이스 반응형** — `@media (max-width: 768px)` 와 `(max-width: 480px)` 두 단계. drawer-bag을 우측 슬라이드(translateX)에서 **하단 바텀시트(translateY)**로 전환(grab handle 포함). 카로우셀의 slide-meta는 가먼트 아래로 stack, refinement chips는 horizontal scroll 가능, Explore/Saved 그리드는 2열(480 이하 1열).
+
+Explore 진입 피드 (B1, 신규):
+
+- intro 신을 완전 제거하고 같은 위치에 `scene-explore`를 둔다. 빈 입력창 마비 회피.
+- Style Atelier intro의 브랜드 모먼트는 **Explore 헤더 brand-strip**으로 흡수: 작은 `knot` SVG + `STYLE ATELIER` eyebrow(11px small-caps) + "Begin with a place, mood, and constraint." 헤드라인.
+- 검색바는 화면 상단 sticky(`.explore-search`, top 76px) — Daydream 패턴 차용.
+- 시즌 데모 프롬프트 칩 5개 (2026-05-17 = 봄): "봄 데이트룩", "환절기 출근룩", "한강 피크닉룩", "주말 카페룩", "비 오는 날 데일리".
+- 큐레이션 룩 그리드 12개 (`.explore-grid`, 4-2-1 반응형) — 룩별 톤 그라디언트(Office=베이지·세이지 4 변주, Date=로즈·와인 4 변주, Sport=세이지·올리브 4 변주) 위에 가먼트 SVG(v0.4.1 carousel 3종 재활용). 사람 사진 0건(ADR-006 준수).
+- 카드/시즌 칩 클릭 시 dockInput에 프롬프트 자동 입력 + `runQuery()` 호출.
+
+워크스페이스 4개 추가 (작은 변경):
+
+- **로딩 카피 polish (C1, 폴리시 단계에서 롤백 후 재정의)** — 초안에서는 `extractLookKeyword(prompt)`로 한국어 키워드를 추출해 "○○○○ 룩을 그리고 있어요" 형태로 삽입했으나, Playfair Display의 한국어 fallback 폰트가 자모를 따로 렌더링해 깨지고("ㅇㄴㅁㅇ" 같은 미조합 입력에서 화면을 가득 채움) 챗봇 톤으로 느껴진다는 피드백을 반영해 **v0.4.1 에디토리얼 영문 카피**("Reading daily context" → "Reading the silhouette" → "Balancing texture" / pill "Curating Korean daily looks")로 회귀. 동시에 `.loading-title` 사이즈를 `clamp(42px, 6.2vw, 96px)` → `clamp(28px, 3.6vw, 48px)`로 축소해 옷걸이 SVG가 주연이 되도록 비중 조정. `extractLookKeyword()` 함수는 dead code 제거.
+- **Save 버튼 비로그인 사전 표기 (C2)** — 각 carousel 슬라이드에 Save 버튼 추가. 비로그인 상태에서는 자물쇠 아이콘 + "로그인하고 저장" 라벨로 자동 토글. 클릭 시 auth-screen으로 직행(Daydream "Save 후 모달로 기대 깨짐" 약점 회피).
+- **More Like This 버튼 (C3, mini-action #3)** — 각 슬라이드 우하단 frosted 캡슐 + drawer-bag 안 상품 카드별 28px 원형 버튼. 클릭 시 toast "Generating 3 variations..." + carousel 재실행(mock).
+- **정제 칩 (C4, mini-action #2)** — 기존 `.chips` element를 dual-purpose로 활용. results scene 한정 노출: "더 캐주얼하게 / 더 포멀하게 / 색 변경 / 가격대 ↓ / 다른 무드" 5개. ADR-009 명세에 맞춰 silent filter가 아닌 **새 conversation turn**으로 처리 — `runQuery(base + " — " + refine)` 호출해 loading scene 재생.
+
+기타 정리:
+
+- `menu-tray`를 4항목으로 갱신 — Explore / Recent prompts / Saved Looks / New Prompt. 하단에 디자인 확인용 "Demo · 로그인 토글" 추가(부트스트랩 단계에서 제거 예정).
+- 기존 `#modalLogin` (legacy "Coming soon" 모달) 제거 → auth-screen으로 승격.
+- `:root` CSS 변수는 8색 + 2이징 + Playfair Display/Manrope 그대로 유지(새 토큰 0개 추가). 디자인 시스템 안정.
+- HTML 상단 주석에 CHANGELOG 블록을 두어 v0.4.1 대비 변경사항을 1줄씩 기록(별도 CHANGELOG.md 파일 신설 안 함).
+
+다음 피드백 포인트:
+
+- Explore 12 그리드의 가먼트 SVG가 3종 반복이라 패턴이 단조롭게 느껴질 수 있다. 다음 단계에서 SVG 변형 5-6종(트라우저·셔츠·코트·니트 등) 추가 또는 실제 플랫레이 사진 큐레이션 결정.
+- 정제 칩이 5개로 고정이라 결과 맥락에 무관할 수 있다. V1에서 의도 파싱 결과 기반 컨텍스추얼 칩 생성 검토.
+- 모바일 바텀시트에 swipe-down dismiss 제스처가 없다(현재는 close 버튼·오버레이 클릭만). 코드 단계에서 추가 검토.
+
+### v0.6 Landing Long-form 시안
+
+신규 시안:
+
+- `if-homepage-v0.6.html`
+
+V0 freeze 직전 사용자분 질문("PRD에 따라 랜딩 이후 서비스 소개·약관 페이지 필요한가?") 검토 결과, 기획 원본 PRD §9.1(서비스 소개 섹션 명시)·§11.1(서비스 소개 영상 확인)·§16(법적 의무: 개인정보 처리방침·약관·어필리에이트 표시)이 V0 출시 전 충족되어야 함이 확인됨. v0.5는 워크스페이스 중심으로 freeze하고, 별도 시안 v0.6에서 **랜딩 long-form 스크롤 페이지 + 법적 푸터**를 추가한다.
+
+구조 전환:
+
+- v0.5의 `.landing`은 `position: fixed; inset: 0; z-index: 40` 풀스크린 overlay라 스크롤 불가. v0.6에서 `.landing`을 `position: relative; min-height: 100vh` in-flow 섹션으로 전환. html/body는 native scroll(`overflow: auto`)을 가짐.
+- `.studio` z-index 10 → 100, 기본 `opacity: 0; visibility: hidden`. `body.atelier-ready` 시 fixed overlay로 landing 위를 덮음. atelier 진입 시 body scroll lock(`body.atelier-ready { overflow: hidden; height: 100% }`).
+- 랜딩 topbar는 `.landing > .topbar { position: fixed }`로 viewport 상단 고정. studio topbar(`.topbar.fixed`)는 부모 .studio가 fixed inset 0이므로 absolute 유지.
+- 휠 forwarder는 `body.atelier-ready`일 때만 동작. 랜딩에선 native body scroll.
+
+추가된 스크롤 섹션 3개:
+
+- **How it works** — Prompt → AI Look → Product 3-step. 크림 페이퍼 톤. 카드 그리드 X, **세로 풀폭 + 큰 number(01/02/03 in `--rose`) + Playfair 헤딩 + Manrope 본문 + 작은 SVG 아트**로 에디토리얼 톤(PRD "SaaS 카드 안티패턴" 회피). 가먼트·검색바·상품박스 SVG 라인 드로잉.
+- **Today's curated** — Explore 그리드 12개 중 처음 6개를 mount해 미리보기. 카드 클릭 시 `enterAtelier` + `runQuery(prompt)`. 하단 "Start the studio" 다크 CTA.
+- **Site footer** — 짙은 인크 톤 그라디언트. 브랜드 + 이용약관/개인정보처리방침/문의 링크 + **어필리에이트 고지** ("I.F는 무신사·29CM·지그재그·에이블리·네이버쇼핑 등 외부 쇼핑몰의 어필리에이트 링크를 포함할 수 있으며…") + ©. PRD §16 의무 충족.
+
+스크롤 진입 애니메이션:
+
+- `.reveal` 클래스 + `IntersectionObserver` (threshold 0.12). 뷰포트 진입 시 `.in-view` 추가 → opacity·blur·translateY 동시 전환. `welcomeIn`·`fadeUp` 기존 keyframe 톤과 일관.
+- Hero 하단에 `.scroll-hint` (chevron ↓ + "Discover the studio" 라벨, scrollChevron 2.4s 무한 애니메이션) 추가. 클릭 시 `#how-it-works`로 smooth scroll(`html { scroll-behavior: smooth }`).
+
+이용약관·개인정보처리방침 모달:
+
+- 기존 `.modal-overlay` 패턴 + `.modal-doc` 변형. 풀스크린 dim + 페이퍼 톤 카드, max-height 84vh로 내부 스크롤.
+- 이용약관 6섹션(제공 서비스 / 계정 / 사용자 콘텐츠 / 외부 링크·어필리에이트 / 책임 한계 / 분쟁 해결).
+- 개인정보처리방침 8섹션(수집 항목 / 목적 / 보유 기간 / 제3자 제공 / 처리 위탁 / 권리 / 보안 / 책임자). OpenAI·Supabase·Vercel 처리 위탁 명시.
+- 콘텐츠는 V0 베타용 placeholder. 실제 법무 검수는 V0 출시 직전 별도 task.
+- `returnHome()`·Escape 키에서 `closeDocModal()` 호출.
+
+기타:
+
+- `:root` 토큰 추가 0개. v0.5와 동일 8색 + 2이징 + Playfair Display/Manrope.
+- ADR-006 준수: 사람 사진/외부 풍경 0건. How it works의 step-art SVG와 curated-preview 카드 모두 가먼트·아이콘 라인 드로잉만.
+- ADR-009 준수: studio 워크스페이스의 mini-action 3개 변경 없음.
+- studio·auth-screen·history-page·drawer·menu-tray·carousel은 v0.5와 동일.
+
+다음 피드백 포인트:
+
+- 어필리에이트 고지 카피가 법적으로 충분한지 V0 출시 직전 법무 검수 필요.
+- FAQ 섹션은 V0 출시 후 사용자 피드백 보고 결정. 추가 시 footer 위 별도 섹션 또는 별도 페이지로.
+- About 페이지/회사 정보 페이지가 별도 필요한지 V0 출시 직전 결정.
+- 이용약관/개인정보 모달이 URL로 공유 안 되는 약점. 부트스트랩(Next.js) 단계에서 `/terms`, `/privacy` 라우트로 승격.
+
 ## 15. v0.0 기준 핵심 판단
 
 I.F의 승부처는 랜딩의 화려함보다 `룩 결과 뷰 + 상품 연결 패널`이다.
@@ -526,3 +623,5 @@ I.F의 승부처는 랜딩의 화려함보다 `룩 결과 뷰 + 상품 연결 �
 | v0.3.3 | 2026-05-13 | 핵심 폰트 가이드(Instrument Sans + Inter + SUIT) 적용 비교 시안 제작 후 사용자 검토 결과 채택 보류 (시안·폰트 가이드 모두 삭제, Playfair Display + Manrope 조합 유지) |
 | v0.4.0 | 2026-05-13 | Welcome 블러 페이드 인 애니메이션 적용. quote scene 제거로 결과 흐름 단축. 결과 페이지를 풀블리드 carousel + 적응형 그라디언트 배경 + 슬라이드별 가먼트 SVG로 재구성. 우측 상품 패널을 룩별 슬라이드 드로어로 전환. 프롬프트 복사 버튼 추가. 랜딩/스튜디오 Menu 버튼 통합과 menuTray 위치 보정. Login 모달 도입. 로딩 SVG 3종(드레스폼·옷걸이·드레이프) 비교 후 옷걸이(`v0.4.0b_garment.html`) 채택 |
 | v0.4.1 | 2026-05-13 | 랜딩·인트로의 외국 풍경 사진을 모두 제거하고 CSS 그라디언트 + 그레인 텍스처로 대체(인종/지역 마커 제거). 결과창 패션 우선 재배치: 가먼트 사이즈 확대, Office 가먼트 콘트라스트 회복(다크 잉크), 카운터·타이틀·CTA 비중 축소, carousel-nav 하단 중앙 이동, copy prompt 우상단 작은 캡슐로 정돈. `View products` ↔ `Copy prompt` 위치 스왑(룩별 액션은 우상단 고정, 글로벌 카피는 슬라이드 인라인) |
+| v0.5 | 2026-05-17 | Fashion Discovery Layer — `body[data-page]` 4-tier routing(landing/auth/history/studio). 필수 신규 3화면(auth-screen 소셜 3버튼, history-page 로그인/비로그인 2상태, 모바일 반응형+drawer-bag 바텀시트). Explore 진입 피드(intro 흡수, sticky search, 시즌 칩 5개, 톤 그라디언트+가먼트 SVG 12 그리드). 워크스페이스 mini-action 3개 시각화(Save 자물쇠 변형, More Like This 캡슐, 정제 칩 5종) + 로딩 카피 v0.4.1 에디토리얼 영문 유지 + `.loading-title` 사이즈 축소(clamp 28/3.6vw/48). carousel-nav 상단 중앙 이동·slide-counter 제거. body 레벨 휠 forwarder + overscroll-behavior 추가. `:root` 토큰 변경 없음, ADR-006/009 준수, drawer-wishlist·modalLogin 제거 |
+| v0.6 | 2026-05-20 | Landing Long-form — PRD §9.1/§11.1/§16 충족. `.landing` 풀스크린 overlay → in-flow scrollable 페이지 전환(`html/body { overflow: auto }`, `.landing { position: relative; min-height: 100vh }`). studio z-index 10→100 + body.atelier-ready 시 fixed overlay/scroll lock. Hero 하단 scroll-hint(chevron + Discover the studio). 신규 스크롤 섹션 3종: How it works(3-step 에디토리얼, 카드 X), Today's curated(Explore 6 카드 미리보기 + Start the studio CTA), Site footer(이용약관·개인정보 링크 + 어필리에이트 고지 + ©). IntersectionObserver `.reveal`/`.in-view` blur fade-in. 이용약관 6섹션·개인정보처리방침 8섹션 풀스크린 모달(modal-doc 변형). 휠 forwarder는 atelier-ready일 때만 동작, returnHome 시 window.scrollTo(0,0). `:root` 토큰 변경 없음, ADR-006/009 유지 |
