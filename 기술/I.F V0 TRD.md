@@ -814,7 +814,11 @@ payments
 - interpreted_prompt_id
 - generated_look_id
 - status
+- parent_history_id (NEW — mini-action turn 추적, ADR-009)
+- trigger_type (NEW — 'fresh' / 'regenerate' / 'chip_refine' / 'more_like_this')
 - created_at
+
+상세는 `docs/DATA_MODEL.md` §15.6 참조. mini-action 패턴(다시 생성·정제 칩=conversation turn·More Like This)을 부모-자식 관계로 추적.
 
 ### 15.7 prompt_intents
 
@@ -846,10 +850,13 @@ payments
 GET  /api/me
 POST /api/auth/callback
 
-POST /api/prompts/interpret
-POST /api/looks/generate
+GET  /api/explore                       (NEW — Explore 진입 피드)
+POST /api/prompts/interpret             (chip_refinements·parent_history_id 파라미터 추가)
+POST /api/looks/generate                (trigger_type·parent_history_id 파라미터 추가)
 GET  /api/looks/:id
 GET  /api/looks/:id/products
+POST /api/looks/:id/save
+POST /api/looks/:id/more-like-this      (NEW — mini-action #3, ADR-009)
 
 POST /api/saved-looks
 GET  /api/saved-looks
@@ -869,18 +876,19 @@ POST /api/admin/products
 PATCH /api/admin/products/:id
 ```
 
-V0에서는 API route 이름과 payload를 개발 전 별도 API spec 문서에서 확정한다.
+상세 request/response 스키마는 `docs/API_CONTRACTS.md`가 정식 문서. 본 섹션은 엔드포인트 목록 reference.
 
 ## 17. Main Screens
 
 V0 필수 화면:
 
 - 랜딩
+- **Explore 진입 피드** (NEW — Get Started 후 첫 화면, 큐레이션 룩 + 시즌 데모 프롬프트, ADR-009·`docs/PRD.md` §9.6)
 - 로그인
 - 메인 프롬프트 화면
-- AI 룩 결과
-- 상품 패널
-- 저장/히스토리
+- AI 룩 결과 (mini-action 3개: 다시 생성·정제 칩·More Like This)
+- 상품 패널 (More Like This 섹션 포함)
+- 저장/히스토리 (비로그인 시 가입 유도 화면, `docs/PRD.md` §9.8)
 - 토큰/플랜
 - 어드민
 
@@ -888,8 +896,8 @@ V0 필수 화면:
 
 - 하단 바텀시트 상품 패널
 - 세로 룩 탐색
-- 명확한 저장 버튼
-- 생성 중 상태
+- 명확한 저장 버튼 (비로그인 시 "로그인하고 저장" 사전 표기)
+- 생성 중 상태 (진행 텍스트 "○○○○ 룩을 그리고 있어요" — Daydream 약점 회피)
 - 토큰 부족 상태
 
 ## 18. Observability / Logging
@@ -950,7 +958,10 @@ TRD 이후 개발 전 확정해야 할 질문:
 
 ## 21. ADR Candidates
 
-초기 ADR 후보:
+> **번호 정합성 주의**: 본 TRD §21의 ADR 번호와 `docs/ADR.md`의 ADR 번호는 일치하지 않는다.
+> 정식 ADR 기록은 `docs/ADR.md`가 single source of truth. 본 섹션은 초기 후보 목록 reference.
+
+초기 ADR 후보 (TRD 작성 시점):
 
 - ADR-001: V0는 웹 기반 MVP로 시작하되 앱 전환 가능성을 고려한다.
 - ADR-002: V0의 핵심 입력은 텍스트 프롬프트로 한다.
@@ -962,6 +973,18 @@ TRD 이후 개발 전 확정해야 할 질문:
 - ADR-008: V0는 Next.js + Supabase + Vercel 조합으로 시작한다.
 - ADR-009: FastAPI는 V0 Core에서 분리하지 않고, AI 파이프라인 복잡도가 커질 때 도입한다.
 - ADR-010: 결제는 V0 Core가 아니라 V0 Extended로 분리한다.
+
+`docs/ADR.md` 정식 ADR 목록 (2026-05-17 기준):
+
+- docs ADR-001: V0는 웹 MVP로 시작
+- docs ADR-002: Next.js + Supabase + Vercel
+- docs ADR-003: OpenAI GPT Image 2 + 하이브리드
+- docs ADR-004: V0 자체 결제 제외
+- docs ADR-005: 룩 단위 추천 + curated 500개
+- docs ADR-006: 이미지 업로드·얼굴 합성·셀럽 생성 제외
+- docs ADR-007: FastAPI V0에서 분리 안 함
+- docs ADR-008: 상품 링크 수동/제휴 우선
+- **docs ADR-009 (신규)**: V0는 싱글턴 워크스페이스 + mini-action 패턴 채택, 풀 멀티턴 채팅은 V1 검토. 세부 결정·이유·트레이드오프는 `docs/ADR.md` 참조.
 
 ## 22. Development Readiness Criteria
 

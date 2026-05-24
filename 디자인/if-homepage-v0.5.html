@@ -1,0 +1,3917 @@
+<!doctype html>
+<!--
+  ==========================================================================
+  I.F Homepage v0.5 — Fashion Discovery Layer
+  Base: if-homepage-v0.4.1.html (2026-05-13)
+  Date: 2026-05-17
+
+  v0.5 CHANGELOG (vs v0.4.1)
+  - [+] body[data-page] 4-tier routing (landing / auth / history / studio)
+  - [+] auth-screen (overlay) — Google/Kakao/Naver social buttons, mock login
+  - [+] history-page (overlay) — saved looks grid + non-logged-in gating
+  - [+] explore scene — replaces Style Atelier intro. brand strip
+        (knot + STYLE ATELIER + 'Begin with...') absorbed from intro.
+        sticky top search bar. season prompt chips + 12-card curated grid
+        (tonal gradient + garment SVG)
+  - [+] results scene mini-actions: Save (locked variant), More Like This,
+        refinement chips (silent-filter 회피, runQuery() 새 turn 재생성)
+  - [~] loading-title v0.4.1 영문 카피 유지("Reading the silhouette" 등) + 사이즈
+        축소(clamp 42/6.2vw/96 → 28/3.6vw/48). 한국어 키워드 삽입(C1 초안)은 깨짐
+        + 챗봇 톤 이슈로 롤백
+  - [+] menu-tray 4-item: Explore / Recent prompts / Saved Looks / New Prompt
+        + Demo login toggle (디자인 확인용)
+  - [+] @media 768px / 480px 반응형 + drawer-bag → 모바일 바텀시트
+  - [-] scene-intro 제거 (Explore 헤더로 흡수)
+  - [-] drawer-wishlist 제거 (history-page 비로그인 게이트로 흡수)
+  - [=] :root 토큰 변경 없음 (8 색 + 2 이징 + Playfair/Manrope 그대로 유지)
+  - [=] ADR-006: 사람 사진/외부 풍경 0건. 가먼트 SVG + 톤 그라디언트만
+  - [=] ADR-009: 풀 채팅 UI X. mini-action 3개로 'Daydream 대화 가치 80%' 흡수
+  ==========================================================================
+-->
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>I.F Homepage v0.5 — Fashion Discovery Layer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #1a1815;
+        --ink-soft: #3b352e;
+        --cream: #ece6d8;
+        --paper: #f7f3eb;
+        --white: #fffaf2;
+        --muted: #9e978e;
+        --line: rgba(26, 24, 21, 0.12);
+        --rose: #b94a62;
+        --quote-a: #3a2a1c;
+        --quote-b: #170e08;
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        --font-display: "Playfair Display", Georgia, serif;
+        --font-body: Manrope, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        height: 100%;
+        overflow: hidden;
+        scroll-behavior: auto;
+      }
+
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: var(--font-body);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      body.locked {
+        overflow: hidden;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        background: none;
+        color: inherit;
+        cursor: pointer;
+      }
+
+      input {
+        border: 0;
+        outline: 0;
+        color: inherit;
+        background: transparent;
+      }
+
+      .landing {
+        position: fixed;
+        z-index: 40;
+        inset: 0;
+        overflow: hidden;
+        color: var(--white);
+        background: #171514;
+        transition: opacity 900ms var(--ease-out-expo), visibility 0s 900ms;
+      }
+
+      body.atelier-ready .landing {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .landing::before {
+        content: "";
+        position: absolute;
+        inset: -2%;
+        background:
+          radial-gradient(ellipse 70% 80% at 50% 30%, rgba(180, 140, 88, 0.22), transparent 62%),
+          radial-gradient(ellipse 80% 60% at 50% 110%, rgba(0, 0, 0, 0.68), transparent 72%),
+          linear-gradient(180deg, #0b0908 0%, #1a1410 30%, #2a2018 60%, #1b140f 90%, #0b0807 100%);
+        animation: heroDrift 18s var(--ease) infinite alternate;
+      }
+      .landing::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>");
+        opacity: 0.08;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+      }
+
+      .topbar {
+        position: absolute;
+        z-index: 50;
+        top: 0;
+        left: 0;
+        right: 0;
+        min-height: 76px;
+        padding: 0 34px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        color: currentColor;
+      }
+
+      .topbar.fixed {
+        position: absolute;
+        color: var(--white);
+        transition: color 700ms var(--ease), background 700ms var(--ease);
+      }
+
+      .topbar.fixed.dark {
+        color: var(--ink);
+      }
+
+      .nav-left,
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .nav-right {
+        justify-content: flex-end;
+      }
+
+      .menu-mark {
+        display: inline-grid;
+        gap: 6px;
+        width: 28px;
+      }
+
+      .menu-mark span {
+        height: 1px;
+        background: currentColor;
+      }
+
+      .brand {
+        display: inline-grid;
+        justify-items: center;
+        gap: 2px;
+        font-family: var(--font-display);
+      }
+
+      .brand strong {
+        font-size: 30px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+      }
+
+      .brand span {
+        font-family: var(--font-body);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.24em;
+      }
+
+      .icon-row {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .account-link {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .icon-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        transition: background 220ms ease;
+      }
+
+      .icon-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .topbar.fixed.dark .icon-btn:hover {
+        background: rgba(0, 0, 0, 0.06);
+      }
+
+      .icon-btn svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.45;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .landing-content {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: 1fr auto;
+        padding: 120px 52px 44px;
+      }
+
+      .hero-title {
+        align-self: center;
+        justify-self: center;
+        max-width: 1060px;
+        margin: 0;
+        text-align: center;
+        font-family: var(--font-display);
+        font-size: clamp(50px, 6.7vw, 106px);
+        font-weight: 500;
+        line-height: 0.98;
+        letter-spacing: -0.025em;
+        transform: scaleX(0.94);
+        text-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+        animation: welcomeIn 1200ms var(--ease-out-expo) both;
+      }
+
+      .hero-title em {
+        font-style: italic;
+        font-weight: 500;
+      }
+
+      .landing-bottom {
+        display: grid;
+        grid-template-columns: minmax(210px, 360px) 1fr minmax(210px, 360px);
+        gap: 30px;
+        align-items: end;
+      }
+
+      .bottom-copy {
+        margin: 0;
+        color: rgba(255, 250, 242, 0.74);
+        font-size: 13px;
+        line-height: 1.75;
+        animation: fadeUp 900ms var(--ease-out-expo) 350ms both;
+      }
+
+      .bottom-copy b {
+        display: block;
+        margin-bottom: 8px;
+        color: rgba(255, 250, 242, 0.95);
+        font-size: 11px;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+      }
+
+      .landing-cta-wrap {
+        justify-self: center;
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 166px;
+        min-height: 50px;
+        padding: 0 26px;
+        border: 1px solid rgba(255, 250, 242, 0.48);
+        border-radius: 999px;
+        color: var(--white);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(14px);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
+        animation: fadeUp 900ms var(--ease-out-expo) 520ms both;
+      }
+
+      .cta:hover {
+        border-color: rgba(255, 250, 242, 0.78);
+        background: rgba(255, 255, 255, 0.18);
+        transform: translateY(-2px);
+      }
+
+      .studio {
+        position: fixed;
+        z-index: 10;
+        inset: 0;
+        overflow: hidden;
+        color: var(--white);
+        background: #11100e;
+      }
+
+      body:not(.atelier-ready) .studio .topbar.fixed,
+      body:not(.atelier-ready) .studio .scene,
+      body:not(.atelier-ready) .studio .chips,
+      body:not(.atelier-ready) .studio .dock,
+      body:not(.atelier-ready) .studio .loading-pill {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .scene {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 780ms var(--ease), visibility 0s 780ms;
+      }
+
+      .scene.active {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 900ms var(--ease);
+      }
+
+      .studio.process-running .scene.active {
+        transition: opacity 1050ms var(--ease-out-expo);
+      }
+
+      .scene-intro {
+        background:
+          radial-gradient(ellipse 70% 60% at 50% 35%, rgba(192, 148, 96, 0.24), transparent 60%),
+          radial-gradient(ellipse 80% 50% at 50% 110%, rgba(0, 0, 0, 0.58), transparent 70%),
+          linear-gradient(168deg, #15110e 0%, #251a13 36%, #34241a 64%, #1c140f 100%);
+      }
+      .scene-intro::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>");
+        opacity: 0.07;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+      }
+
+      .intro-inner {
+        width: min(960px, 86vw);
+        text-align: center;
+        padding-top: 5vh;
+      }
+
+      .knot {
+        display: block;
+        width: 48px;
+        height: 20px;
+        margin: 0 auto 24px;
+      }
+
+      .knot path {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 0.9;
+        stroke-linecap: round;
+      }
+
+      .intro-title,
+      .quote-text,
+      .loading-title,
+      .results-title {
+        font-family: var(--font-display);
+        font-weight: 500;
+        letter-spacing: -0.022em;
+      }
+
+      .intro-title {
+        margin: 0;
+        font-size: clamp(54px, 8.5vw, 132px);
+        line-height: 0.96;
+        transform: scaleX(0.94);
+      }
+
+      .intro-title em,
+      .quote-text em,
+      .loading-title em,
+      .results-title em,
+      .drawer-quote em {
+        font-style: italic;
+        font-weight: 500;
+      }
+
+      .intro-copy {
+        max-width: 560px;
+        margin: 26px auto 0;
+        color: rgba(255, 250, 242, 0.78);
+        font-size: 15px;
+        line-height: 1.8;
+      }
+
+      .scene-intro.active .intro-title {
+        animation: welcomeIn 1100ms var(--ease-out-expo) both;
+      }
+
+      .scene-intro.active .intro-copy {
+        animation: fadeUp 760ms var(--ease-out-expo) 650ms both;
+      }
+
+      /* ─── v0.5: scene-explore ─────────────────────────────────────── */
+      /* intro scene을 대체. 라이트 페이퍼 배경 위로 brand strip + sticky
+         search + season chips + 12-card curated grid. */
+      .scene-explore {
+        align-items: start;
+        justify-items: stretch;
+        padding: 0;
+        color: var(--ink);
+        background: var(--paper);
+        overflow: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+
+      .explore-inner {
+        width: 100%;
+        max-width: 1480px;
+        margin: 0 auto;
+        padding: 110px 28px 140px;
+      }
+
+      .brand-strip {
+        text-align: center;
+        margin-bottom: 22px;
+        animation: welcomeIn 950ms var(--ease-out-expo) both;
+      }
+
+      .brand-strip .knot {
+        margin: 0 auto 14px;
+        color: var(--ink-soft);
+        opacity: 0.7;
+      }
+
+      .brand-eyebrow {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+      }
+
+      .brand-headline {
+        margin: 0 auto;
+        max-width: 880px;
+        font-family: var(--font-display);
+        font-size: clamp(28px, 3.6vw, 48px);
+        font-weight: 500;
+        line-height: 1.06;
+        letter-spacing: -0.022em;
+        transform: scaleX(0.94);
+      }
+
+      .brand-headline em {
+        font-style: italic;
+        font-weight: 500;
+      }
+
+      .brand-sub {
+        margin: 14px auto 0;
+        max-width: 520px;
+        color: #6f685f;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .explore-search-wrap {
+        position: sticky;
+        top: 76px;
+        /* z-index는 sticky stuck 상태일 때만 필요. 아래 :is(:hover) trick 대신
+           아래 형제(.season-prompts)에 명시 stacking을 줘서 hit-test 충돌 회피. */
+        z-index: 5;
+        margin: 30px auto 22px;
+        max-width: 690px;
+        animation: fadeUp 760ms var(--ease-out-expo) 220ms both;
+      }
+
+      .explore-search {
+        width: 100%;
+        padding: 6px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        color: var(--ink);
+        background: rgba(255, 250, 242, 0.92);
+        backdrop-filter: blur(18px) saturate(1.1);
+        box-shadow: 0 14px 38px rgba(26, 24, 21, 0.08);
+      }
+
+      .explore-search .dock-btn {
+        flex: 0 0 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+      }
+
+      .explore-search .dock-btn:hover {
+        background: rgba(26, 24, 21, 0.06);
+      }
+
+      .explore-search .dock-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .explore-search .dock-input {
+        min-width: 0;
+        flex: 1;
+        height: 48px;
+        padding: 0 8px;
+        color: var(--ink);
+        font-size: 15px;
+        letter-spacing: 0.01em;
+      }
+
+      .explore-search .dock-input::placeholder {
+        color: var(--ink-soft);
+        opacity: 0.62;
+      }
+
+      .season-prompts {
+        position: relative;
+        z-index: 10;       /* search-wrap(z 5) 위에 명시 stacking — hit-test 충돌 회피 */
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 auto 46px;
+        max-width: 880px;
+        animation: fadeUp 760ms var(--ease-out-expo) 320ms both;
+      }
+
+      .season-prompts .chip {
+        cursor: pointer;
+        color: var(--ink);
+        border-color: rgba(26, 24, 21, 0.14);
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .season-prompts .chip:hover {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: rgba(26, 24, 21, 0.32);
+      }
+
+      .explore-section-label {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+      }
+
+      .explore-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .explore-card {
+        position: relative;
+        aspect-ratio: 3 / 4;
+        overflow: hidden;
+        border-radius: 4px;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(18px);
+        animation: cardIn 720ms var(--ease-out-expo) both;
+      }
+
+      /* stagger up to 12 cards */
+      .explore-card:nth-child(1) { animation-delay: 360ms; }
+      .explore-card:nth-child(2) { animation-delay: 420ms; }
+      .explore-card:nth-child(3) { animation-delay: 480ms; }
+      .explore-card:nth-child(4) { animation-delay: 540ms; }
+      .explore-card:nth-child(5) { animation-delay: 600ms; }
+      .explore-card:nth-child(6) { animation-delay: 660ms; }
+      .explore-card:nth-child(7) { animation-delay: 720ms; }
+      .explore-card:nth-child(8) { animation-delay: 780ms; }
+      .explore-card:nth-child(9) { animation-delay: 840ms; }
+      .explore-card:nth-child(10) { animation-delay: 900ms; }
+      .explore-card:nth-child(11) { animation-delay: 960ms; }
+      .explore-card:nth-child(12) { animation-delay: 1020ms; }
+
+      .explore-card-bg {
+        position: absolute;
+        inset: 0;
+        transition: filter 600ms var(--ease);
+      }
+
+      .explore-card:hover .explore-card-bg {
+        filter: brightness(1.05);
+      }
+
+      .explore-card-svg {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 58%;
+        transform: translate(-50%, -52%) scale(1);
+        transition: transform 700ms var(--ease);
+      }
+
+      .explore-card:hover .explore-card-svg {
+        transform: translate(-50%, -52%) scale(1.05);
+      }
+
+      .explore-card-svg path,
+      .explore-card-svg line {
+        stroke: currentColor;
+        stroke-width: 1.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .explore-card-tag {
+        position: absolute;
+        left: 14px;
+        bottom: 12px;
+        color: currentColor;
+        opacity: 0.78;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+      }
+
+      .explore-card-prompt {
+        position: absolute;
+        right: 14px;
+        bottom: 12px;
+        max-width: 60%;
+        text-align: right;
+        color: currentColor;
+        font-family: var(--font-display);
+        font-size: 14px;
+        font-weight: 500;
+        font-style: italic;
+        line-height: 1.18;
+      }
+
+      /* Office 변주 (베이지·세이지 톤) — 다크 잉크 글씨/SVG */
+      .explore-card.tone-office-a .explore-card-bg { background: linear-gradient(155deg, #e8e0d0 0%, #cdc6b6 60%, #b8b3a3 100%); }
+      .explore-card.tone-office-b .explore-card-bg { background: linear-gradient(165deg, #d8d2c1 0%, #aeb29c 60%, #8d9484 100%); }
+      .explore-card.tone-office-c .explore-card-bg { background: linear-gradient(150deg, #efe7d6 0%, #cabf9f 65%, #9c9477 100%); }
+      .explore-card.tone-office-d .explore-card-bg { background: linear-gradient(160deg, #d0cdc1 0%, #9c9c8e 100%); }
+      .explore-card.tone-office-a, .explore-card.tone-office-b,
+      .explore-card.tone-office-c, .explore-card.tone-office-d {
+        color: #2a241e;
+      }
+      .explore-card.tone-office-a .explore-card-svg path,
+      .explore-card.tone-office-b .explore-card-svg path,
+      .explore-card.tone-office-c .explore-card-svg path,
+      .explore-card.tone-office-d .explore-card-svg path {
+        fill: #2a241e;
+      }
+
+      /* Date 변주 (로즈·와인 톤) — 따뜻한 오프화이트 SVG */
+      .explore-card.tone-date-a .explore-card-bg { background: linear-gradient(155deg, #6f3a3f 0%, #4a2026 60%, #2b1014 100%); }
+      .explore-card.tone-date-b .explore-card-bg { background: linear-gradient(165deg, #a25a66 0%, #5d2a36 70%, #2a0f17 100%); }
+      .explore-card.tone-date-c .explore-card-bg { background: linear-gradient(150deg, #c98c8f 0%, #7a3c46 60%, #3a1a23 100%); }
+      .explore-card.tone-date-d .explore-card-bg { background: linear-gradient(160deg, #8b4858 0%, #401c25 100%); }
+      .explore-card.tone-date-a, .explore-card.tone-date-b,
+      .explore-card.tone-date-c, .explore-card.tone-date-d {
+        color: #f7eee2;
+      }
+      .explore-card.tone-date-a .explore-card-svg path,
+      .explore-card.tone-date-b .explore-card-svg path,
+      .explore-card.tone-date-c .explore-card-svg path,
+      .explore-card.tone-date-d .explore-card-svg path {
+        fill: #f7eee2;
+      }
+
+      /* Sport 변주 (세이지·올리브 톤) — 따뜻한 오프화이트 SVG */
+      .explore-card.tone-sport-a .explore-card-bg { background: linear-gradient(155deg, #6a7059 0%, #494f3b 60%, #2c3022 100%); }
+      .explore-card.tone-sport-b .explore-card-bg { background: linear-gradient(165deg, #8a9077 0%, #585e48 70%, #2e3424 100%); }
+      .explore-card.tone-sport-c .explore-card-bg { background: linear-gradient(150deg, #b1b39a 0%, #6e7559 60%, #383d28 100%); }
+      .explore-card.tone-sport-d .explore-card-bg { background: linear-gradient(160deg, #7d8268 0%, #3c4030 100%); }
+      .explore-card.tone-sport-a, .explore-card.tone-sport-b,
+      .explore-card.tone-sport-c, .explore-card.tone-sport-d {
+        color: #f3eede;
+      }
+      .explore-card.tone-sport-a .explore-card-svg path,
+      .explore-card.tone-sport-b .explore-card-svg path,
+      .explore-card.tone-sport-c .explore-card-svg path,
+      .explore-card.tone-sport-d .explore-card-svg path {
+        fill: #f3eede;
+      }
+
+      /* explore scene 진입 시 하단 dock + refine chips만 숨김. loading-pill은
+         시즌 칩 클릭 직후 'Reading daily context' 즉시 피드백 줄 수 있게 유지. */
+      body[data-scene="explore"] .dock,
+      body[data-scene="explore"] .chips {
+        opacity: 0;
+        pointer-events: none;
+      }
+      /* ─── /scene-explore ──────────────────────────────────────────── */
+
+      /* ─── v0.5: auth-screen (A1) ─────────────────────────────────── */
+      .auth-screen {
+        position: fixed;
+        z-index: 150;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: var(--white);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        background:
+          radial-gradient(ellipse 60% 70% at 50% 35%, rgba(180, 140, 88, 0.22), transparent 62%),
+          radial-gradient(ellipse 80% 60% at 50% 110%, rgba(0, 0, 0, 0.68), transparent 72%),
+          linear-gradient(180deg, #0b0908 0%, #1a1410 30%, #2a2018 60%, #1b140f 90%, #0b0807 100%);
+        transition: opacity 480ms var(--ease-out-expo), visibility 0s 480ms;
+      }
+
+      body[data-page="auth"] .auth-screen {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transition: opacity 520ms var(--ease-out-expo);
+      }
+
+      .auth-screen::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>");
+        opacity: 0.08;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+      }
+
+      .auth-close {
+        position: absolute;
+        top: 22px;
+        right: 22px;
+        z-index: 2;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .auth-close:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .auth-close svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .auth-card {
+        position: relative;
+        z-index: 1;
+        width: min(420px, 90vw);
+        padding: 36px 30px 26px;
+        text-align: center;
+      }
+
+      .auth-card .knot {
+        margin: 0 auto 18px;
+        color: rgba(255, 250, 242, 0.7);
+      }
+
+      .auth-eyebrow {
+        margin: 0 0 14px;
+        color: rgba(255, 250, 242, 0.62);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+      }
+
+      .auth-headline {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(36px, 4.6vw, 60px);
+        font-weight: 500;
+        line-height: 1.02;
+        letter-spacing: -0.025em;
+        transform: scaleX(0.94);
+        text-shadow: 0 16px 50px rgba(0, 0, 0, 0.32);
+      }
+
+      .auth-headline em {
+        font-style: italic;
+        font-weight: 500;
+      }
+
+      .auth-sub {
+        margin: 18px auto 28px;
+        max-width: 320px;
+        color: rgba(255, 250, 242, 0.78);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .auth-social {
+        display: grid;
+        gap: 10px;
+        margin: 0 0 22px;
+      }
+
+      .social-btn {
+        width: 100%;
+        min-height: 52px;
+        padding: 0 22px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
+      }
+
+      .social-btn svg {
+        width: 22px;
+        height: 22px;
+        flex: 0 0 22px;
+      }
+
+      .social-btn span {
+        flex: 1;
+        text-align: center;
+        margin-left: -22px; /* keep label optically centered ignoring icon */
+      }
+
+      .social-btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .social-btn.social-google {
+        color: var(--ink);
+        background: #fff;
+        border-color: rgba(0, 0, 0, 0.08);
+      }
+      .social-btn.social-google:hover {
+        background: #f5f1ea;
+      }
+
+      .social-btn.social-kakao {
+        color: #191919;
+        background: #FEE500;
+        border-color: rgba(0, 0, 0, 0.08);
+      }
+      .social-btn.social-kakao:hover {
+        background: #ffd900;
+      }
+
+      .social-btn.social-naver {
+        color: #fff;
+        background: #03C75A;
+        border-color: rgba(0, 0, 0, 0.0);
+      }
+      .social-btn.social-naver:hover {
+        background: #02b350;
+      }
+
+      .auth-fineprint {
+        margin: 0;
+        color: rgba(255, 250, 242, 0.5);
+        font-size: 11px;
+        line-height: 1.6;
+      }
+      /* ─── /auth-screen ────────────────────────────────────────────── */
+
+      /* ─── v0.5: history-page (A2) ────────────────────────────────── */
+      .history-page {
+        position: fixed;
+        z-index: 140;
+        inset: 0;
+        overflow: auto;
+        color: var(--ink);
+        background: var(--paper);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 480ms var(--ease-out-expo), visibility 0s 480ms;
+      }
+
+      body[data-page="history"] .history-page {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transition: opacity 520ms var(--ease-out-expo);
+      }
+
+      .history-head {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: grid;
+        grid-template-columns: 38px 1fr 38px;
+        align-items: end;
+        gap: 14px;
+        padding: 26px 32px 18px;
+        background: linear-gradient(180deg, rgba(247, 243, 235, 0.96) 70%, rgba(247, 243, 235, 0));
+        backdrop-filter: blur(14px);
+      }
+
+      .history-back {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(26, 24, 21, 0.04);
+      }
+
+      .history-back:hover {
+        background: rgba(26, 24, 21, 0.1);
+      }
+
+      .history-back svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .history-eyebrow {
+        margin: 0;
+        text-align: center;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+      }
+
+      .history-title {
+        margin: 4px 0 0;
+        text-align: center;
+        font-family: var(--font-display);
+        font-size: clamp(28px, 3vw, 40px);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        transform: scaleX(0.95);
+        grid-column: 2;
+      }
+
+      /* 비로그인 게이트 */
+      .history-gate { display: none; padding: 40px 28px 100px; }
+      body:not(.is-logged-in) .history-gate { display: block; }
+      body:not(.is-logged-in) .saved-wrap { display: none; }
+
+      .gate-inner {
+        max-width: 720px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .gate-eyebrow {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+      }
+
+      .gate-headline {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(30px, 4vw, 56px);
+        font-weight: 500;
+        line-height: 1.06;
+        letter-spacing: -0.022em;
+        transform: scaleX(0.94);
+      }
+
+      .gate-headline em {
+        font-style: italic;
+        font-weight: 500;
+        color: var(--rose);
+      }
+
+      .gate-sub {
+        margin: 18px auto 28px;
+        max-width: 440px;
+        color: #6f685f;
+        font-size: 14px;
+        line-height: 1.75;
+      }
+
+      .gate-cta {
+        color: var(--white);
+        background: var(--ink);
+        border-color: var(--ink);
+        backdrop-filter: none;
+      }
+
+      .gate-cta:hover {
+        background: #2a2520;
+      }
+
+      .gate-preview-label {
+        margin: 56px 0 18px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+      }
+
+      .gate-preview {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        max-width: 720px;
+        margin: 0 auto;
+        filter: blur(1.5px);
+        opacity: 0.62;
+        pointer-events: none;
+      }
+
+      .gate-preview .explore-card {
+        aspect-ratio: 3 / 4;
+        animation: none;
+        opacity: 1;
+        transform: none;
+      }
+
+      /* 로그인 상태 saved 그리드 */
+      .saved-wrap { display: none; padding: 28px 28px 100px; }
+      body.is-logged-in .saved-wrap { display: block; }
+      body.is-logged-in .history-gate { display: none; }
+
+      .saved-grid {
+        max-width: 1480px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .saved-card {
+        position: relative;
+        aspect-ratio: 4 / 5;
+        overflow: hidden;
+        border-radius: 4px;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(14px);
+        animation: cardIn 640ms var(--ease-out-expo) both;
+      }
+
+      .saved-card:nth-child(1) { animation-delay: 60ms; }
+      .saved-card:nth-child(2) { animation-delay: 120ms; }
+      .saved-card:nth-child(3) { animation-delay: 180ms; }
+      .saved-card:nth-child(4) { animation-delay: 240ms; }
+      .saved-card:nth-child(5) { animation-delay: 300ms; }
+      .saved-card:nth-child(6) { animation-delay: 360ms; }
+
+      .saved-card-meta {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        bottom: 14px;
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 12px 14px;
+        color: var(--white);
+        background: rgba(0, 0, 0, 0.36);
+        backdrop-filter: blur(12px);
+      }
+
+      .saved-card-meta .prompt {
+        min-width: 0;
+        flex: 1;
+        font-size: 12px;
+        line-height: 1.4;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+
+      .saved-card-meta .date {
+        color: rgba(255, 250, 242, 0.72);
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .saved-card .trash {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: var(--white);
+        background: rgba(0, 0, 0, 0.36);
+        opacity: 0;
+        transform: translateY(-4px);
+        transition: opacity 220ms ease, transform 220ms ease;
+      }
+
+      .saved-card:hover .trash {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .saved-card .trash svg {
+        width: 14px;
+        height: 14px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.4;
+        stroke-linecap: round;
+      }
+      /* ─── /history-page ───────────────────────────────────────────── */
+
+      /* ─── v0.5: results scene mini-actions (C2/C3/C4) ────────────── */
+
+      /* slide 안 액션 그룹 — Copy prompt + Save 가로 정렬 */
+      .slide-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      /* Save 버튼 — Copy prompt와 동일한 .slide-cta 베이스 재사용 */
+      .slide-cta-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      /* 로그인/비로그인 상태에 따라 아이콘/라벨 토글 */
+      .slide-cta-save .ic-save,
+      .slide-cta-save .save-label { display: inline; }
+      .slide-cta-save .ic-lock,
+      .slide-cta-save .save-locked { display: none; }
+      body:not(.is-logged-in) .slide-cta-save .ic-save,
+      body:not(.is-logged-in) .slide-cta-save .save-label { display: none; }
+      body:not(.is-logged-in) .slide-cta-save .ic-lock,
+      body:not(.is-logged-in) .slide-cta-save .save-locked { display: inline; }
+      body:not(.is-logged-in) .slide-cta-save {
+        opacity: 0.86;
+      }
+
+      /* More Like This — 슬라이드 우하단 작은 캡슐 */
+      .more-like-btn {
+        position: absolute;
+        right: 28px;
+        bottom: 28px;
+        z-index: 4;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 32px;
+        padding: 0 14px;
+        border: 1px solid rgba(255, 250, 242, 0.28);
+        border-radius: 999px;
+        color: var(--white);
+        background: rgba(17, 15, 13, 0.42);
+        backdrop-filter: blur(12px);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        transition: background 220ms ease, transform 220ms ease, border-color 220ms ease;
+      }
+
+      .more-like-btn:hover {
+        background: rgba(17, 15, 13, 0.62);
+        border-color: rgba(255, 250, 242, 0.5);
+        transform: translateY(-2px);
+      }
+
+      .more-like-btn svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      /* Office 슬라이드(라이트 톤)에서 More Like This 톤 반전 */
+      body.look-office .more-like-btn {
+        color: var(--ink);
+        border-color: rgba(26, 24, 21, 0.16);
+        background: rgba(255, 250, 242, 0.7);
+      }
+      body.look-office .more-like-btn:hover {
+        background: rgba(255, 250, 242, 0.9);
+        border-color: rgba(26, 24, 21, 0.4);
+      }
+
+      /* 정제 칩 (results scene에서만 노출) — 기존 .chips/.chip 토큰 재사용 */
+      body[data-scene="results"] .chips,
+      body[data-scene="results"] .chips.hide {
+        opacity: 1;
+        pointer-events: auto;
+        transition: opacity 360ms ease;
+      }
+      .refine-chip {
+        cursor: pointer;
+      }
+      .refine-chip:hover {
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(255, 255, 255, 0.32);
+      }
+      body.look-office .refine-chip {
+        color: var(--ink);
+        border-color: rgba(26, 24, 21, 0.18);
+        background: rgba(255, 250, 242, 0.68);
+      }
+      body.look-office .refine-chip:hover {
+        background: rgba(255, 250, 242, 0.94);
+        border-color: rgba(26, 24, 21, 0.36);
+      }
+
+      /* drawer-bag 안 상품 카드의 More Like This (아이콘만) */
+      .product-more {
+        width: 28px;
+        height: 28px;
+        flex: 0 0 28px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(26, 24, 21, 0.06);
+        margin-left: 6px;
+      }
+      .product-more:hover {
+        background: rgba(26, 24, 21, 0.12);
+      }
+      .product-more svg {
+        width: 13px;
+        height: 13px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.4;
+        stroke-linecap: round;
+      }
+      /* ─── /results mini-actions ───────────────────────────────────── */
+
+      .scene-quote {
+        background:
+          radial-gradient(ellipse at 50% 48%, rgba(139, 98, 62, 0.78), transparent 42%),
+          radial-gradient(ellipse at 40% 38%, rgba(241, 213, 173, 0.18), transparent 16%),
+          linear-gradient(180deg, var(--quote-a), var(--quote-b));
+      }
+
+      .quote-wrap {
+        width: min(1120px, 90vw);
+        text-align: center;
+        color: #f5efdf;
+      }
+
+      .quote-text {
+        margin: 0;
+        font-size: clamp(34px, 4.8vw, 72px);
+        line-height: 1.18;
+        text-shadow: 0 4px 40px rgba(0, 0, 0, 0.42);
+      }
+
+      .scene-quote.active .quote-text {
+        animation: quoteIn 1350ms var(--ease-out-expo) both;
+      }
+
+      .scene-loading {
+        color: var(--ink);
+        background:
+          linear-gradient(180deg, #a8a29a 0%, var(--cream) 30%, var(--cream) 100%);
+      }
+
+      .loading-wrap {
+        width: min(920px, 92vw);
+        text-align: center;
+      }
+
+      .loading-title {
+        margin: 12px 0 0;
+        font-size: clamp(28px, 3.6vw, 48px);
+        line-height: 1.02;
+        transform: scaleX(0.95);
+      }
+
+      .fashion-lines {
+        width: min(820px, 90vw);
+        margin-top: 46px;
+      }
+
+      .fashion-lines path,
+      .fashion-lines circle,
+      .fashion-lines rect,
+      .fashion-lines line {
+        fill: none;
+        stroke: var(--ink);
+        stroke-width: 1.1;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 2200;
+        stroke-dashoffset: 2200;
+      }
+
+      .fashion-lines .swatch {
+        fill: rgba(26, 24, 21, 0.035);
+      }
+
+      .scene-loading.active .fashion-lines path,
+      .scene-loading.active .fashion-lines circle,
+      .scene-loading.active .fashion-lines rect,
+      .scene-loading.active .fashion-lines line {
+        animation: lineDraw 2400ms 200ms var(--ease) forwards;
+      }
+
+      .scene-results {
+        align-items: start;
+        justify-items: center;
+        color: var(--ink);
+        background: var(--paper);
+        padding: 98px 28px 132px;
+        overflow: auto;
+        overflow-x: hidden;
+      }
+
+      .results-head {
+        width: min(1120px, 92vw);
+        text-align: center;
+      }
+
+      .results-title {
+        margin: 0;
+        font-size: clamp(36px, 5vw, 70px);
+        line-height: 1.04;
+        transform: scaleX(0.94);
+        overflow-wrap: anywhere;
+      }
+
+      .results-copy {
+        max-width: 560px;
+        margin: 14px auto 0;
+        color: #6f685f;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .results-layout {
+        width: min(1480px, 94vw);
+        margin-top: 38px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(310px, 380px);
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .look-grid {
+        width: 100%;
+        margin-top: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        min-height: min(56vh, 620px);
+      }
+
+      .look-card {
+        position: relative;
+        min-height: 420px;
+        overflow: hidden;
+        background: #ddd3c7;
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      .scene-results.active .look-card {
+        animation: cardIn 780ms var(--ease-out-expo) both;
+      }
+
+      .scene-results.active .look-card:nth-child(2) {
+        animation-delay: 90ms;
+      }
+
+      .scene-results.active .look-card:nth-child(3) {
+        animation-delay: 180ms;
+      }
+
+      .look-card:nth-child(1) {
+        grid-row: span 2;
+      }
+
+      .look-card img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        transition: transform 1100ms var(--ease);
+      }
+
+      .look-card:hover img {
+        transform: scale(1.045);
+      }
+
+      .look-meta {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        bottom: 18px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 16px;
+        color: var(--white);
+        background: rgba(0, 0, 0, 0.36);
+        backdrop-filter: blur(16px);
+      }
+
+      .look-meta b {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .look-meta span {
+        display: block;
+        color: rgba(255, 250, 242, 0.72);
+        font-size: 12px;
+      }
+
+      .product-panel {
+        display: flex;
+        min-height: min(56vh, 620px);
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 26px;
+        border: 1px solid var(--line);
+        background: rgba(255, 250, 242, 0.68);
+      }
+
+      .panel-label {
+        margin: 0 0 20px;
+        color: var(--rose);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .product-panel h3 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(30px, 3vw, 48px);
+        font-weight: 500;
+        letter-spacing: -0.025em;
+        line-height: 1.02;
+        transform: scaleX(0.95);
+        transform-origin: left center;
+      }
+
+      .panel-copy {
+        margin: 18px 0 0;
+        color: #776f66;
+        font-size: 13px;
+        line-height: 1.75;
+      }
+
+      .product-list {
+        display: grid;
+        gap: 12px;
+        margin: 32px 0;
+      }
+
+      .product-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .product-item b {
+        font-size: 13px;
+        letter-spacing: 0.03em;
+      }
+
+      .product-item span,
+      .product-item small {
+        color: #7b746b;
+        font-size: 12px;
+      }
+
+      .panel-cta {
+        width: 100%;
+        min-height: 62px;
+        border: 0;
+        color: var(--white);
+        background: var(--ink);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .dock {
+        position: fixed;
+        z-index: 62;
+        left: 50%;
+        bottom: 34px;
+        width: min(690px, 86vw);
+        padding: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        color: var(--white);
+        background: rgba(17, 15, 13, 0.54);
+        backdrop-filter: blur(18px) saturate(1.1);
+        box-shadow: 0 18px 52px rgba(0, 0, 0, 0.34);
+        transform: translateX(-50%);
+        transition: color 700ms var(--ease), background 700ms var(--ease), border-color 700ms var(--ease);
+      }
+
+      .dock.cream {
+        color: var(--ink);
+        border-color: rgba(26, 24, 21, 0.08);
+        background: rgba(255, 255, 255, 0.52);
+      }
+
+      .dock.dim {
+        background: rgba(76, 60, 46, 0.42);
+      }
+
+      .dock.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .dock-btn {
+        flex: 0 0 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+      }
+
+      .dock-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .dock.cream .dock-btn:hover {
+        background: rgba(0, 0, 0, 0.06);
+      }
+
+      .dock-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .dock-input {
+        min-width: 0;
+        flex: 1;
+        height: 48px;
+        padding: 0 8px;
+        font-size: 15px;
+        letter-spacing: 0.01em;
+      }
+
+      .dock-input::placeholder {
+        color: currentColor;
+        opacity: 0.58;
+      }
+
+      .chips {
+        position: fixed;
+        z-index: 61;
+        left: 50%;
+        bottom: 126px;
+        display: flex;
+        gap: 8px;
+        max-width: 88vw;
+        justify-content: center;
+        flex-wrap: wrap;
+        transform: translateX(-50%);
+        transition: opacity 260ms ease;
+      }
+
+      .chips.hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .chip {
+        padding: 8px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        color: rgba(255, 250, 242, 0.84);
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        letter-spacing: 0.02em;
+      }
+
+      .loading-pill {
+        position: fixed;
+        z-index: 63;
+        left: 50%;
+        bottom: 104px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 18px;
+        border-radius: 999px;
+        color: var(--white);
+        background: rgba(0, 0, 0, 0.36);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 4px);
+        transition: opacity 300ms ease, transform 300ms ease;
+      }
+
+      .loading-pill.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .spinner {
+        width: 14px;
+        height: 14px;
+        border: 1.5px solid rgba(255, 255, 255, 0.25);
+        border-top-color: var(--white);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      .toast {
+        position: fixed;
+        z-index: 190;
+        top: 92px;
+        right: 28px;
+        padding: 12px 16px;
+        color: var(--ink);
+        background: rgba(255, 250, 242, 0.9);
+        border: 1px solid rgba(26, 24, 21, 0.12);
+        border-radius: 999px;
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.16);
+        backdrop-filter: blur(14px);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-8px);
+        transition: opacity 260ms ease, transform 260ms ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .drawer-overlay,
+      .bag-bg {
+        position: fixed;
+        inset: 0;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 480ms var(--ease);
+      }
+
+      .drawer-overlay {
+        z-index: 90;
+        background: rgba(0, 0, 0, 0.18);
+      }
+
+      .drawer-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .menu-tray {
+        position: absolute;
+        z-index: 70;
+        top: 76px;
+        left: 24px;
+        width: min(340px, calc(100vw - 48px));
+        padding: 18px;
+        color: #f1ece0;
+        background: rgba(28, 25, 22, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        backdrop-filter: blur(18px);
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.25);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition:
+          opacity 420ms var(--ease-out-expo),
+          transform 420ms var(--ease-out-expo),
+          visibility 0s 420ms;
+      }
+
+      .menu-tray.open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        transition:
+          opacity 520ms var(--ease-out-expo),
+          transform 520ms var(--ease-out-expo);
+      }
+
+      .menu-tray p {
+        margin: 0 0 14px;
+        color: rgba(241, 236, 224, 0.64);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .menu-action {
+        width: 100%;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid rgba(241, 236, 224, 0.16);
+        color: #f1ece0;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .menu-action:first-of-type {
+        border-top: 0;
+      }
+
+      .menu-action span:last-child {
+        color: rgba(241, 236, 224, 0.48);
+        font-size: 11px;
+      }
+
+      /* v0.5: 디자인 확인용 로그인 토글 (부트스트랩 단계에서 제거) */
+      .menu-demo-toggle {
+        width: 100%;
+        min-height: 40px;
+        margin-top: 18px;
+        padding: 0 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px dashed rgba(241, 236, 224, 0.18);
+        padding-top: 16px;
+        color: rgba(241, 236, 224, 0.52);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .menu-demo-toggle:hover { color: rgba(241, 236, 224, 0.86); }
+      .menu-demo-toggle .demo-state {
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(241, 236, 224, 0.1);
+        color: rgba(241, 236, 224, 0.86);
+        font-weight: 800;
+      }
+      body.is-logged-in .menu-demo-toggle .demo-state {
+        background: var(--rose);
+        color: var(--white);
+      }
+
+      .bag-bg {
+        z-index: 95;
+        background: linear-gradient(135deg, #1c1815 0%, #2d211a 60%, #3d2a1c 100%);
+      }
+
+      .bag-bg.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .drawer {
+        position: fixed;
+        z-index: 100;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        transform: translateX(100%);
+        transition: transform 700ms var(--ease-out-expo);
+      }
+
+      .drawer.open {
+        transform: translateX(0);
+      }
+
+      .drawer-close {
+        position: absolute;
+        top: 22px;
+        right: 22px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .drawer-close.dark {
+        background: rgba(0, 0, 0, 0.06);
+      }
+
+      .drawer-close svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.45;
+        stroke-linecap: round;
+      }
+
+      .drawer-history {
+        width: min(560px, 92vw);
+        padding: 78px 22px 26px;
+        display: flex;
+        flex-direction: column;
+        color: #f1ece0;
+        background: linear-gradient(180deg, #3d3a37 0%, #2a2723 100%);
+      }
+
+      .history-list {
+        flex: 1;
+        display: grid;
+        align-content: start;
+        gap: 8px;
+        overflow: auto;
+        padding-right: 6px;
+      }
+
+      .history-row {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 10px;
+        align-items: center;
+        min-height: 70px;
+        padding: 16px 18px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.06);
+        cursor: pointer;
+      }
+
+      .history-row:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .history-row .text {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 14px;
+      }
+
+      .history-row .ts {
+        color: rgba(241, 236, 224, 0.62);
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .history-row .trash {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        opacity: 0;
+        transform: translateX(8px);
+        transition: opacity 220ms ease, transform 220ms ease, background 220ms ease;
+      }
+
+      .history-row:hover .trash {
+        opacity: 0.75;
+        transform: translateX(0);
+      }
+
+      .history-row .trash:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .drawer-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 18px;
+      }
+
+      .btn-pill {
+        padding: 13px 22px;
+        border-radius: 999px;
+        color: #f1ece0;
+        background: rgba(255, 255, 255, 0.08);
+        font-size: 13px;
+      }
+
+      .btn-pill.primary {
+        color: var(--ink);
+        background: #fff;
+      }
+
+      .drawer-empty {
+        flex: 1;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 0 24px;
+      }
+
+      .drawer-quote {
+        max-width: 390px;
+        margin: 16px auto 0;
+        font-family: var(--font-display);
+        font-size: clamp(24px, 2.5vw, 34px);
+        font-weight: 500;
+        line-height: 1.2;
+      }
+
+      .drawer-wishlist {
+        width: min(620px, 96vw);
+        padding: 78px 32px 100px;
+        color: #f1ece0;
+        text-align: center;
+        background: linear-gradient(180deg, #2c2e3a 0%, #1a1815 65%, #2a1f17 100%);
+      }
+
+      .drawer-label {
+        margin: 0;
+        text-align: left;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(241, 236, 224, 0.72);
+      }
+
+      .drawer-wishlist .empty-line {
+        margin-top: 20vh;
+        color: rgba(241, 236, 224, 0.84);
+        font-size: 14px;
+      }
+
+      .drawer-wishlist .drawer-quote {
+        max-width: 520px;
+        font-size: clamp(34px, 4vw, 58px);
+      }
+
+      .drawer-bag {
+        width: min(720px, 96vw);
+        padding: 78px 30px 30px;
+        color: var(--ink);
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .drawer-bag h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .drawer-bag .empty-line {
+        margin-top: 34px;
+        text-align: center;
+        color: #5a544c;
+        font-size: 13px;
+      }
+
+      .drawer-bag .drawer-quote {
+        color: var(--ink);
+        max-width: 480px;
+        font-size: clamp(28px, 3.4vw, 46px);
+      }
+
+      .bag-photo {
+        /* (legacy) v0.4.0+ 이후 bag drawer는 product-list 기반으로 전환 */
+        display: none;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 120;
+        display: grid;
+        place-items: center;
+        background: rgba(0, 0, 0, 0);
+        pointer-events: none;
+        transition: background 340ms ease;
+      }
+
+      .modal-overlay.open {
+        background: rgba(0, 0, 0, 0.45);
+        pointer-events: auto;
+      }
+
+      .modal {
+        width: min(440px, 90vw);
+        padding: 30px 28px;
+        border-radius: 22px;
+        color: #f1ece0;
+        background: rgba(60, 55, 48, 0.94);
+        backdrop-filter: blur(18px);
+        opacity: 0;
+        transform: scale(0.96);
+        transition: opacity 340ms var(--ease-out-expo), transform 340ms var(--ease-out-expo);
+      }
+
+      .modal-overlay.open .modal {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .modal h4 {
+        margin: 0 0 12px;
+        font-size: 16px;
+      }
+
+      .modal p {
+        margin: 0 0 22px;
+        color: rgba(241, 236, 224, 0.76);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .modal-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      @keyframes heroDrift {
+        from {
+          transform: scale(1.02);
+        }
+        to {
+          transform: scale(1.07) translate3d(-1.2%, -0.6%, 0);
+        }
+      }
+
+      @keyframes welcomeIn {
+        0% {
+          opacity: 0;
+          filter: blur(22px);
+          transform: scale(1.045) scaleX(0.94);
+          letter-spacing: 0.04em;
+        }
+        60% {
+          opacity: 0.82;
+          filter: blur(6px);
+          transform: scale(1.01) scaleX(0.94);
+          letter-spacing: 0.005em;
+        }
+        100% {
+          opacity: 1;
+          filter: blur(0);
+          transform: scale(1) scaleX(0.94);
+          letter-spacing: -0.025em;
+        }
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          filter: blur(8px);
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          filter: blur(0);
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes quoteIn {
+        from {
+          opacity: 0;
+          filter: blur(14px);
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          filter: blur(0);
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes lineDraw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+
+      @keyframes cardIn {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 900px) {
+        .nav-left button:not(.menu-mark) {
+          display: none;
+        }
+
+        .nav-right {
+          gap: 14px;
+        }
+
+        .landing-content {
+          padding: 96px 22px 28px;
+        }
+
+        .landing-bottom {
+          grid-template-columns: 1fr;
+          gap: 18px;
+        }
+
+        .landing-cta-wrap {
+          justify-self: start;
+        }
+
+        .results-layout {
+          grid-template-columns: 1fr;
+          width: 100%;
+        }
+
+        .look-grid {
+          grid-template-columns: 1fr;
+          min-height: auto;
+        }
+
+        .look-card,
+        .look-card:nth-child(1) {
+          grid-row: auto;
+          min-height: 420px;
+        }
+
+        .product-panel {
+          min-height: auto;
+        }
+
+        .dock {
+          width: calc(100vw - 42px);
+          bottom: 20px;
+          gap: 12px;
+        }
+
+        .chips {
+          display: none;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 1ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    
+      /* === v0.4.0 — Menu trigger (icon + text 통합) === */
+      .menu-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: currentColor;
+      }
+      .menu-trigger .menu-mark {
+        display: inline-grid;
+        gap: 6px;
+        width: 28px;
+      }
+      .menu-trigger .menu-mark span {
+        height: 1px;
+        background: currentColor;
+        transition: transform 220ms var(--ease-out-expo);
+      }
+      .menu-trigger:hover .menu-mark span:nth-child(1) { transform: translateY(1px); }
+      .menu-trigger:hover .menu-mark span:nth-child(2) { transform: scaleX(0.6); }
+      .menu-trigger:hover .menu-mark span:nth-child(3) { transform: translateY(-1px); }
+      .menu-trigger .menu-text { line-height: 1; }
+
+      /* === v0.4.0 — menu-tray body-level positioning === */
+      .menu-tray {
+        position: fixed !important;
+        z-index: 200 !important;
+        top: 76px;
+        left: 24px;
+      }
+
+      /* === v0.4.0 — Carousel === */
+      .scene-results {
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: transparent !important;
+        align-items: stretch !important;
+        justify-items: stretch !important;
+      }
+      .carousel {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 900ms var(--ease-out-expo), visibility 0s 900ms;
+      }
+      .slide.active {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 900ms var(--ease-out-expo);
+      }
+      .slide-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        transition: opacity 900ms var(--ease-out-expo);
+      }
+      /* Adaptive backgrounds per look */
+      .slide[data-look="office"] .slide-bg {
+        background:
+          radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.18), transparent 50%),
+          linear-gradient(135deg, #e8e4d9 0%, #c9c2b0 100%);
+      }
+      .slide[data-look="date"] .slide-bg {
+        background:
+          radial-gradient(ellipse at 30% 30%, rgba(255,210,210,0.22), transparent 55%),
+          linear-gradient(135deg, #d4a5a5 0%, #8a5050 100%);
+      }
+      .slide[data-look="sport"] .slide-bg {
+        background:
+          radial-gradient(ellipse at 30% 30%, rgba(220,230,210,0.20), transparent 50%),
+          linear-gradient(135deg, #a9b8a1 0%, #4a5d4a 100%);
+      }
+      .slide-stage {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: grid;
+        grid-template-rows: 1fr auto;
+        align-items: stretch;
+        padding: 100px 60px 200px;
+      }
+      .slide-meta {
+        align-self: end;
+        max-width: 540px;
+        color: rgba(255, 250, 242, 0.96);
+      }
+      .slide[data-look="office"] .slide-meta {
+        color: var(--ink);
+      }
+      .slide-tag {
+        margin: 0 0 10px;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        opacity: 0.7;
+      }
+      .slide-title {
+        margin: 0 0 14px;
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: clamp(32px, 3.6vw, 54px);
+        line-height: 1.02;
+        letter-spacing: -0.018em;
+        transform: scaleX(0.95);
+        transform-origin: left center;
+      }
+      .slide-title em {
+        font-style: italic;
+        font-weight: 500;
+      }
+      .slide-desc {
+        margin: 0 0 22px;
+        font-size: 13.5px;
+        line-height: 1.7;
+        max-width: 380px;
+        opacity: 0.86;
+      }
+      .slide-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 42px;
+        padding: 0 20px;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        background: transparent;
+        color: inherit;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        transition: background 220ms ease, transform 220ms ease;
+      }
+      .slide-cta svg { width: 13px; height: 13px; }
+      .slide-cta .slide-cta-label { line-height: 1; }
+      .slide-cta:hover {
+        background: currentColor;
+        color: var(--paper);
+        transform: translateY(-2px);
+      }
+      .slide[data-look="office"] .slide-cta:hover {
+        color: var(--paper);
+      }
+      .slide-stage .garment {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -52%);
+        width: min(560px, 78vw);
+        max-height: 70vh;
+        height: auto;
+        z-index: 1;
+        filter: drop-shadow(0 36px 70px rgba(0,0,0,0.32));
+        animation: garmentFloat 7s ease-in-out infinite alternate;
+      }
+      .slide-stage .garment path,
+      .slide-stage .garment line {
+        fill: rgba(255, 250, 242, 0.98);
+        stroke: rgba(0, 0, 0, 0.08);
+        stroke-width: 0.6;
+      }
+      /* Office: dark garment on cream bg for proper contrast */
+      .slide[data-look="office"] .slide-stage .garment path {
+        fill: #2a241e;
+        stroke: rgba(0,0,0,0.12);
+      }
+      .slide[data-look="office"] .slide-stage .garment line {
+        stroke: rgba(0,0,0,0.4);
+        fill: none;
+      }
+      .slide[data-look="date"] .slide-stage .garment path {
+        fill: rgba(255, 244, 244, 0.96);
+      }
+      .slide[data-look="sport"] .slide-stage .garment path {
+        fill: rgba(245, 248, 238, 0.96);
+      }
+      .slide[data-look="sport"] .slide-stage .garment line {
+        stroke: rgba(0,0,0,0.22);
+        fill: none;
+      }
+      @keyframes garmentFloat {
+        from { transform: translateY(-6px) rotate(-0.4deg); }
+        to   { transform: translateY(6px)  rotate(0.4deg); }
+      }
+      .scene-results.active .slide.active .garment {
+        animation: garmentIn 1100ms var(--ease-out-expo) both, garmentFloat 6.5s 1100ms ease-in-out infinite alternate;
+      }
+      @keyframes garmentIn {
+        0%   { opacity: 0; filter: blur(18px) drop-shadow(0 30px 60px rgba(0,0,0,0.22)); transform: scale(1.05); }
+        100% { opacity: 1; filter: blur(0) drop-shadow(0 30px 60px rgba(0,0,0,0.22)); transform: scale(1); }
+      }
+      /* v0.5: .slide-counter (좌상단 01/03) 제거. carousel-nav 상단 중앙 라벨로 통합. */
+
+      .carousel-nav {
+        position: fixed;
+        z-index: 64;
+        left: 50%;
+        top: 92px;
+        transform: translate(-50%, -8px);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 6px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.32);
+        backdrop-filter: blur(14px);
+        color: var(--white);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 420ms var(--ease-out-expo), transform 420ms var(--ease-out-expo);
+      }
+      body.results-on .carousel-nav {
+        opacity: 1;
+        transform: translate(-50%, 0);
+        pointer-events: auto;
+      }
+      body.results-on.look-office .carousel-nav {
+        background: rgba(26, 24, 21, 0.7);
+      }
+      .nav-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: currentColor;
+        transition: background 200ms ease;
+      }
+      .nav-btn:hover { background: rgba(255,255,255,0.18); }
+      .nav-btn svg { width: 16px; height: 16px; }
+      .nav-pagination {
+        padding: 0 6px;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.22em;
+        font-variant-numeric: tabular-nums;
+        min-width: 52px;
+        text-align: center;
+      }
+
+      .copy-prompt-btn {
+        position: fixed;
+        z-index: 64;
+        right: 32px;
+        top: 100px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 32px;
+        padding: 0 12px;
+        border: 1px solid rgba(255, 250, 242, 0.28);
+        border-radius: 999px;
+        color: rgba(255, 250, 242, 0.86);
+        background: rgba(0, 0, 0, 0.22);
+        backdrop-filter: blur(14px);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-6px);
+        transition: opacity 380ms var(--ease-out-expo), transform 380ms var(--ease-out-expo), background 200ms ease, color 200ms ease;
+      }
+      body.results-on .copy-prompt-btn {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+      .copy-prompt-btn:hover {
+        background: rgba(0, 0, 0, 0.36);
+        color: var(--white);
+      }
+      .copy-prompt-btn svg { width: 12px; height: 12px; }
+      /* 슬라이드가 light(office)일 때 카피 버튼도 dark 톤으로 */
+      body.results-on.look-office .copy-prompt-btn {
+        color: rgba(26, 24, 21, 0.78);
+        background: rgba(255, 255, 255, 0.45);
+        border-color: rgba(26, 24, 21, 0.18);
+      }
+      body.results-on.look-office .copy-prompt-btn:hover {
+        background: rgba(255, 255, 255, 0.65);
+        color: var(--ink);
+      }
+
+      /* === v0.4.0 — Bag drawer 확장 (룩별 상품) === */
+      .drawer-bag-inner {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .drawer-bag .bag-title {
+        margin: 0;
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: clamp(30px, 3.4vw, 44px);
+        line-height: 1.04;
+        letter-spacing: -0.02em;
+        transform: scaleX(0.95);
+        transform-origin: left center;
+      }
+      .drawer-bag .bag-copy {
+        margin: 0;
+        color: #776f66;
+        font-size: 13.5px;
+        line-height: 1.7;
+      }
+      .drawer-bag .product-list {
+        flex: 1;
+        margin: 18px 0 22px;
+        overflow: auto;
+      }
+      .drawer-bag .panel-cta {
+        margin-top: auto;
+      }
+
+      @media (max-width: 900px) {
+        .slide-stage {
+          padding: 88px 22px 180px;
+        }
+        .slide-stage .garment {
+          width: min(380px, 88vw);
+          max-height: 56vh;
+        }
+        .slide-title {
+          font-size: clamp(28px, 6vw, 38px);
+        }
+        .slide-desc {
+          font-size: 13px;
+        }
+        .carousel-nav {
+          top: 84px;
+        }
+        .copy-prompt-btn {
+          right: 14px;
+          top: 76px;
+          padding: 0 10px;
+          font-size: 9px;
+          height: 28px;
+        }
+      }
+
+      /* ─── v0.5: 모바일 반응형 (A3) ───────────────────────────────── */
+      @media (max-width: 768px) {
+        .topbar { padding: 0 16px; }
+        .topbar .nav-left .menu-text,
+        .topbar .account-link { display: none; }
+        .brand strong { font-size: 24px; }
+
+        /* dock — 너비 + 버튼 축소 */
+        .dock {
+          width: calc(100vw - 24px);
+          bottom: 16px;
+          padding: 4px;
+        }
+        .dock-btn { flex: 0 0 44px; height: 44px; }
+        .dock-input { height: 44px; font-size: 14px; }
+
+        /* refine chips horizontal scroll */
+        body[data-scene="results"] .chips {
+          left: 12px;
+          right: 12px;
+          transform: none;
+          justify-content: flex-start;
+          overflow-x: auto;
+          flex-wrap: nowrap;
+          padding-bottom: 6px;
+          bottom: 86px;
+          max-width: none;
+          -webkit-overflow-scrolling: touch;
+        }
+        body[data-scene="results"] .chips::-webkit-scrollbar { display: none; }
+        .refine-chip { flex: 0 0 auto; white-space: nowrap; }
+
+        /* carousel nav: 상단 topbar 바로 아래 */
+        .carousel-nav { top: 72px; }
+        .carousel-nav .nav-btn { width: 30px; height: 30px; }
+
+        /* slide-meta는 가먼트 아래로 stack */
+        .slide-stage { padding: 84px 18px 200px; }
+        .slide-meta {
+          position: relative;
+          left: auto;
+          right: auto;
+          bottom: auto;
+          margin-top: 16px;
+          padding: 0 8px;
+        }
+        .slide-actions { flex-wrap: wrap; }
+        .more-like-btn {
+          right: 14px;
+          bottom: 80px;
+          height: 28px;
+          padding: 0 10px;
+          font-size: 10px;
+        }
+
+        /* View products: 우상단 아이콘만 */
+        .copy-prompt-btn .copy-prompt-text,
+        .copy-prompt-btn #viewProductsText {
+          display: none;
+        }
+        .copy-prompt-btn {
+          width: 32px;
+          height: 32px;
+          padding: 0;
+          border-radius: 50%;
+          justify-content: center;
+        }
+
+        /* Explore — brand strip 여백 축소 + 검색바 top 갭 보정 */
+        .explore-inner { padding: 88px 18px 140px; }
+        .explore-search-wrap { top: 60px; }
+        .explore-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .explore-card-prompt { font-size: 12px; }
+
+        /* auth/history 모바일 패딩 */
+        .auth-card { padding: 28px 22px 22px; }
+        .history-head { padding: 22px 18px 14px; }
+        .history-gate { padding: 28px 18px 80px; }
+        .saved-wrap { padding: 22px 18px 100px; }
+        .saved-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .gate-preview { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+        /* drawer-bag → 모바일 바텀시트 */
+        .drawer-bag {
+          top: auto;
+          right: 0;
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          height: min(82vh, 640px);
+          border-top-left-radius: 22px;
+          border-top-right-radius: 22px;
+          padding: 38px 22px 22px;
+          transform: translateY(100%);
+        }
+        .drawer-bag.open { transform: translateY(0); }
+        .drawer-bag::before {
+          content: "";
+          position: absolute;
+          top: 12px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 44px;
+          height: 4px;
+          border-radius: 4px;
+          background: rgba(26, 24, 21, 0.18);
+        }
+        .drawer-close { top: 14px; right: 16px; }
+      }
+
+      @media (max-width: 480px) {
+        .brand strong { font-size: 22px; }
+        .brand span { font-size: 8px; letter-spacing: 0.2em; }
+
+        .explore-grid { grid-template-columns: 1fr; }
+        .saved-grid { grid-template-columns: 1fr; }
+        .gate-preview { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+
+        .slide-title { font-size: clamp(24px, 7vw, 32px); }
+        .slide-desc { font-size: 12px; }
+
+        .auth-headline { font-size: clamp(28px, 8vw, 40px); }
+        .gate-headline { font-size: clamp(24px, 7vw, 36px); }
+        .brand-headline { font-size: clamp(22px, 6.6vw, 32px); }
+      }
+      /* ─── /모바일 반응형 ───────────────────────────────────────────── */
+
+    </style>
+  </head>
+  <body data-page="landing">
+    <section class="landing" id="top" aria-label="I.F landing">
+      <header class="topbar">
+        <nav class="nav-left" aria-label="Landing navigation">
+          <button class="menu-trigger" id="btnLandingMenu" type="button" aria-label="Open menu">
+            <span class="menu-mark"><span></span><span></span><span></span></span>
+            <span class="menu-text">Menu</span>
+          </button>
+        </nav>
+        <button class="brand" id="btnLandingHome" type="button" aria-label="I.F home">
+          <strong>I.F</strong>
+          <span>INTELLIGENT FASHION</span>
+        </button>
+        <nav class="nav-right" aria-label="Account">
+          <button type="button" id="btnLandingLogin">Login</button>
+        </nav>
+      </header>
+
+      <div class="landing-content">
+        <h1 class="hero-title">Wear what you <em>imagine.</em></h1>
+        <div class="landing-bottom">
+          <p class="bottom-copy">
+            <b>Intelligent Fashion</b>
+            I.F turns situation, place, and mood into wearable visual directions.
+          </p>
+          <div class="landing-cta-wrap">
+            <button class="cta" id="btnGetStarted" type="button">Get Started</button>
+          </div>
+          <span aria-hidden="true"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- v0.5: Auth overlay (A1). 모든 Login 버튼이 showPage('auth')로 보낸다. -->
+    <section class="auth-screen" id="authScreen" aria-label="Sign in to I.F" aria-hidden="true">
+      <button class="auth-close" id="authClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>
+      </button>
+      <div class="auth-card">
+        <svg class="knot" viewBox="0 0 80 36" aria-hidden="true"><path d="M2 18 C12 4 28 32 40 18 C52 4 68 32 78 18"/></svg>
+        <p class="auth-eyebrow">Sign in to I.F</p>
+        <h2 class="auth-headline">Wear what you <em>imagine.</em></h2>
+        <p class="auth-sub">Continue with your social account to save and revisit your looks.</p>
+
+        <div class="auth-social">
+          <button class="social-btn social-google" type="button" data-provider="google">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M21.6 12.227c0-.709-.064-1.39-.182-2.045H12v3.868h5.382a4.6 4.6 0 0 1-1.995 3.018v2.509h3.232c1.89-1.741 2.981-4.305 2.981-7.35Z" fill="#4285F4"/>
+              <path d="M12 22c2.7 0 4.964-.895 6.619-2.423l-3.232-2.509c-.895.6-2.04.955-3.387.955-2.605 0-4.81-1.759-5.596-4.123H3.064v2.59A9.997 9.997 0 0 0 12 22Z" fill="#34A853"/>
+              <path d="M6.404 13.9A6.012 6.012 0 0 1 6.09 12c0-.66.114-1.302.314-1.9V7.51H3.064A9.997 9.997 0 0 0 2 12c0 1.614.386 3.14 1.064 4.49l3.34-2.59Z" fill="#FBBC05"/>
+              <path d="M12 5.977c1.468 0 2.786.505 3.823 1.496l2.867-2.867C16.959 2.99 14.695 2 12 2A9.997 9.997 0 0 0 3.064 7.51l3.34 2.59C7.191 7.736 9.395 5.977 12 5.977Z" fill="#EA4335"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+          <button class="social-btn social-kakao" type="button" data-provider="kakao">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="#191919">
+              <path d="M12 3C6.477 3 2 6.477 2 10.785c0 2.794 1.847 5.235 4.62 6.605l-1.067 3.9a.3.3 0 0 0 .463.327l4.595-3.045c.46.046.92.07 1.389.07 5.523 0 10-3.477 10-7.785S17.523 3 12 3Z"/>
+            </svg>
+            <span>Continue with Kakao</span>
+          </button>
+          <button class="social-btn social-naver" type="button" data-provider="naver">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="#fff">
+              <path d="M14.16 12.86 9.42 6H4v12h5.84v-6.86L14.58 18H20V6h-5.84v6.86Z"/>
+            </svg>
+            <span>Continue with Naver</span>
+          </button>
+        </div>
+
+        <p class="auth-fineprint">By continuing, you agree to I.F's Terms and acknowledge our Privacy notice. This is a demo screen — login is wired as a mock state toggle.</p>
+      </div>
+    </section>
+
+    <!-- v0.5: History/Saved Looks overlay (A2). 로그인=saved-grid, 비로그인=가입 게이트. -->
+    <section class="history-page" id="historyPage" aria-label="Saved Looks" aria-hidden="true">
+      <header class="history-head">
+        <button class="history-back" id="historyBack" type="button" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <p class="history-eyebrow">Atelier</p>
+        <h2 class="history-title" id="historyTitle">Saved Looks</h2>
+      </header>
+
+      <!-- 비로그인 게이트 (body:not(.is-logged-in)) -->
+      <div class="history-gate" id="historyGate">
+        <div class="gate-inner">
+          <p class="gate-eyebrow">Saved Looks</p>
+          <h3 class="gate-headline">내 룩 컬렉션을 만들려면 <em>로그인</em>하세요.</h3>
+          <p class="gate-sub">저장한 룩과 프롬프트가 한 곳에 정리됩니다. 진행 중인 탐색은 그대로 유지돼요.</p>
+          <button class="cta gate-cta" type="button" id="gateSignIn">Sign in to save looks</button>
+          <p class="gate-preview-label">Saved by other I.F atelier guests</p>
+          <div class="gate-preview" id="gatePreview">
+            <!-- JS: 3 blurred sample 카드 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 로그인 상태 (body.is-logged-in) -->
+      <div class="saved-wrap" id="savedWrap">
+        <div class="saved-grid" id="savedGrid">
+          <!-- JS: 6 mock saved 카드 -->
+        </div>
+      </div>
+    </section>
+
+    <section class="studio" id="studio" aria-label="I.F AI atelier">
+      <header class="topbar fixed" id="appTopbar">
+        <nav class="nav-left" aria-label="Studio navigation">
+          <button class="menu-trigger" id="btnMenu" type="button" aria-label="Open menu">
+            <span class="menu-mark"><span></span><span></span><span></span></span>
+            <span class="menu-text">Menu</span>
+          </button>
+        </nav>
+        <button class="brand" id="btnStudioHome" type="button" aria-label="I.F home">
+          <strong>I.F</strong>
+          <span>INTELLIGENT FASHION</span>
+        </button>
+        <div class="icon-row" aria-label="Studio tools">
+          <button class="account-link" type="button">Login</button>
+          <button class="icon-btn" id="btnBag" aria-label="Selection">
+            <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 13H7L6 7Z" /><path d="M9 7a3 3 0 0 1 6 0" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- v0.5: scene-intro 제거 → scene-explore. Style Atelier 브랜드 모먼트는 brand-strip으로 흡수. -->
+      <section class="scene scene-explore active" data-scene="explore">
+        <div class="explore-inner">
+
+          <div class="brand-strip">
+            <svg class="knot" viewBox="0 0 80 36" aria-hidden="true"><path d="M2 18 C12 4 28 32 40 18 C52 4 68 32 78 18" /></svg>
+            <p class="brand-eyebrow">Style Atelier</p>
+            <h2 class="brand-headline">Begin with a <em>place</em>, mood, and constraint.</h2>
+            <p class="brand-sub">Pick a curated direction below, or type your own intention into the search.</p>
+          </div>
+
+          <div class="explore-search-wrap">
+            <div class="explore-search" id="exploreSearch">
+              <button class="dock-btn" type="button" aria-label="Add context">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+              <input class="dock-input" id="exploreInput" type="text" placeholder="Tell I.F where you are going, and how you want to feel." autocomplete="off" />
+              <button class="dock-btn" id="exploreSend" type="button" aria-label="Generate">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="season-prompts" id="seasonPrompts" aria-label="Seasonal prompt suggestions">
+            <button class="chip" data-prompt="봄 데이트룩, 한강 산책 무드">봄 데이트룩</button>
+            <button class="chip" data-prompt="환절기 출근룩, 가볍게 레이어드">환절기 출근룩</button>
+            <button class="chip" data-prompt="한강 피크닉룩, 편안하지만 단정하게">한강 피크닉룩</button>
+            <button class="chip" data-prompt="주말 카페룩, 미니멀 캐주얼">주말 카페룩</button>
+            <button class="chip" data-prompt="비 오는 날 데일리룩, 어두운 톤">비 오는 날 데일리</button>
+          </div>
+
+          <p class="explore-section-label">Curated for this week</p>
+          <div class="explore-grid" id="exploreGrid">
+            <!-- 12 cards: 4 office / 4 date / 4 sport 변주. JS renderExploreGrid()가 채움. -->
+          </div>
+
+        </div>
+      </section>
+
+<section class="scene scene-loading" data-scene="loading">
+        <div class="loading-wrap">
+          <svg class="knot" viewBox="0 0 80 36" aria-hidden="true"><path d="M2 18 C12 4 28 32 40 18 C52 4 68 32 78 18" /></svg>
+          <h2 class="loading-title" id="loadingTitle">Reading the <em>silhouette</em></h2>
+          <svg class="fashion-lines" viewBox="0 0 820 260" aria-hidden="true">
+            <!-- Horizontal rod -->
+            <line x1="60" y1="58" x2="760" y2="58" />
+            <line x1="60" y1="58" x2="60" y2="52" />
+            <line x1="760" y1="58" x2="760" y2="52" />
+            <!-- Hanger 1: Jacket -->
+            <g transform="translate(160, 38)">
+              <line x1="0" y1="20" x2="0" y2="2" />
+              <circle cx="0" cy="2" r="3" />
+              <path d="M0 20 L -22 30 L -22 36 L 22 36 L 22 30 Z" />
+              <path d="M-22 38 C -42 60 -50 100 -50 150 L -42 188 L -10 188 L -6 100 L -2 188 L 4 188" />
+              <path d="M22 38 C 42 60 50 100 50 150 L 42 188 L 10 188 L 6 100 L 2 188 L -2 188" />
+              <line x1="-20" y1="42" x2="-12" y2="72" />
+              <line x1="20" y1="42" x2="12" y2="72" />
+            </g>
+            <!-- Hanger 2: Slip dress -->
+            <g transform="translate(340, 38)">
+              <line x1="0" y1="20" x2="0" y2="2" />
+              <circle cx="0" cy="2" r="3" />
+              <path d="M0 20 L -18 30 L -18 36 L 18 36 L 18 30 Z" />
+              <path d="M-20 38 C -14 48 14 48 20 38 L 24 70 L 32 200 L -32 200 L -24 70 Z" />
+              <path d="M-14 90 C -8 100 8 100 14 90" />
+            </g>
+            <!-- Hanger 3: Trouser -->
+            <g transform="translate(500, 38)">
+              <line x1="0" y1="20" x2="0" y2="2" />
+              <circle cx="0" cy="2" r="3" />
+              <path d="M0 20 L -16 30 L -16 36 L 16 36 L 16 30 Z" />
+              <path d="M-18 38 L -22 60 L -14 200 L -4 200 L 0 80 L 4 200 L 14 200 L 22 60 L 18 38 Z" />
+              <line x1="0" y1="38" x2="0" y2="80" />
+            </g>
+            <!-- Hanger 4: Shirt -->
+            <g transform="translate(660, 38)">
+              <line x1="0" y1="20" x2="0" y2="2" />
+              <circle cx="0" cy="2" r="3" />
+              <path d="M0 20 L -22 30 L -22 36 L 22 36 L 22 30 Z" />
+              <path d="M-24 38 L -34 56 L -28 84 L -20 80 L -20 188 L 20 188 L 20 80 L 28 84 L 34 56 L 24 38 L 16 50 L 0 58 L -16 50 Z" />
+              <line x1="-10" y1="62" x2="-10" y2="188" />
+              <line x1="10" y1="62" x2="10" y2="188" />
+            </g>
+            <!-- Subtle floor line -->
+            <line x1="60" y1="244" x2="760" y2="244" />
+          </svg>
+        </div>
+      </section>
+
+      <section class="scene scene-results" data-scene="results">
+        <div class="carousel" id="carousel" aria-label="Generated looks carousel">
+          <article class="slide active" data-look="office" data-index="0">
+            <div class="slide-bg"></div>
+            <div class="slide-stage">
+              <svg class="garment garment-office" viewBox="0 0 320 420" aria-hidden="true">
+                <!-- Tailored jacket silhouette -->
+                <path d="M88 86 C 110 72 130 64 160 64 C 190 64 210 72 232 86 L 260 120 L 254 320 C 254 360 250 392 240 408 L 200 408 L 196 270 L 188 408 L 132 408 L 124 270 L 120 408 L 80 408 C 70 392 66 360 66 320 L 60 120 Z"/>
+                <path d="M160 64 L 152 110 L 132 152 M160 64 L 168 110 L 188 152" stroke-width="1.4" fill="none"/>
+                <line x1="160" y1="108" x2="160" y2="408" stroke-dasharray="3 4" stroke-width="0.8"/>
+              </svg>
+              <div class="slide-meta">
+                <p class="slide-tag">Office</p>
+                <h3 class="slide-title">Clean Seoul <em>Daily</em></h3>
+                <p class="slide-desc">A restrained daily edit for Korean city hours — light tailoring, fine knit, low‑profile shoes.</p>
+                <div class="slide-actions">
+                  <button class="slide-cta slide-cta-copy" data-look="office" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="8" y="3" width="13" height="13" rx="2"/>
+                      <path d="M16 8H3v13h13V8"/>
+                    </svg>
+                    <span class="slide-cta-label">Copy prompt</span>
+                  </button>
+                  <button class="slide-cta slide-cta-save" data-look="office" type="button">
+                    <svg class="ic-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M6 3h12v18l-6-4-6 4V3z"/>
+                    </svg>
+                    <svg class="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="5" y="10" width="14" height="10" rx="2"/>
+                      <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                    </svg>
+                    <span class="slide-cta-label save-label">Save</span>
+                    <span class="slide-cta-label save-locked">로그인하고 저장</span>
+                  </button>
+                </div>
+              </div>
+              <button class="more-like-btn" data-look="office" type="button">
+                <span>이런 스타일 더</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </button>
+            </div>
+          </article>
+
+          <article class="slide" data-look="date" data-index="1">
+            <div class="slide-bg"></div>
+            <div class="slide-stage">
+              <svg class="garment garment-date" viewBox="0 0 320 420" aria-hidden="true">
+                <!-- Slip dress silhouette -->
+                <path d="M120 80 L 130 64 L 160 60 L 190 64 L 200 80 L 205 150 L 230 280 L 230 410 L 90 410 L 90 280 L 115 150 Z"/>
+                <path d="M130 64 C 144 86 176 86 190 64" stroke-width="1.2" fill="none"/>
+                <path d="M120 200 C 150 220 170 220 200 200" stroke-width="0.9" fill="none"/>
+              </svg>
+              <div class="slide-meta">
+                <p class="slide-tag">Date</p>
+                <h3 class="slide-title">Warm Evening <em>Ease</em></h3>
+                <p class="slide-desc">A soft, feminine line for slow evenings — a silk slip, a low heel, a quiet glow.</p>
+                <div class="slide-actions">
+                  <button class="slide-cta slide-cta-copy" data-look="date" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="8" y="3" width="13" height="13" rx="2"/>
+                      <path d="M16 8H3v13h13V8"/>
+                    </svg>
+                    <span class="slide-cta-label">Copy prompt</span>
+                  </button>
+                  <button class="slide-cta slide-cta-save" data-look="date" type="button">
+                    <svg class="ic-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M6 3h12v18l-6-4-6 4V3z"/>
+                    </svg>
+                    <svg class="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="5" y="10" width="14" height="10" rx="2"/>
+                      <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                    </svg>
+                    <span class="slide-cta-label save-label">Save</span>
+                    <span class="slide-cta-label save-locked">로그인하고 저장</span>
+                  </button>
+                </div>
+              </div>
+              <button class="more-like-btn" data-look="date" type="button">
+                <span>이런 스타일 더</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </button>
+            </div>
+          </article>
+
+          <article class="slide" data-look="sport" data-index="2">
+            <div class="slide-bg"></div>
+            <div class="slide-stage">
+              <svg class="garment garment-sport" viewBox="0 0 320 420" aria-hidden="true">
+                <!-- Athletic top + shorts silhouette -->
+                <path d="M86 100 C 110 86 140 78 160 78 C 180 78 210 86 234 100 L 252 130 L 246 220 L 218 220 L 218 200 L 102 200 L 102 220 L 74 220 L 68 130 Z"/>
+                <path d="M108 230 L 108 380 L 152 380 L 156 240 L 164 240 L 168 380 L 212 380 L 212 230 Z"/>
+                <line x1="160" y1="80" x2="160" y2="200" stroke-dasharray="3 4" stroke-width="0.8"/>
+              </svg>
+              <div class="slide-meta">
+                <p class="slide-tag">Sport</p>
+                <h3 class="slide-title">Soft Active <em>Line</em></h3>
+                <p class="slide-desc">A breathable layer for riverside hours — soft knit, easy short, low cushioned shoe.</p>
+                <div class="slide-actions">
+                  <button class="slide-cta slide-cta-copy" data-look="sport" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="8" y="3" width="13" height="13" rx="2"/>
+                      <path d="M16 8H3v13h13V8"/>
+                    </svg>
+                    <span class="slide-cta-label">Copy prompt</span>
+                  </button>
+                  <button class="slide-cta slide-cta-save" data-look="sport" type="button">
+                    <svg class="ic-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M6 3h12v18l-6-4-6 4V3z"/>
+                    </svg>
+                    <svg class="ic-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="5" y="10" width="14" height="10" rx="2"/>
+                      <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                    </svg>
+                    <span class="slide-cta-label save-label">Save</span>
+                    <span class="slide-cta-label save-locked">로그인하고 저장</span>
+                  </button>
+                </div>
+              </div>
+              <button class="more-like-btn" data-look="sport" type="button">
+                <span>이런 스타일 더</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <div class="carousel-nav" aria-label="Carousel navigation">
+          <button class="nav-btn nav-prev" id="carouselPrev" aria-label="Previous look">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
+          </button>
+          <span class="nav-pagination" id="carouselPagination">01 / 03</span>
+          <button class="nav-btn nav-next" id="carouselNext" aria-label="Next look">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+
+        <button class="copy-prompt-btn" id="btnViewProductsTop" type="button">
+          <span id="viewProductsText">View products</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
+        </button>
+      </section>
+
+      <!-- v0.5: 기존 example chips → 결과 화면의 정제 칩(refinement chips)으로 전환.
+           ADR-009: silent filter 아님. 클릭 시 runQuery()가 새 turn으로 재생성됨. -->
+      <div class="chips" id="chips" aria-label="Refine results">
+        <button class="chip refine-chip" data-refine="더 캐주얼하게">더 캐주얼하게</button>
+        <button class="chip refine-chip" data-refine="더 포멀하게">더 포멀하게</button>
+        <button class="chip refine-chip" data-refine="색 변경">색 변경</button>
+        <button class="chip refine-chip" data-refine="가격대 ↓">가격대 ↓</button>
+        <button class="chip refine-chip" data-refine="다른 무드">다른 무드</button>
+      </div>
+
+      <div class="loading-pill" id="loadingPill">
+        <span class="spinner"></span>
+        <span id="loadingText">Understanding the occasion</span>
+      </div>
+
+      <div class="dock" id="dock">
+        <button class="dock-btn" type="button" aria-label="Add context">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
+        <input class="dock-input" id="dockInput" type="text" placeholder="Tell I.F where you are going, and how you want to feel." autocomplete="off" />
+        <button class="dock-btn" id="dockSend" type="button" aria-label="Generate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+        </button>
+      </div>
+    </section>
+
+        <aside class="menu-tray" id="menuTray" aria-hidden="true">
+      <p>Menu</p>
+      <button class="menu-action" id="btnMenuExplore" type="button"><span>Explore</span><span>01</span></button>
+      <button class="menu-action" id="btnMenuHistory" type="button"><span>Recent prompts</span><span>02</span></button>
+      <button class="menu-action" id="btnMenuWishlist" type="button"><span>Saved Looks</span><span>03</span></button>
+      <button class="menu-action" id="btnNewPromptTop" type="button"><span>New Prompt</span><span>04</span></button>
+      <!-- v0.5: Demo 토글 — 디자인 확인용 로그인 상태 스위치. 부트스트랩 단계에서 제거 예정. -->
+      <button class="menu-demo-toggle" id="btnDemoLogin" type="button">
+        <span class="demo-label">Demo · 로그인 토글</span>
+        <span class="demo-state" id="demoState">Off</span>
+      </button>
+    </aside>
+
+    <div class="toast" id="toast" aria-live="polite">Login coming soon</div>
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="bag-bg" id="bagBg"></div>
+
+    <aside class="drawer drawer-history" id="drawerHistory" aria-hidden="true">
+      <button class="drawer-close" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19" /></svg>
+      </button>
+      <div class="history-list" id="historyList"></div>
+      <div class="drawer-actions" id="historyActions">
+        <button class="btn-pill" id="btnClearAll">Clear all</button>
+        <button class="btn-pill primary" id="btnNewPrompt">Start a new prompt</button>
+      </div>
+    </aside>
+
+    <!-- v0.5: 기존 drawer-wishlist 제거됨 → history-page 비로그인 게이트로 흡수 -->
+
+    <aside class="drawer drawer-bag" id="drawerBag" aria-hidden="true">
+      <button class="drawer-close dark" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19" /></svg>
+      </button>
+      <div class="drawer-bag-inner" id="drawerBagInner">
+        <p class="panel-label" id="bagLookLabel">Selected Look</p>
+        <h3 class="bag-title" id="bagTitle">Office · Clean Seoul Daily</h3>
+        <p class="bag-copy" id="bagCopy">A restrained daily edit for Korean city life: light outerwear, structured knit, relaxed trouser, and low‑profile shoes.</p>
+        <div class="product-list" id="bagProductList"></div>
+        <button class="panel-cta" type="button">Buy Full Look</button>
+      </div>
+    </aside>
+
+    <div class="modal-overlay" id="modalDelete" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h4>Delete all sessions?</h4>
+        <p>By proceeding, you will delete all prompt history in this prototype.</p>
+        <div class="modal-buttons">
+          <button class="btn-pill" id="modalCancel">Cancel</button>
+          <button class="btn-pill primary" id="modalConfirm">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const $ = (selector) => document.querySelector(selector);
+        const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+        const scenes = $$(".scene");
+        const topbar = $("#appTopbar");
+        const dock = $("#dock");
+        const dockInput = $("#dockInput");
+        const loadingPill = $("#loadingPill");
+        const loadingText = $("#loadingText");
+        const loadingTitle = $("#loadingTitle");
+        const chips = $("#chips");
+        const drawerOverlay = $("#drawerOverlay");
+        const bagBg = $("#bagBg");
+        const historyList = $("#historyList");
+        const historyActions = $("#historyActions");
+        const modalDelete = $("#modalDelete");
+        const studio = $("#studio");
+        const menuTray = $("#menuTray");
+        const toast = $("#toast");
+        const body = document.body;
+        let toastTimer = null;
+
+        const drawers = {
+          history: $("#drawerHistory"),
+          // wishlist 드로어 폐기 → history-page overlay로 이동 (v0.5)
+          bag: $("#drawerBag"),
+        };
+
+        let busy = false;
+        let activeDrawer = null;
+        let menuOpen = false;
+        let history = [
+          { text: "Minimal office look for a warm spring morning", at: Date.now() - 1000 * 60 * 24 },
+          { text: "Date look for a quiet evening near Hannam", at: Date.now() - 1000 * 60 * 110 },
+          { text: "Riverside running look after work", at: Date.now() - 1000 * 60 * 240 },
+        ];
+
+        const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+        if (window.location.hash) {
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        }
+
+        function setMode(mode) {
+          // cream(로딩), results(캐러설), explore(라이트 페이퍼) 모두 어두운 토픽바 톤
+          const dark = (mode === "cream" || mode === "results" || mode === "explore");
+          topbar.classList.toggle("dark", dark);
+          dock.classList.toggle("cream", mode === "cream" || mode === "explore");
+          dock.classList.toggle("dim", mode === "results");
+        }
+
+        // v0.5: 4-tier page routing (landing / studio / auth / history).
+        // landing ↔ studio는 기존 atelier-ready 상태 머신을 그대로 쓰고,
+        // auth/history는 overlay로 현재 화면 위에 올린다.
+        function showPage(name) {
+          body.dataset.page = name;
+          if (name === "landing") {
+            body.classList.remove("atelier-ready");
+            closeMenu();
+            closeDrawer();
+          } else if (name === "studio") {
+            // enterAtelier가 atelier-ready + scene을 같이 처리
+            closeMenu();
+            closeDrawer();
+          } else if (name === "auth" || name === "history") {
+            closeMenu();
+            closeDrawer();
+          }
+        }
+
+        // v0.5: 로그인 상태 토글 (mock). Save·history-page·menu Demo 토글이 함께 본다.
+        function setLoggedIn(flag) {
+          body.classList.toggle("is-logged-in", !!flag);
+        }
+
+        // v0.5: Explore 큐레이션 데이터 (12 mock looks). 백엔드 연동 전 시각 명세용.
+        // 각 항목: {look, tone, prompt, caption}. look ∈ office|date|sport.
+        const EXPLORE_LOOKS = [
+          { look: "office", tone: "a", prompt: "Clean Seoul daily, light tailoring under 300k", caption: "Clean Seoul Daily" },
+          { look: "date",   tone: "a", prompt: "Warm evening date, silk slip and a low heel",   caption: "Warm Evening Ease" },
+          { look: "sport",  tone: "a", prompt: "Riverside running, breathable knit and shorts", caption: "Soft Active Line" },
+          { look: "office", tone: "b", prompt: "Spring office, fine knit and trouser, low key", caption: "Fine Knit Hours" },
+          { look: "date",   tone: "b", prompt: "봄 데이트룩, 한강 산책 무드",                     caption: "Hangang Stroll" },
+          { look: "sport",  tone: "b", prompt: "주말 요가 후 카페, 편안한 레이어드",             caption: "Easy Layered" },
+          { look: "office", tone: "c", prompt: "환절기 출근룩, 가볍게 레이어드",                 caption: "Shoulder Season" },
+          { look: "date",   tone: "c", prompt: "비 오는 날 저녁 데이트, 어두운 톤",              caption: "Rainy Evening" },
+          { look: "sport",  tone: "c", prompt: "한강 피크닉룩, 편안하지만 단정하게",             caption: "Hangang Picnic" },
+          { look: "office", tone: "d", prompt: "주말 카페룩, 미니멀 캐주얼",                     caption: "Weekend Cafe" },
+          { look: "date",   tone: "d", prompt: "여름 저녁 약속, 가벼운 슬립",                    caption: "Summer Slip" },
+          { look: "sport",  tone: "d", prompt: "비 오는 날 데일리룩, 어두운 톤",                 caption: "Rainy Daily" },
+        ];
+
+        // 룩별 가먼트 SVG path 데이터 (v0.4.1 carousel SVG에서 추출)
+        const GARMENT_SVG = {
+          office: '<svg class="explore-card-svg" viewBox="0 0 320 420" aria-hidden="true"><path d="M88 86 C 110 72 130 64 160 64 C 190 64 210 72 232 86 L 260 120 L 254 320 C 254 360 250 392 240 408 L 200 408 L 196 270 L 188 408 L 132 408 L 124 270 L 120 408 L 80 408 C 70 392 66 360 66 320 L 60 120 Z"/><path d="M160 64 L 152 110 L 132 152 M160 64 L 168 110 L 188 152" stroke-width="1.4" fill="none"/><line x1="160" y1="108" x2="160" y2="408" stroke-dasharray="3 4" stroke-width="0.8"/></svg>',
+          date:   '<svg class="explore-card-svg" viewBox="0 0 320 420" aria-hidden="true"><path d="M120 80 L 130 64 L 160 60 L 190 64 L 200 80 L 205 150 L 230 280 L 230 410 L 90 410 L 90 280 L 115 150 Z"/><path d="M130 64 C 144 86 176 86 190 64" stroke-width="1.2" fill="none"/><path d="M120 200 C 150 220 170 220 200 200" stroke-width="0.9" fill="none"/></svg>',
+          sport:  '<svg class="explore-card-svg" viewBox="0 0 320 420" aria-hidden="true"><path d="M86 100 C 110 86 140 78 160 78 C 180 78 210 86 234 100 L 252 130 L 246 220 L 218 220 L 218 200 L 102 200 L 102 220 L 74 220 L 68 130 Z"/><path d="M108 230 L 108 380 L 152 380 L 156 240 L 164 240 L 168 380 L 212 380 L 212 230 Z"/><line x1="160" y1="80" x2="160" y2="200" stroke-dasharray="3 4" stroke-width="0.8"/></svg>',
+        };
+
+        // v0.5: 저장 룩 6개 mock + 비로그인 게이트 sample 3개
+        let savedLooks = [
+          { look: "date",   tone: "b", prompt: "봄 데이트룩, 한강 산책 무드",            ago: 2 },
+          { look: "office", tone: "a", prompt: "Clean Seoul daily, light tailoring",     ago: 5 },
+          { look: "sport",  tone: "c", prompt: "한강 피크닉룩, 편안하지만 단정하게",     ago: 9 },
+          { look: "date",   tone: "c", prompt: "비 오는 날 저녁 데이트, 어두운 톤",      ago: 14 },
+          { look: "office", tone: "c", prompt: "환절기 출근룩, 가볍게 레이어드",         ago: 21 },
+          { look: "sport",  tone: "a", prompt: "Riverside running after work",           ago: 32 },
+        ];
+
+        function daysAgoLabel(n) {
+          if (n === 0) return "Today";
+          if (n === 1) return "Yesterday";
+          if (n < 30) return `${n} days ago`;
+          return `${Math.floor(n / 30)}mo ago`;
+        }
+
+        function renderSavedGrid() {
+          const grid = $("#savedGrid");
+          if (!grid) return;
+          $("#historyTitle").textContent = `Saved Looks (${savedLooks.length})`;
+          if (!savedLooks.length) {
+            grid.innerHTML = `
+              <div style="grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: var(--muted);">
+                <p class="empty-line">Your saved atelier is empty.</p>
+              </div>
+            `;
+            return;
+          }
+          grid.innerHTML = savedLooks.map((item, idx) => `
+            <button class="saved-card explore-card tone-${item.look}-${item.tone}" type="button" data-idx="${idx}" data-prompt="${escapeHtml(item.prompt)}" aria-label="${escapeHtml(item.prompt)}">
+              <div class="explore-card-bg"></div>
+              ${GARMENT_SVG[item.look]}
+              <span class="trash" data-trash="${idx}" aria-label="Remove">
+                <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></svg>
+              </span>
+              <div class="saved-card-meta">
+                <span class="prompt">${escapeHtml(item.prompt)}</span>
+                <span class="date">${daysAgoLabel(item.ago)}</span>
+              </div>
+            </button>
+          `).join("");
+          grid.querySelectorAll(".saved-card").forEach((card) => {
+            card.addEventListener("click", (event) => {
+              const trash = event.target.closest("[data-trash]");
+              if (trash) {
+                event.stopPropagation();
+                const idx = Number(trash.dataset.trash);
+                savedLooks.splice(idx, 1);
+                renderSavedGrid();
+                return;
+              }
+              const prompt = card.dataset.prompt;
+              showPage("studio");
+              if (!body.classList.contains("atelier-ready")) {
+                enterAtelier({ focus: false });
+                window.setTimeout(() => { dockInput.value = prompt; runQuery(prompt); }, 320);
+              } else {
+                dockInput.value = prompt;
+                runQuery(prompt);
+              }
+            });
+          });
+        }
+
+        function renderGatePreview() {
+          const preview = $("#gatePreview");
+          if (!preview) return;
+          const sample = EXPLORE_LOOKS.slice(0, 3);
+          preview.innerHTML = sample.map((item) => `
+            <div class="explore-card tone-${item.look}-${item.tone}">
+              <div class="explore-card-bg"></div>
+              ${GARMENT_SVG[item.look]}
+            </div>
+          `).join("");
+        }
+
+        function renderExploreGrid() {
+          const grid = $("#exploreGrid");
+          if (!grid) return;
+          grid.innerHTML = EXPLORE_LOOKS.map((item) => `
+            <button class="explore-card tone-${item.look}-${item.tone}" type="button" data-prompt="${escapeHtml(item.prompt)}" aria-label="${escapeHtml(item.caption)}">
+              <div class="explore-card-bg"></div>
+              ${GARMENT_SVG[item.look]}
+              <p class="explore-card-tag">${item.look}</p>
+              <p class="explore-card-prompt">${escapeHtml(item.caption)}</p>
+            </button>
+          `).join("");
+          grid.querySelectorAll(".explore-card").forEach((card) => {
+            card.addEventListener("click", () => {
+              const prompt = card.dataset.prompt;
+              dockInput.value = prompt;
+              runQuery(prompt);
+            });
+          });
+        }
+
+        function showScene(name) {
+          scenes.forEach((scene) => {
+            if (scene.dataset.scene === name) {
+              scene.classList.remove("active");
+              void scene.offsetWidth;
+              scene.classList.add("active");
+            } else {
+              scene.classList.remove("active");
+            }
+          });
+
+          // v0.5: body[data-scene]도 함께 셋. .dock·.refine-chips 등 scene별 가시성 제어.
+          document.body.dataset.scene = name;
+
+          if (name !== "results") document.body.classList.remove("results-on", "look-office", "look-date", "look-sport");
+          if (name === "explore") setMode("explore");
+          if (name === "loading") setMode("cream");
+          if (name === "results") setMode("results");
+        }
+
+        function enterAtelier({ focus = true } = {}) {
+          body.dataset.page = "studio";
+          body.classList.add("atelier-ready");
+          body.classList.remove("results-on", "look-office", "look-date", "look-sport");
+          closeMenu();
+          closeDrawer();
+          chips.classList.remove("hide");
+          hideLoading();
+          studio.classList.remove("process-running");
+          // v0.5: intro 신 제거 → explore가 첫 화면
+          showScene("explore");
+          if (focus) {
+            // Explore 진입 시 자동 포커스는 끔 (사용자가 그리드/시즌 칩을 먼저 보길 의도)
+          }
+        }
+
+        function returnHome() {
+          if (busy) return;
+          closeMenu();
+          closeDrawer();
+          closeModal();
+          body.dataset.page = "landing";
+          body.classList.remove("atelier-ready");
+          body.classList.remove("results-on", "look-office", "look-date", "look-sport");
+          chips.classList.remove("hide");
+          dockInput.value = "";
+          hideLoading();
+          studio.classList.remove("process-running");
+          showScene("explore");
+        }
+
+        function openMenu() {
+          closeDrawer();
+          menuOpen = true;
+          menuTray.classList.add("open");
+          menuTray.setAttribute("aria-hidden", "false");
+        }
+
+        function closeMenu() {
+          menuOpen = false;
+          menuTray.classList.remove("open");
+          menuTray.setAttribute("aria-hidden", "true");
+        }
+
+        function toggleMenu() {
+          if (menuOpen) closeMenu();
+          else openMenu();
+        }
+
+        function showLoading(text) {
+          loadingText.textContent = text;
+          loadingPill.classList.add("show");
+        }
+
+        function hideLoading() {
+          loadingPill.classList.remove("show");
+        }
+
+        function showToast(message) {
+          toast.textContent = message;
+          toast.classList.add("show");
+          window.clearTimeout(toastTimer);
+          toastTimer = window.setTimeout(() => toast.classList.remove("show"), 1400);
+        }
+
+        function escapeHtml(text) {
+          return text.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+        }
+
+        // v0.5 polish: extractLookKeyword() 제거 — C1 한국어 키워드 삽입 롤백.
+        // 로딩 카피는 v0.4.1 정적 영문(아래 runQuery 내부)으로 회귀.
+
+        async function runQuery(prompt) {
+          if (busy) return;
+          if (!body.classList.contains("atelier-ready")) enterAtelier({ focus: false });
+          busy = true;
+          closeMenu();
+          closeDrawer();
+          studio.classList.add("process-running");
+          chips.classList.add("hide");
+          pushHistory(prompt);
+
+          // v0.5 polish: 한국어 키워드 삽입(C1) 롤백 → v0.4.1 에디토리얼 영문 원복.
+          // 이유: Playfair Display는 영문 전용이라 한국어 fallback 폰트가 자모를 따로
+          // 렌더링해 깨짐 + 짧은 영문 라인이 패션 브랜드 톤에 더 부합.
+          showLoading("Reading daily context");
+          await wait(900);
+
+          showScene("loading");
+          loadingTitle.innerHTML = "Reading the <em>silhouette</em>";
+          showLoading("Reading the silhouette");
+          await wait(2400);
+
+          loadingTitle.innerHTML = "Balancing <em>tex</em>ture";
+          showLoading("Curating Korean daily looks");
+          await wait(1400);
+
+          lastPrompt = prompt;
+          showScene("results");
+          document.body.classList.add("results-on");
+          resetCarousel();
+          hideLoading();
+          studio.classList.remove("process-running");
+          busy = false;
+        }
+
+        function shortPrompt(prompt) {
+          const clean = prompt.trim() || "your day";
+          return clean.length > 24 ? `${clean.slice(0, 24)}...` : clean;
+        }
+
+        function pushHistory(text) {
+          history.unshift({ text, at: Date.now() });
+          history = history.slice(0, 12);
+        }
+
+        function formatTime(timestamp) {
+          const date = new Date(timestamp);
+          const dd = String(date.getDate()).padStart(2, "0");
+          const mm = String(date.getMonth() + 1).padStart(2, "0");
+          const yy = String(date.getFullYear()).slice(-2);
+          const hh = String(date.getHours()).padStart(2, "0");
+          const mn = String(date.getMinutes()).padStart(2, "0");
+          return `${dd}.${mm}.${yy} | ${hh}:${mn}`;
+        }
+
+        function renderHistory() {
+          historyList.innerHTML = "";
+          if (!history.length) {
+            historyList.className = "drawer-empty";
+            historyActions.style.display = "none";
+            historyList.innerHTML = `
+              <div>
+                <p class="empty-line">Your history is empty</p>
+                <h3 class="drawer-quote">A clear day begins where <em>intention</em> meets form.</h3>
+                <button class="btn-pill primary" id="emptyStart">Start a prompt</button>
+              </div>
+            `;
+            $("#emptyStart").addEventListener("click", () => {
+              closeDrawer();
+              dockInput.focus();
+            });
+            return;
+          }
+
+          historyList.className = "history-list";
+          historyActions.style.display = "flex";
+          history.forEach((item, index) => {
+            const row = document.createElement("div");
+            row.className = "history-row";
+            row.innerHTML = `
+              <div class="text">${escapeHtml(item.text)}</div>
+              <div class="ts">${formatTime(item.at)}</div>
+              <button class="trash" aria-label="Delete">×</button>
+            `;
+            row.addEventListener("click", (event) => {
+              if (event.target.closest(".trash")) {
+                history.splice(index, 1);
+                renderHistory();
+                return;
+              }
+              closeDrawer();
+              dockInput.value = item.text;
+              runQuery(item.text);
+            });
+            historyList.appendChild(row);
+          });
+        }
+
+        function openDrawer(name) {
+          closeMenu();
+          closeDrawer();
+          activeDrawer = name;
+          drawers[name].classList.add("open");
+          drawers[name].setAttribute("aria-hidden", "false");
+          drawerOverlay.classList.add("open");
+          if (name === "bag") bagBg.classList.add("show");
+        }
+
+        function closeDrawer() {
+          if (!activeDrawer) return;
+          drawers[activeDrawer].classList.remove("open");
+          drawers[activeDrawer].setAttribute("aria-hidden", "true");
+          drawerOverlay.classList.remove("open");
+          bagBg.classList.remove("show");
+          activeDrawer = null;
+        }
+
+        function openModal() {
+          modalDelete.classList.add("open");
+          modalDelete.setAttribute("aria-hidden", "false");
+        }
+
+        function closeModal() {
+          modalDelete.classList.remove("open");
+          modalDelete.setAttribute("aria-hidden", "true");
+        }
+
+        let lastPrompt = "";
+        let currentSlide = 0;
+        const carousel = $("#carousel");
+        const slides = carousel ? Array.from(carousel.querySelectorAll(".slide")) : [];
+        const carouselPagination = $("#carouselPagination");
+        const carouselPrev = $("#carouselPrev");
+        const carouselNext = $("#carouselNext");
+        const btnCopyPrompt = null; /* deprecated — replaced by btnViewProductsTop above */
+        const copyPromptText = null; /* deprecated */
+
+        const lookProducts = {
+          office: {
+            title: "Office · Clean Seoul Daily",
+            copy: "A restrained daily edit for Korean city life: light outerwear, structured knit, relaxed trouser, and low-profile shoes.",
+            items: [
+              { cat: "Outer",  name: "Light tailored jacket",     price: "₩129,000" },
+              { cat: "Top",    name: "Fine rib knit",             price: "₩49,000" },
+              { cat: "Bottom", name: "Relaxed straight trouser",  price: "₩79,000" },
+              { cat: "Shoes",  name: "Minimal leather sneaker",   price: "₩89,000" },
+            ],
+          },
+          date: {
+            title: "Date · Warm Evening Ease",
+            copy: "A soft, feminine line for slow evenings — a silk slip, a sheer cardigan, and a low heel that warms the walk.",
+            items: [
+              { cat: "Dress",  name: "Silk slip midi",            price: "₩159,000" },
+              { cat: "Outer",  name: "Sheer cardigan",            price: "₩78,000" },
+              { cat: "Shoes",  name: "Low strap heel",            price: "₩98,000" },
+              { cat: "Bag",    name: "Soft leather pouch",        price: "₩119,000" },
+            ],
+          },
+          sport: {
+            title: "Sport · Soft Active Line",
+            copy: "A breathable layer for riverside hours — soft knit, easy short, low cushioned shoe.",
+            items: [
+              { cat: "Top",    name: "Breathable mesh tee",       price: "₩42,000" },
+              { cat: "Bottom", name: "Easy training short",       price: "₩52,000" },
+              { cat: "Outer",  name: "Featherweight running shell", price: "₩148,000" },
+              { cat: "Shoes",  name: "Cushioned trail runner",    price: "₩168,000" },
+            ],
+          },
+        };
+
+        function updateCarousel(nextIdx) {
+          if (!slides.length) return;
+          currentSlide = ((nextIdx % slides.length) + slides.length) % slides.length;
+          slides.forEach((slide, i) => {
+            slide.classList.toggle("active", i === currentSlide);
+          });
+          if (carouselPagination) {
+            carouselPagination.textContent = `${String(currentSlide + 1).padStart(2, "0")} / 03`;
+          }
+          // body에 현재 룩 클래스 토글 (light 슬라이드 시 UI 톤 반전)
+          const cur = slides[currentSlide];
+          const look = cur && cur.dataset.look;
+          ["office","date","sport"].forEach(k => document.body.classList.toggle(`look-${k}`, k === look));
+        }
+        function nextSlide() { updateCarousel(currentSlide + 1); }
+        function prevSlide() { updateCarousel(currentSlide - 1); }
+        function resetCarousel() { updateCarousel(0); }
+
+        if (carouselNext) carouselNext.addEventListener("click", nextSlide);
+        if (carouselPrev) carouselPrev.addEventListener("click", prevSlide);
+
+        // Top-right: View products → open bag drawer with current look's products
+        const btnViewProductsTop = $("#btnViewProductsTop");
+        if (btnViewProductsTop) {
+          btnViewProductsTop.addEventListener("click", () => {
+            const cur = slides[currentSlide];
+            const look = (cur && cur.dataset.look) || "office";
+            populateBagDrawer(look);
+            openDrawer("bag");
+          });
+        }
+
+        function populateBagDrawer(look) {
+          const data = lookProducts[look] || lookProducts.office;
+          const bagTitle = $("#bagTitle");
+          const bagCopy = $("#bagCopy");
+          const bagList = $("#bagProductList");
+          if (bagTitle) bagTitle.textContent = data.title;
+          if (bagCopy) bagCopy.textContent = data.copy;
+          if (bagList) {
+            // v0.5: 각 상품 행에 More Like This 버튼 추가 (mini-action #3)
+            bagList.innerHTML = data.items.map((it) => `
+              <div class="product-item">
+                <div><b>${escapeHtml(it.cat)}</b><span>${escapeHtml(it.name)}</span></div>
+                <div style="display:inline-flex;align-items:center;gap:6px;">
+                  <small>${escapeHtml(it.price)}</small>
+                  <button class="product-more" type="button" data-more-product="${escapeHtml(it.name)}" aria-label="More like this">
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            `).join("");
+            bagList.querySelectorAll("[data-more-product]").forEach((btn) => {
+              btn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                showToast(`Generating 3 variations of ${btn.dataset.moreProduct}...`);
+              });
+            });
+          }
+        }
+
+        // Inline slide-cta: now Copy prompt
+        async function copyCurrentPrompt(targetLabel) {
+          const text = (lastPrompt || dockInput.value || "").trim();
+          if (!text) { showToast("No prompt to copy"); return; }
+          try {
+            await navigator.clipboard.writeText(text);
+            if (targetLabel) {
+              const orig = targetLabel.textContent;
+              targetLabel.textContent = "Copied";
+              setTimeout(() => { targetLabel.textContent = orig; }, 1600);
+            }
+            showToast("Prompt copied");
+          } catch (err) {
+            showToast("Copy failed");
+          }
+        }
+        // Copy prompt: 기존 .slide-cta → v0.5에서 .slide-cta-copy로 한정
+        $$(".slide-cta-copy").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const label = e.currentTarget.querySelector(".slide-cta-label");
+            copyCurrentPrompt(label);
+          });
+        });
+
+        // v0.5 [C2]: Save 버튼 — 비로그인=auth로, 로그인=toast + savedLooks 추가
+        $$(".slide-cta-save").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (!body.classList.contains("is-logged-in")) {
+              showPage("auth");
+              return;
+            }
+            const look = btn.dataset.look || "office";
+            const prompt = (lastPrompt || dockInput.value || "오늘의 룩").trim();
+            savedLooks.unshift({
+              look,
+              tone: "a",
+              prompt: prompt.length > 60 ? prompt.slice(0, 60) + "…" : prompt,
+              ago: 0,
+            });
+            showToast("Saved to your atelier");
+          });
+        });
+
+        // v0.5 [C3]: More Like This — toast + carousel mock 재생성
+        $$(".more-like-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            if (busy) return;
+            const look = btn.dataset.look || "office";
+            showToast(`Generating 3 variations of ${look}...`);
+            // mock: 1초 후 carousel reset (실제 API에선 새 룩 3개로 갱신)
+            await wait(900);
+            resetCarousel();
+          });
+        });
+
+        // v0.5 [C4]: 정제 칩 — runQuery에 라벨을 붙여 새 turn 처리. silent filter 아님.
+        $$(".refine-chip").forEach((chip) => {
+          chip.addEventListener("click", () => {
+            const refine = chip.dataset.refine || "";
+            const base = (lastPrompt || dockInput.value || "오늘의 룩").trim();
+            const next = `${base} — ${refine}`;
+            dockInput.value = next;
+            runQuery(next);
+          });
+        });
+
+        // Arrow keys on results
+        document.addEventListener("keydown", (e) => {
+          if (!document.body.classList.contains("results-on")) return;
+          if (activeDrawer || menuOpen) return;
+          if (e.key === "ArrowRight") nextSlide();
+          if (e.key === "ArrowLeft")  prevSlide();
+        });
+
+        
+        // v0.5: 로그인 모달 → auth-screen 풀스크린으로 승격.
+        // 기존 함수 이름(openLoginModal/closeLoginModal)은 그대로 두되 동작만 교체.
+        function openLoginModal() { showPage("auth"); }
+        function closeLoginModal() {
+          // 돌아갈 곳: 이미 atelier 진입한 상태면 studio, 아니면 landing
+          if (body.classList.contains("atelier-ready")) showPage("studio");
+          else showPage("landing");
+        }
+        $("#authClose")?.addEventListener("click", closeLoginModal);
+
+        // 소셜 로그인 (mock): 상태 토글 + toast + studio Explore 진입
+        $$(".social-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            setLoggedIn(true);
+            showToast(`Signed in via ${btn.dataset.provider} (demo)`);
+            if (!body.classList.contains("atelier-ready")) {
+              enterAtelier({ focus: false });
+            } else {
+              showPage("studio");
+            }
+          });
+        });
+
+        $("#dockSend").addEventListener("click", () => runQuery(dockInput.value || "office, date, sport looks for my day"));
+        dockInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") runQuery(dockInput.value || "office, date, sport looks for my day");
+        });
+
+        // v0.5: Explore sticky search — 동일 runQuery 흐름
+        const exploreInput = $("#exploreInput");
+        const exploreSend = $("#exploreSend");
+        if (exploreInput && exploreSend) {
+          const submitExplore = () => {
+            const value = exploreInput.value.trim();
+            if (!value) return;
+            dockInput.value = value;
+            runQuery(value);
+          };
+          exploreSend.addEventListener("click", submitExplore);
+          exploreInput.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") submitExplore();
+          });
+        }
+
+        // v0.5: refine-chip은 별도 핸들러(아래)에서 처리. 여기선 data-prompt 가진 칩만.
+        $$(".chip[data-prompt]").forEach((chip) => {
+          chip.addEventListener("click", () => {
+            dockInput.value = chip.dataset.prompt;
+            runQuery(chip.dataset.prompt);
+          });
+        });
+
+        // v0.5: Explore 큐레이션 그리드 초기 렌더 + 카드 클릭 바인딩 (renderExploreGrid 내부에서 처리)
+        renderExploreGrid();
+
+        $("#btnLandingMenu").addEventListener("click", toggleMenu);
+        $("#btnLandingHome").addEventListener("click", returnHome);
+        $("#btnLandingLogin").addEventListener("click", openLoginModal);
+        $("#btnGetStarted").addEventListener("click", () => enterAtelier());
+        $("#btnStudioHome").addEventListener("click", returnHome);
+        $("#btnMenu").addEventListener("click", toggleMenu);
+        $(".account-link").addEventListener("click", openLoginModal);
+        $("#btnNewPromptTop").addEventListener("click", () => {
+          body.classList.add("atelier-ready");
+          closeMenu();
+          window.setTimeout(() => dockInput.focus(), 120);
+        });
+        // v0.5: Explore 메뉴 → studio 진입 후 explore scene으로 직진
+        $("#btnMenuExplore")?.addEventListener("click", () => {
+          closeMenu();
+          if (!body.classList.contains("atelier-ready")) {
+            enterAtelier({ focus: false });
+          } else {
+            showPage("studio");
+            showScene("explore");
+          }
+        });
+        // v0.5: Demo · 로그인 토글 — 디자인 확인용 (부트스트랩 단계에서 제거)
+        $("#btnDemoLogin")?.addEventListener("click", () => {
+          const next = !body.classList.contains("is-logged-in");
+          setLoggedIn(next);
+          const stateEl = $("#demoState");
+          if (stateEl) stateEl.textContent = next ? "On" : "Off";
+          showToast(next ? "Demo: signed in" : "Demo: signed out");
+        });
+        $("#btnMenuHistory").addEventListener("click", () => {
+          renderHistory();
+          openDrawer("history");
+        });
+        // v0.5: Saved Looks → 풀스크린 history-page로 라우팅 (드로어 폐기)
+        $("#btnMenuWishlist").addEventListener("click", () => {
+          closeMenu();
+          renderSavedGrid();
+          renderGatePreview();
+          showPage("history");
+        });
+        $("#historyBack")?.addEventListener("click", () => {
+          if (body.classList.contains("atelier-ready")) showPage("studio");
+          else showPage("landing");
+        });
+        $("#gateSignIn")?.addEventListener("click", () => showPage("auth"));
+        $("#btnBag").addEventListener("click", () => openDrawer("bag"));
+        $("#btnClearAll").addEventListener("click", openModal);
+        $("#btnNewPrompt").addEventListener("click", () => {
+          closeDrawer();
+          enterAtelier();
+        });
+        $("#modalCancel").addEventListener("click", closeModal);
+        $("#modalConfirm").addEventListener("click", () => {
+          history = [];
+          renderHistory();
+          closeModal();
+        });
+
+        drawerOverlay.addEventListener("click", closeDrawer);
+        bagBg.addEventListener("click", closeDrawer);
+        modalDelete.addEventListener("click", (event) => {
+          if (event.target === modalDelete) closeModal();
+        });
+        $$("[data-close]").forEach((button) => button.addEventListener("click", closeDrawer));
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            closeMenu();
+            closeModal();
+            closeLoginModal();
+            closeDrawer();
+          }
+        });
+        document.addEventListener("click", (event) => {
+          if (!menuOpen) return;
+          if (
+            event.target.closest("#menuTray") ||
+            event.target.closest("#btnMenu") ||
+            event.target.closest("#btnLandingMenu")
+          ) return;
+          closeMenu();
+        });
+
+        // v0.5 fix: html/body가 overflow:hidden이라 스크롤은 .scene.active 내부에서만
+        // 동작. topbar·menu-tray·여백 등 scene 바깥의 모든 영역에서 휠을 활성 scene
+        // 으로 forwarding. drawer·auth·history overlay와 scene 내부 native 스크롤은
+        // 그대로 두고, 그 밖의 영역만 인터셉트.
+        function forwardWheelToActiveScene(event) {
+          // overlay 내부는 자체 overflow:auto가 있으니 native 처리
+          if (event.target.closest(".drawer, .auth-screen, .history-page, .modal-overlay")) return;
+          const active = document.querySelector(".scene.active");
+          if (!active) return;
+          // 활성 scene 내부의 휠은 native (scene 자체 overflow:auto 사용)
+          if (active.contains(event.target)) return;
+          if (active.scrollHeight <= active.clientHeight) return;
+          active.scrollTop += event.deltaY;
+          event.preventDefault();
+        }
+        // body 레벨 catch-all: scene 바깥 어디서든 휠 잡히면 forward
+        document.body.addEventListener("wheel", forwardWheelToActiveScene, { passive: false });
+      })();
+    </script>
+
+    <!-- v0.5: 기존 #modalLogin 제거됨 → auth-screen overlay로 승격 -->
+  </body>
+</html>
