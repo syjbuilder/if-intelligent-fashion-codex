@@ -44,6 +44,9 @@ venv/
 # Specific large assets
 기획/서비스 개발 전체 과정.png
 
+# 레퍼런스 mp4에서 추출한 프레임/분석 결과물 (원본 mp4가 gitignore되므로 산출물도 제외)
+디자인/레퍼런스/_analysis_*/
+
 # Per-user Claude settings (개인별 권한·실행 모드)
 .claude/settings.local.json
 
