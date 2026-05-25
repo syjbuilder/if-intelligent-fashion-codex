@@ -1,0 +1,13 @@
+# sync 짝꿍 매핑 (sync-warn.sh가 읽는다)
+# 형식: 영문정본<TAB>한국어원본
+# DOC_MAP.md §2 거울 표와 동일. 변경 시 두 곳 모두 갱신.
+# '#'로 시작하는 줄과 빈 줄은 무시된다.
+
+docs/PRD.md	기획/I.F V0 PRD.md
+docs/ARCHITECTURE.md	기술/I.F V0 TRD.md
+docs/ADR.md	기획/I.F V0 PRD.md
+docs/ADR.md	기술/I.F V0 TRD.md
+docs/DATA_MODEL.md	기술/I.F V0 TRD.md
+docs/API_CONTRACTS.md	기술/I.F V0 TRD.md
+docs/AI_PIPELINE.md	기획/If discovery summary.md
+docs/UI_GUIDE.md	디자인/I.F 디자인 계획 v0.0.md

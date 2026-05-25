@@ -47,6 +47,9 @@ venv/
 # 레퍼런스 mp4에서 추출한 프레임/분석 결과물 (원본 mp4가 gitignore되므로 산출물도 제외)
 디자인/레퍼런스/_analysis_*/
 
+# 개인 학습·외부 참고 자산 — git 추적하지 않음 (docs/DOC_MAP.md "제외" 섹션 참조)
+학습/
+
 # Per-user Claude settings (개인별 권한·실행 모드)
 .claude/settings.local.json
 
