@@ -13,30 +13,34 @@
 📦 코덱스/
 ├─ 🔧 제품을 만드는 도구  ─ 에이전트가 "항상 먼저" 보는 곳 (공식 기준)
 │   ├─ docs/             공식 요약 문서
+│   │   ├─ DOC_MAP.md        ← 문서 어디에 뭐 있는지 한 페이지 지도
 │   │   ├─ PRD.md            제품 요구사항 (V0 범위)
 │   │   ├─ ARCHITECTURE.md   기술 구조
 │   │   ├─ ADR.md            기술 결정 기록
 │   │   └─ UI_GUIDE.md       디자인·컴포넌트 규칙
 │   ├─ CLAUDE.md         에이전트 작업 규칙 (CRITICAL 규칙 포함)
 │   ├─ .claude/          Claude Code 설정·훅·스킬
-│   ├─ .githooks/        커밋 전 lint/build/test 강제
+│   ├─ .githooks/        커밋 전 lint/build/test + sync drift 경고
 │   ├─ scripts/          Harness 자동화 (execute.py)
 │   └─ (앞으로) src/      코드
 │
 └─ 📚 원본 자료·시안  ─ "더 자세한 원본이 필요할 때만" 들추는 곳
     ├─ 기획/              I.F V0 PRD 원본, Discovery 요약
     ├─ 기술/              I.F V0 TRD 원본
-    ├─ 디자인/            홈페이지 시안 (v0.0 → v0.6), 광고영상 계획, 레퍼런스
-    ├─ 문서_모두의 창업/  외부 제출용 지원서 (제품 개발과 직접 무관)
-    └─ 바이브 코딩 스터디/ 학습 자료
+    ├─ 디자인/            현행 시안 v0.6, archive/ 이전 시안, 광고영상/, 레퍼런스/
+    ├─ 지원서/            외부 제출용 (모두의창업 등)
+    └─ 학습/              개인 학습 자료 (untracked, git 추적 안 함)
 ```
 
 ## 어디를 보면 되나
 
 **규칙: `docs/`가 공식 기준(single source of truth). 한글 폴더는 원본 보관소.**
 
+> **헷갈리면 [`docs/DOC_MAP.md`](./docs/DOC_MAP.md) 한 페이지를 먼저 본다** — 모든 문서 위치·정본 여부·sync 짝꿍이 표로 정리돼 있다.
+
 | 알고 싶은 것 | 보는 곳 |
 |--------------|---------|
+| 어디에 뭐 있는지 전체 지도 | `docs/DOC_MAP.md` |
 | 무슨 제품인가, V0 범위 | `docs/PRD.md` |
 | 기술 구조 (Next.js, Supabase 등) | `docs/ARCHITECTURE.md` |
 | 왜 그렇게 결정했나 | `docs/ADR.md` |

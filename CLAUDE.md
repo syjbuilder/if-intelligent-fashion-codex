@@ -37,16 +37,12 @@
 
 ## 문서 참조 우선순위
 
-**원칙:** `docs/`가 공식 기준(single source of truth). 한글 폴더(`기획/`, `기술/`, `디자인/`, `문서_모두의 창업/`)는 원본 보관소이며 `docs/`로 부족할 때만 참조한다. 저장소 전반 안내는 [`README.md`](./README.md).
-
-- 운영 가이드 (매 작업 시): `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/ADR.md`, `docs/UI_GUIDE.md`
-- 데이터·API·AI 설계: `docs/DATA_MODEL.md`, `docs/API_CONTRACTS.md`, `docs/AI_PIPELINE.md`
-- 상세 원본 (필요 시): `기획/I.F V0 PRD.md`, `기술/I.F V0 TRD.md`
-- 디자인 문서 역할 분리: `docs/UI_GUIDE.md` = **현행 운영 디자인 스펙(단일 출처)**, `디자인/I.F 디자인 계획 v0.0.md` = 디자인 탐색·의사결정 archive(버전 히스토리 기록용).
-- 최신 디자인 시안: `디자인/if-homepage-v0.6.html` (Landing Long-form, 디자인 기준선)
-- 개발 착수 준비 현황: `개발_전_진행_체크리스트.md`
-- docs/ 변경 시 `기술/I.F V0 TRD.md`도 동시 sync (디퍼 금지). PRD/ADR 변경 시 `기획/I.F V0 PRD.md`도 동시 sync.
-- 디자인 변경 시 `docs/UI_GUIDE.md`를 갱신한다. `디자인/I.F 디자인 계획 v0.0.md`에는 버전 히스토리만 기록하며 운영 값은 UI_GUIDE에만 둔다 (이중 업데이트 금지).
+- CRITICAL: 문서 거버넌스 단일 출처는 [`docs/DOC_MAP.md`](./docs/DOC_MAP.md) — 정본/거울/archive/운영 자산/제외 분류와 sync 짝꿍 매핑이 모두 거기 있다. 문서 추가·이동·삭제 시 DOC_MAP을 같이 갱신한다.
+- 매 작업 시 최소: `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/ADR.md`, `docs/UI_GUIDE.md`.
+- 데이터·API·AI 설계: `docs/DATA_MODEL.md`, `docs/API_CONTRACTS.md`, `docs/AI_PIPELINE.md`.
+- 최신 디자인 시안: `디자인/if-homepage-v0.6.html` (Landing Long-form, 디자인 기준선). 이전 시안은 `디자인/archive/`.
+- 한글 원본은 `기획/`, `기술/`에 그대로 보관. `docs/` ↔ 한글 원본 sync는 `/sync-docs` + pre-commit `sync-warn.sh` 경고로 관리한다 (DOC_MAP §2 거울 표 + `.githooks/sync-pairs.tsv` 참조).
+- 개발 착수 준비 현황: `개발_전_진행_체크리스트.md`.
 
 ## 명령어
 
