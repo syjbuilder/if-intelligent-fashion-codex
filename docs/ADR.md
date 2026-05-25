@@ -72,3 +72,42 @@ MVP 속도 최우선. 외부 의존성 최소화. 한국 시장 로컬화 우선
 - V1에서 사용자 피드백·이탈 데이터를 본 뒤 풀 채팅 도입 여부 재검토. Explore 피드와 mini-action 데이터가 의사결정 기준.
 
 **관련**: PRD §8.4 Mini-Action Pattern, §9.6 Explore Screen, §10.10 Mini-Actions
+
+### ADR-010: 1인 비개발자 commander × AI 에이전트 협업 모델 — 자동 가드 4종 + Harness 워크플로우
+
+**결정**: 사용자는 한국어 자연어로 의도만 전달하고, AI 에이전트(Claude·Codex)가 git·파일 편집·PR 생성을 대신 실행한다. 사고 위험은 PreToolUse·pre-commit 훅 4종이 사전 차단한다:
+
+1. `.claude/hooks/main-branch-guard.sh` — main에서 `git commit`/`git push` 시도 시 Bash 도구 호출 차단
+2. `.claude/hooks/secret-guard.sh` — `.env`/API key/JWT/AWS key/GitHub token/Stripe key/DB URL 패턴이 들어가는 Write/Edit 차단
+3. `.claude/hooks/tdd-guard.sh` — `.ts/.tsx/.js/.jsx` 구현 파일에 대응 테스트가 없으면 Write/Edit 차단
+4. `.githooks/sync-warn.sh` — pre-commit 시 `.githooks/sync-pairs.tsv`의 docs↔한국어 짝꿍 중 한쪽만 staged면 경고 + y/N 프롬프트 (인터랙티브 환경에서만 block, CI 등 non-interactive에서는 경고만)
+
+3 step 이상의 복합 작업(여러 모듈 동시 변경·자동 재시도 필요)은 Harness 워크플로우(`phases/{task}/index.json`, `step{N}.md`, `scripts/execute.py`)로 단계 분해해 실행. 단순 변경은 phase 없이 직접 진행.
+
+**이유**: 사용자는 비개발자라 직접 git/터미널을 치지 않는 워크플로우가 전제. 그러나 "AI가 다 알아서" 모델은 시크릿 유출·main 오염·테스트 누락·문서 drift 같은 사고 위험을 키운다. 가드 4종이 사용자/에이전트를 가리지 않고 같은 라인에서 막아주므로, 사용자는 "커밋해줘"라고만 부탁하면 됨. Harness는 멀티 step 작업에서 컨텍스트 유실·중복 작업·복구 비용을 줄임.
+
+**트레이드오프**:
+- 가드 false-positive 시 일일이 해제 부담 → `xxx`·placeholder·"example"·"TODO" 등 힌트 단어 예외 패턴으로 최소화
+- Harness는 단순 변경엔 과한 절차 → "3 step 이상·여러 모듈·재시도 필요" 기준으로 사용 진입선 둠
+- TDD 가드는 초기 프로토타이핑 단계에서 답답함 → `.claude/settings.local.json.example` 복사로 일시 비활성 가능 (gitignore됨)
+
+**관련**: CLAUDE.md "아키텍처 규칙"·"개발 프로세스" CRITICAL, `.claude/hooks/`, `.githooks/`, `.claude/skills/harness-framework/`, `학습/Claude_훅_슬래시_가이드.md`.
+
+### ADR-011: 문서 거버넌스 — docs/ 영문 정본 + 한국어 원본 이중 유지 + DOC_MAP 단일 지도 + UI_GUIDE 단일 운영 스펙
+
+**결정**:
+- `docs/` 7개(`PRD`, `ARCHITECTURE`, `ADR`, `UI_GUIDE`, `DATA_MODEL`, `API_CONTRACTS`, `AI_PIPELINE`)를 공식 single source of truth로 둔다.
+- 한국어 원본(`기획/I.F V0 PRD.md`, `기술/I.F V0 TRD.md`, `기획/If discovery summary.md`)은 보관소로 함께 유지한다.
+- 모든 문서의 신원(정본/거울/archive/운영자산/제외)과 sync 짝꿍은 [`docs/DOC_MAP.md`](./DOC_MAP.md) 한 페이지에 명시한다.
+- docs↔한국어 짝꿍 매핑은 `.githooks/sync-pairs.tsv`에 데이터로 두고 `sync-warn.sh`(ADR-010 §4)가 drift를 자동 감지한다.
+- 디자인은 `docs/UI_GUIDE.md`가 단일 운영 디자인 스펙이며, `디자인/I.F 디자인 계획 v0.0.md`는 archive(버전 히스토리·의사결정 기록)로 역할 분리한다. 이중 업데이트 금지.
+- 폐기된 시안 버전은 archive로 보내지 않고 삭제, 이전 버전 시안 HTML은 `디자인/archive/`로 분리한다.
+
+**이유**: 한국어로 사고하는 1인 PM의 작성 속도와 영문 docs로 일하는 AI 에이전트·미래 협업자의 검색 속도를 둘 다 살리는 절충안. 둘 중 하나를 버리면 한쪽 비용이 커짐. UI_GUIDE/디자인계획 분리는 ADR-009 v0.6 기준선 확정 과정에서 "운영 값과 의사결정 기록의 이중 업데이트 부담"이 누적된 결과 — archive는 히스토리만, 운영 값은 한 곳에만.
+
+**트레이드오프**:
+- 동일 결정을 두 언어로 유지하는 비용 → `/sync-docs` 슬래시 + `sync-warn.sh` 자동 경고로 사람 책임 0에 수렴
+- DOC_MAP을 항상 최신 유지해야 함 → CLAUDE.md CRITICAL로 "문서 추가·이동·삭제 시 DOC_MAP 같이 갱신" 박제
+- UI_GUIDE 단일화로 디자인 의사결정 archive 가치가 디자인계획 v0.0.md에 격리 → 이 파일을 "디자인 archive 정본"으로 명시
+
+**관련**: `docs/DOC_MAP.md`, `.githooks/sync-pairs.tsv`, `.githooks/sync-warn.sh`, `.claude/commands/sync-docs.md`, ADR-010(가드 일부로 sync-warn 포함), ADR-009(디자인 v0.6 기준선).

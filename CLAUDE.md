@@ -42,6 +42,7 @@
 - 데이터·API·AI 설계: `docs/DATA_MODEL.md`, `docs/API_CONTRACTS.md`, `docs/AI_PIPELINE.md`.
 - 최신 디자인 시안: `디자인/if-homepage-v0.6.html` (Landing Long-form, 디자인 기준선). 이전 시안은 `디자인/archive/`.
 - 한글 원본은 `기획/`, `기술/`에 그대로 보관. `docs/` ↔ 한글 원본 sync는 `/sync-docs` + pre-commit `sync-warn.sh` 경고로 관리한다 (DOC_MAP §2 거울 표 + `.githooks/sync-pairs.tsv` 참조).
+- 일상 작업 프로세스·시나리오·막히는 케이스 대처는 [`docs/WORKFLOW.md`](./docs/WORKFLOW.md).
 - 개발 착수 준비 현황: `개발_전_진행_체크리스트.md`.
 
 ## 명령어
