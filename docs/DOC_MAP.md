@@ -22,6 +22,7 @@
 | `docs/DATA_MODEL.md` | Supabase Postgres 스키마·RLS | ✓ 거울 있음 |
 | `docs/API_CONTRACTS.md` | V0 API request/response 계약 | ✓ 거울 있음 |
 | `docs/AI_PIPELINE.md` | 룩 생성·상품 매칭 파이프라인 | ✓ 거울 있음 |
+| `docs/WORKFLOW.md` | 일상 작업 프로세스·시나리오·막히는 케이스 대처 | (없음, 단독) |
 | `docs/DOC_MAP.md` | 이 문서 — 거버넌스 지도 | (없음, 단독) |
 
 ## 2. 거울 (Mirror — sync 필요)

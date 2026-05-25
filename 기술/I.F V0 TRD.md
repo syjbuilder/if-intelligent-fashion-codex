@@ -985,6 +985,8 @@ TRD 이후 개발 전 확정해야 할 질문:
 - docs ADR-007: FastAPI V0에서 분리 안 함
 - docs ADR-008: 상품 링크 수동/제휴 우선
 - **docs ADR-009 (신규)**: V0는 싱글턴 워크스페이스 + mini-action 패턴 채택, 풀 멀티턴 채팅은 V1 검토. 세부 결정·이유·트레이드오프는 `docs/ADR.md` 참조.
+- **docs ADR-010 (신규)**: 1인 비개발자 commander × AI 에이전트 협업 모델. 자동 가드 4종(`main-branch-guard`, `secret-guard`, `tdd-guard`, `sync-warn`) + 3 step 이상 작업은 Harness 워크플로우(`phases/`, `scripts/execute.py`)로 분해. 세부는 `docs/ADR.md` 참조.
+- **docs ADR-011 (신규)**: 문서 거버넌스 — `docs/` 영문 7개 정본 + 한국어 원본(`기획/`, `기술/`) 이중 유지. 신원·sync 짝꿍 단일 지도는 `docs/DOC_MAP.md`. drift 감지는 `.githooks/sync-pairs.tsv` + `sync-warn.sh`. UI_GUIDE는 단일 운영 디자인 스펙, `디자인/I.F 디자인 계획 v0.0.md`는 archive로 역할 분리. 세부는 `docs/ADR.md` 참조.
 
 ## 22. Development Readiness Criteria
 

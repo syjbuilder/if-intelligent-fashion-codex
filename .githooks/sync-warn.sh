@@ -8,6 +8,13 @@ set -eu
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
+# 의도적 우회 (예: 거울 짝꿍 매핑이 거칠어 false-positive일 때).
+# 사용: SYNC_WARN_SKIP=1 git commit ...
+if [ "${SYNC_WARN_SKIP:-0}" = "1" ]; then
+  printf '[sync-warn] SYNC_WARN_SKIP=1 — 우회됨.\n'
+  exit 0
+fi
+
 pairs_file=".githooks/sync-pairs.tsv"
 if [ ! -f "$pairs_file" ]; then
   exit 0
