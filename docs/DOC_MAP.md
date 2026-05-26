@@ -47,7 +47,7 @@
 
 | 위치 | 내용 | 비고 |
 |---|---|---|
-| `디자인/archive/` | `if-homepage-v0.0`~`v0.5*.html` (10개) | v0.6이 현행 기준. 폐기 시안은 archive 안 보냄 |
+| `디자인/archive/` | `if-homepage-v0.0`~`v0.6*.html` (11개) | v0.7이 현행 기준 (`디자인/if-homepage-v0.7.html`). 폐기 시안은 archive 안 보냄 |
 | `지원서/모두의창업/archive/` | `지원서_v0.0`~`v0.2.md` | 최신은 `지원서/모두의창업/지원서_v0.3.md` |
 | `디자인/I.F 디자인 계획 v0.0.md` | 디자인 탐색·의사결정 archive | 운영 값은 `docs/UI_GUIDE.md`에만 |
 | `기획/Read_history.md` | 대화·작업 환경 이전 히스토리 | 신규 작업 시 참고용 |
