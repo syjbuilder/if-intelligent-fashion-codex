@@ -45,7 +45,7 @@
 | 기술 구조 (Next.js, Supabase 등) | `docs/ARCHITECTURE.md` |
 | 왜 그렇게 결정했나 | `docs/ADR.md` |
 | UI 색상·폰트·컴포넌트 | `docs/UI_GUIDE.md` |
-| 최신 디자인 시안 | `디자인/if-homepage-v0.6.html` |
+| 최신 디자인 시안 | `디자인/if-homepage-v0.7.html` |
 | 에이전트가 따라야 할 규칙 | `CLAUDE.md` |
 | 더 자세한 기획 원본 | `기획/I.F V0 PRD.md` |
 | 더 자세한 기술 원본 | `기술/I.F V0 TRD.md` |

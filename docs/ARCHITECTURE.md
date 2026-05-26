@@ -61,3 +61,17 @@ Supabase RLS로 본인만 접근. 상세 스키마는 TRD 15장.
 
 Supabase Auth 기반, Google → Kakao → Naver 순 구현. OAuth callback URL / redirect URI /
 deep link 전략은 향후 앱 전환을 고려해 provider 설정 시 별도 확인.
+
+## 관련 ADR (거버넌스)
+
+코드·데이터 구조 외 운영·협업 결정:
+
+- **ADR-010** (비개발자 commander × AI 에이전트 협업 모델): 자동 가드 4종
+  (`main-branch-guard`, `secret-guard`, `tdd-guard`, `sync-warn`) + 3 step 이상 작업은
+  Harness 워크플로우(`phases/`, `scripts/execute.py`)로 분해.
+- **ADR-011** (문서 거버넌스): `docs/` 영문 7개 정본 + 한국어 원본(`기획/`, `기술/`) 이중
+  유지. 신원·sync 짝꿍 단일 지도는 `docs/DOC_MAP.md`. drift 감지는
+  `.githooks/sync-pairs.tsv` + `sync-warn.sh`. UI_GUIDE는 단일 운영 디자인 스펙,
+  `디자인/I.F 디자인 계획 v0.0.md`는 archive로 역할 분리.
+
+세부 결정·이유·트레이드오프는 `docs/ADR.md` 참조.

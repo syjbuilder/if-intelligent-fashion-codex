@@ -40,7 +40,7 @@
 - CRITICAL: 문서 거버넌스 단일 출처는 [`docs/DOC_MAP.md`](./docs/DOC_MAP.md) — 정본/거울/archive/운영 자산/제외 분류와 sync 짝꿍 매핑이 모두 거기 있다. 문서 추가·이동·삭제 시 DOC_MAP을 같이 갱신한다.
 - 매 작업 시 최소: `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/ADR.md`, `docs/UI_GUIDE.md`.
 - 데이터·API·AI 설계: `docs/DATA_MODEL.md`, `docs/API_CONTRACTS.md`, `docs/AI_PIPELINE.md`.
-- 최신 디자인 시안: `디자인/if-homepage-v0.6.html` (Landing Long-form, 디자인 기준선). 이전 시안은 `디자인/archive/`.
+- 최신 디자인 시안: `디자인/if-homepage-v0.7.html` (Landing Long-form, Typography 7원칙 — 디자인 기준선). 이전 시안(v0.0~v0.6)은 `디자인/archive/`.
 - 한글 원본은 `기획/`, `기술/`에 그대로 보관. `docs/` ↔ 한글 원본 sync는 `/sync-docs` + pre-commit `sync-warn.sh` 경고로 관리한다 (DOC_MAP §2 거울 표 + `.githooks/sync-pairs.tsv` 참조).
 - 일상 작업 프로세스·시나리오·막히는 케이스 대처는 [`docs/WORKFLOW.md`](./docs/WORKFLOW.md).
 - 개발 착수 준비 현황: `개발_전_진행_체크리스트.md`.
