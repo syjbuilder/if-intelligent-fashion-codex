@@ -3,9 +3,20 @@
   ==========================================================================
   IF Homepage v0.7 — Landing Long-form (Typography 7-principles redesign)
   Base: if-homepage-v0.6.html (2026-05-20)
-  Date: 2026-05-26
+  Date: 2026-05-26 (v0.7.1 patch 같은 날)
 
-  v0.7 CHANGELOG (vs v0.6)
+  v0.7.1 CHANGELOG (사용자 렌더 확인 후 4가지 보정)
+  - [~] --accent #6a6234 다크 올리브 브라운 → #4a2e16 에스프레소 브라운 (녹색 기미 제거).
+        .cta-accent:hover bg #585228 → #321e0c
+  - [~] scroll-hint 마크업을 .landing-content 자식 → .landing 직속으로 이동
+        내부 순서 반전: text "Scroll" → chevron → chevron(위) → text "Scroll"(아래)
+        font 10→12, color 0.6→0.75, chevron 16×16→22×22, bottom 22→36 (가시성·중앙 정렬 안정)
+  - [~] hero-title·auth-headline·footer-tagline 텍스트 "Wear what you imagine." → "Style your Imagination."
+        (사용자 선택 — Imagination 명사화, 소유격 your로 사용자 중심)
+  - [+] hero-title white → muted 미세 수직 그라데이션
+        linear-gradient(180deg, #fbfbfa 0%, #c8c8c5 100%) + background-clip: text + @supports 폴백
+
+  v0.7.0 CHANGELOG (vs v0.6)
   - [~] Brand mark: 두 글자 사이 점 제거 (마크업 5곳 + body text·aria-label·placeholder 전부)
   - [~] 폰트 가족: Playfair Display + Manrope → Inter + Pretendard 단일 산세리프 통일
   - [~] Weight 스케일: 자유→ 400/600/800 3단 고정 (500/700 금지)
@@ -102,7 +113,7 @@
         --cream: #eaeae6;          /* 라이트 면 카드 */
         --white: #fbfbfa;          /* 다크 위 텍스트 / 최밝은 면 */
         --line: rgba(26, 26, 26, 0.10);
-        --accent: #6a6234;         /* 포인트 — 다크 올리브 브라운. 페이지당 ≤2회 */
+        --accent: #4a2e16;         /* 포인트 — 에스프레소 브라운 (v0.7.1, 녹색 기미 제거). 페이지당 ≤2회 */
 
         /* ── 사이즈 스케일 ──────────────────────────────────────────── */
         --t1: clamp(56px, 9vw, 128px);  /* hero title */
@@ -455,6 +466,8 @@
         text-transform: uppercase;
       }
 
+      /* v0.7.1: hero-title white → muted 미세 수직 그라데이션 — 거대 타이포에 깊이감.
+         @supports로 background-clip 폴백 (미지원 브라우저는 white 단색 유지). */
       .hero-title {
         margin: 0;
         font-family: var(--font-display);
@@ -462,6 +475,16 @@
         font-weight: 800;
         line-height: 0.96;
         letter-spacing: -0.02em;
+        color: var(--white); /* fallback */
+        background: linear-gradient(180deg, #fbfbfa 0%, #c8c8c5 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+      }
+      @supports (-webkit-background-clip: text) or (background-clip: text) {
+        .hero-title {
+          color: transparent;
+          -webkit-text-fill-color: transparent;
+        }
       }
 
       .hero-cta-wrap {
@@ -469,18 +492,20 @@
         animation: fadeUp 900ms var(--ease-out-expo) 520ms both;
       }
 
-      /* v0.6: hero 하단 scroll-hint — chevron + 라벨 */
+      /* v0.7.1: scroll-hint — .landing 직속 absolute. chevron(위) + 라벨(아래) 순서.
+         가시성 강화 (font 10→12, opacity 0.6→0.75, chevron 16→22, bottom 22→36). */
       .scroll-hint {
         position: absolute;
         left: 50%;
-        bottom: 22px;
+        bottom: 36px;
         transform: translateX(-50%);
+        z-index: 10;
         display: inline-flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
-        color: rgba(255, 250, 242, 0.6);
-        font-size: 10px;
+        gap: 8px;
+        color: rgba(251, 251, 250, 0.75);
+        font-size: var(--t7);
         font-weight: 800;
         letter-spacing: 0.16em;
         text-transform: uppercase;
@@ -492,8 +517,8 @@
         transform: translate(-50%, 2px);
       }
       .scroll-hint svg {
-        width: 16px;
-        height: 16px;
+        width: 22px;
+        height: 22px;
         animation: scrollChevron 2.4s var(--ease) infinite;
       }
       @keyframes scrollChevron {
@@ -525,15 +550,15 @@
         transform: translateY(-2px);
       }
 
-      /* v0.7: cta-accent — 다크 올리브 브라운 배경 + 흰 텍스트. 페이지당 1개 핵심 전환 CTA에만. */
+      /* v0.7.1: cta-accent — 에스프레소 브라운 배경 + 흰 텍스트. 페이지당 1개 핵심 전환 CTA에만. */
       .cta.cta-accent {
         color: var(--white);
         background: var(--accent);
         border-color: var(--accent);
       }
       .cta.cta-accent:hover {
-        background: #585228;
-        border-color: #585228;
+        background: #321e0c;
+        border-color: #321e0c;
       }
 
       /* v0.6: studio z-index 10 → 100 (in-flow landing 위로 fixed overlay).
@@ -2677,7 +2702,7 @@
         letter-spacing: -0.02em;
       }
 
-      /* v0.7: 헤드라인 한 단어 컬러 강조 — 다크 올리브 브라운. 페이지당 ≤2회 사용 예산. */
+      /* v0.7.1: 헤드라인 한 단어 컬러 강조 — 에스프레소 브라운. 페이지당 ≤2회 사용 예산. */
       .accent {
         color: var(--accent);
         font-weight: inherit;
@@ -3206,19 +3231,20 @@
       <div class="landing-content">
         <div class="hero-copy">
           <p class="hero-kicker">AI Lookbook / Seoul Daily Wear</p>
-          <h1 class="hero-title">Wear what you imagine.</h1>
+          <h1 class="hero-title">Style your Imagination.</h1>
         </div>
         <div class="hero-cta-wrap">
           <button class="cta cta-accent" id="btnGetStarted" type="button">Get Started</button>
         </div>
-        <!-- v0.7: scroll-hint — chevron + Scroll 라벨. 클릭 시 how-it-works로 smooth scroll. -->
-        <a class="scroll-hint" href="#how-it-works" aria-label="Scroll to How it works">
-          <span class="scroll-hint-label">Scroll</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 9l6 6 6-6"/>
-          </svg>
-        </a>
       </div>
+      <!-- v0.7.1: scroll-hint를 .landing 직속으로 이동(가로 viewport 기준 정확한 중앙).
+           chevron(위) + Scroll(아래) 순서 반전 — 화살표→라벨 자연스러운 navigation 흐름. -->
+      <a class="scroll-hint" href="#how-it-works" aria-label="Scroll to How it works">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+        <span class="scroll-hint-label">Scroll</span>
+      </a>
     </section>
 
     <!-- v0.6: How it works — Prompt → AI Look → Product 3-step 에디토리얼. 사람 사진 X, 가먼트/숫자 라벨만. -->
@@ -3291,7 +3317,7 @@
         <div class="footer-brand">
           <strong>IF</strong>
           <span>Intelligent Fashion</span>
-          <p class="footer-tagline">Wear what you imagine.</p>
+          <p class="footer-tagline">Style your Imagination.</p>
         </div>
         <nav class="footer-links" aria-label="Legal and contact">
           <button class="footer-link" type="button" data-modal="terms">이용약관</button>
@@ -3314,7 +3340,7 @@
       </button>
       <div class="auth-card">
         <p class="auth-eyebrow">Sign in to IF</p>
-        <h2 class="auth-headline">Wear what you imagine.</h2>
+        <h2 class="auth-headline">Style your Imagination.</h2>
         <p class="auth-sub">Continue with your social account to save and revisit your looks.</p>
 
         <div class="auth-social">
