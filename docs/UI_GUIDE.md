@@ -93,7 +93,7 @@
 
 | 토큰 | 값 | 용도 |
 |------|-----|------|
-| `--t1` | `clamp(56px, 9vw, 128px)` | hero title (한 줄 메시지) |
+| `--t1` | `clamp(48px, 7vw, 96px)` | hero title. *v0.7.1.1 — 9vw/128 → 7vw/96으로 축소, 두 줄 wrap 시 viewport 잘림 방지.* |
 | `--t2` | `clamp(40px, 5.4vw, 72px)` | 섹션 헤드라인 (How it works / Curated / Gate / Auth / Brand-strip / Slide-title) |
 | `--t3` | `clamp(24px, 2.4vw, 32px)` | sub-headline, History title, Bag title, Loading title, Modal-doc title |
 | `--t4` | 18px | sub copy 강 (section-sub, footer-tagline) |

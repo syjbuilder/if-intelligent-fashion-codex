@@ -5,6 +5,17 @@
   Base: if-homepage-v0.6.html (2026-05-20)
   Date: 2026-05-26 (v0.7.1 patch 같은 날)
 
+  v0.7.1.1 CHANGELOG (스크린샷 피드백 3건 보정)
+  - [~] refine-chip·season-prompts chip: rgba(255,255,255,0.7) 반투명 → #ffffff 솔리드 + border 0.18→0.25
+        (paper #f5f5f3 위에서 거의 안 보이던 문제). hover도 var(--cream) + var(--ink) border로 또렷.
+  - [~] setMode(): results scene dock 변형 .dim → .cream (results가 paper 단일 배경이 됐으므로
+        다크 톤 dock이 어색했음). dock.dim CSS 자체는 legacy로 남기되 JS는 항상 false.
+  - [+] html { scrollbar-gutter: stable } — topbar(position: fixed, 뷰포트 기준)와 .landing 내부
+        absolute 요소(scroll-hint)·CTA가 같은 가로 중심선에 정렬되게 스크롤바 폭 항상 예약.
+  - [~] --t1: clamp(56px, 9vw, 128px) → clamp(48px, 7vw, 96px) — 큰 모니터에서 두 줄 hero
+        ("Style your Imagination.") 상단 잘림 방지.
+  - [~] hero-title line-height: 0.96 → 1.02 — wrap 시 라인 간격 충분히 확보.
+
   v0.7.1 CHANGELOG (사용자 렌더 확인 후 4가지 보정)
   - [~] --accent #6a6234 다크 올리브 브라운 → #4a2e16 에스프레소 브라운 (녹색 기미 제거).
         .cta-accent:hover bg #585228 → #321e0c
@@ -116,7 +127,7 @@
         --accent: #4a2e16;         /* 포인트 — 에스프레소 브라운 (v0.7.1, 녹색 기미 제거). 페이지당 ≤2회 */
 
         /* ── 사이즈 스케일 ──────────────────────────────────────────── */
-        --t1: clamp(56px, 9vw, 128px);  /* hero title */
+        --t1: clamp(48px, 7vw, 96px);   /* hero title (v0.7.1.1: 9vw/128 → 7vw/96, 두 줄 hero 잘림 방지) */
         --t2: clamp(40px, 5.4vw, 72px); /* 섹션 헤드라인 */
         --t3: clamp(24px, 2.4vw, 32px); /* sub-headline */
         --t4: 18px;                      /* sub copy 강 */
@@ -149,6 +160,9 @@
       html {
         height: auto;
         scroll-behavior: smooth;
+        /* v0.7.1.1: 스크롤바 폭을 항상 예약 → topbar(fixed, 뷰포트 기준)와
+           landing 내부 absolute 요소(scroll-hint)·CTA가 같은 가로 중심선에 정렬. */
+        scrollbar-gutter: stable;
       }
 
       body {
@@ -467,13 +481,14 @@
       }
 
       /* v0.7.1: hero-title white → muted 미세 수직 그라데이션 — 거대 타이포에 깊이감.
-         @supports로 background-clip 폴백 (미지원 브라우저는 white 단색 유지). */
+         @supports로 background-clip 폴백 (미지원 브라우저는 white 단색 유지).
+         v0.7.1.1: line-height 0.96 → 1.02 — 두 줄 wrap 시 상단 잘림 방지. */
       .hero-title {
         margin: 0;
         font-family: var(--font-display);
         font-size: var(--t1);
         font-weight: 800;
-        line-height: 0.96;
+        line-height: 1.02;
         letter-spacing: -0.02em;
         color: var(--white); /* fallback */
         background: linear-gradient(180deg, #fbfbfa 0%, #c8c8c5 100%);
@@ -746,16 +761,17 @@
         animation: fadeUp 760ms var(--ease-out-expo) 320ms both;
       }
 
+      /* v0.7.1.1: season-prompts chip — paper 위 가시성 ↑ (반투명 흰 → 솔리드 흰 + 진한 border) */
       .season-prompts .chip {
         cursor: pointer;
         color: var(--ink);
-        border-color: rgba(26, 24, 21, 0.14);
-        background: rgba(255, 255, 255, 0.7);
+        border-color: rgba(26, 26, 26, 0.22);
+        background: #ffffff;
       }
 
       .season-prompts .chip:hover {
-        background: rgba(255, 255, 255, 0.95);
-        border-color: rgba(26, 24, 21, 0.32);
+        background: var(--cream);
+        border-color: var(--ink);
       }
 
       .explore-section-label {
@@ -1393,15 +1409,16 @@
         pointer-events: auto;
         transition: opacity 360ms ease;
       }
+      /* v0.7.1.1: refine-chip — paper 위 가시성 ↑ (반투명 흰 → 솔리드 흰 + 진한 border) */
       .refine-chip {
         cursor: pointer;
         color: var(--ink);
-        border-color: rgba(26, 26, 26, 0.18);
-        background: rgba(255, 255, 255, 0.7);
+        border-color: rgba(26, 26, 26, 0.25);
+        background: #ffffff;
       }
       .refine-chip:hover {
-        background: rgba(255, 255, 255, 0.95);
-        border-color: rgba(26, 26, 26, 0.36);
+        background: var(--cream);
+        border-color: var(--ink);
       }
 
       /* drawer-bag 안 상품 카드의 More Like This (아이콘만) */
@@ -3780,11 +3797,12 @@
         }
 
         function setMode(mode) {
-          // cream(로딩), results(캐러설), explore(라이트 페이퍼) 모두 어두운 토픽바 톤
+          // v0.7.1.1: results scene도 paper 단일 배경이 되었으므로 dock도 cream 변형 사용.
+          // dock.dim(다크) 사용 케이스 폐기.
           const dark = (mode === "cream" || mode === "results" || mode === "explore");
           topbar.classList.toggle("dark", dark);
-          dock.classList.toggle("cream", mode === "cream" || mode === "explore");
-          dock.classList.toggle("dim", mode === "results");
+          dock.classList.toggle("cream", mode === "cream" || mode === "explore" || mode === "results");
+          dock.classList.toggle("dim", false);
         }
 
         // v0.5: 4-tier page routing (landing / studio / auth / history).
