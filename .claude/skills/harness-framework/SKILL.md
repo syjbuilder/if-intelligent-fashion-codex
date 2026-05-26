@@ -12,7 +12,7 @@ Use this workflow to turn a product or implementation request into Harness phase
 ## Workflow
 
 1. Explore the repository before planning or editing.
-   Read `CLAUDE.md` and the relevant files under `docs/`, especially `docs/PRD.md`, `docs/ARCHITECTURE.md`, and `docs/ADR.md`. Use additional docs when the task mentions them. Use subagents only when the user explicitly asks for delegated or parallel agent work.
+   Start from `CLAUDE.md` and `docs/DOC_MAP.md` (governance index). Read the baseline docs every time: `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/ADR.md`, `docs/UI_GUIDE.md`. Read design-layer docs when the task touches that area: `docs/DATA_MODEL.md` (DB schema or RLS), `docs/API_CONTRACTS.md` (API endpoints), `docs/AI_PIPELINE.md` (look generation or product matching). Consult `docs/WORKFLOW.md` for daily-process scenarios. Use subagents only when the user explicitly asks for delegated or parallel agent work.
 
 2. Discuss unresolved implementation decisions.
    If requirements, boundaries, architecture choices, or verification commands are unclear, present the concrete decision points to the user before creating step files.
@@ -87,11 +87,24 @@ Use this structure for each step:
 
 ## Files To Read
 
-Read these files first and understand the architecture and design intent:
+Read these files first and understand the architecture and design intent.
+
+Baseline (every step):
 
 - `CLAUDE.md`
+- `docs/PRD.md`
 - `docs/ARCHITECTURE.md`
 - `docs/ADR.md`
+- `docs/UI_GUIDE.md`
+
+When relevant to this step:
+
+- DB schema or RLS work: `docs/DATA_MODEL.md`
+- API endpoint add/change: `docs/API_CONTRACTS.md`
+- AI look generation or product matching: `docs/AI_PIPELINE.md`
+
+Navigation: `docs/DOC_MAP.md`
+
 - {files created or modified by earlier steps}
 
 ## Task
@@ -112,6 +125,8 @@ npm test
    - Does the work follow `docs/ARCHITECTURE.md`?
    - Does the work stay inside the stack and decisions in `docs/ADR.md`?
    - Does the work respect CRITICAL rules in `CLAUDE.md`?
+   - If UI work: does it follow `docs/UI_GUIDE.md` (no AI slop anti-pattern violations)?
+   - If DB / API / AI-pipeline work: does it match `docs/DATA_MODEL.md` / `docs/API_CONTRACTS.md` / `docs/AI_PIPELINE.md` respectively?
 3. Update `phases/{task-name}/index.json` for this step:
    - Success: set `status` to `completed` and add a one-line `summary`.
    - Failure after three fix attempts: set `status` to `error` and add `error_message`.
