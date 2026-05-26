@@ -1,11 +1,12 @@
 # UI 디자인 가이드
 
-> **이 문서는 I.F의 유일한 살아있는 운영 디자인 스펙(operational design spec)이다.**
+> **이 문서는 IF의 유일한 살아있는 운영 디자인 스펙(operational design spec)이다.**
 > harness 워크플로우가 UI 작업의 기준으로 읽는다. 디자인이 바뀌면 **이 문서를 갱신한다.**
 >
-> 기준 시안: `디자인/if-homepage-v0.6.html` (Landing Long-form, 2026-05-20).
+> 기준 시안: `디자인/if-homepage-v0.7.html` (Landing Long-form, 2026-05-26 — Typography 7원칙 재설계).
+> 이전 시안: `디자인/if-homepage-v0.6.html` (2026-05-20) 비교용 보존.
 > 디자인 탐색·의사결정 기록(어떻게 여기까지 왔는지)은 `디자인/I.F 디자인 계획 v0.0.md`(archive)에 있다.
-> 값이 시안과 충돌하면 v0.6 시안의 실제 값이 우선한다.
+> 값이 시안과 충돌하면 v0.7 시안의 실제 값이 우선한다.
 
 ## 디자인 컨셉 & 원칙
 
@@ -32,50 +33,95 @@
 - **studio** 내부는 `<body data-scene="…">`로 scene 전환: `explore → loading → results`.
 - 상태 클래스: `body.atelier-ready`(studio 진입), `body.is-logged-in`(로그인 mock), `body.results-on`, `body.look-{office|date|sport}`(결과 슬라이드 톤 토글).
 
-## 색상 (v0.6 `:root` 토큰)
+## 색상 (v0.7 `:root` 토큰 — 중성화)
 
 | 토큰 | 값 | 용도 |
 |------|------|------|
-| `--ink` | `#1a1815` | 주 텍스트 |
-| `--ink-soft` | `#3b352e` | 보조 텍스트 |
-| `--muted` | `#9e978e` | 비활성/캡션/eyebrow |
-| `--paper` | `#f7f3eb` | 페이지 배경 |
-| `--cream` | `#ece6d8` | 카드/면 배경 |
-| `--white` | `#fffaf2` | 밝은 면, 다크 배경 위 텍스트 |
-| `--line` | `rgba(26,24,21,0.12)` | 구분선 |
-| `--rose` | `#b94a62` | 포인트 컬러 (Deep Rose) |
+| `--ink` | `#1a1a1a` | 주 텍스트 / 다크 배경 (중성 다크) |
+| `--ink-soft` | `#4a4a48` | 보조 텍스트 (중성 회색) |
+| `--muted` | `#8a8a86` | 캡션·eyebrow·placeholder (중성 미디엄 회색) |
+| `--paper` | `#f5f5f3` | 페이지 배경 (중성 오프화이트) |
+| `--cream` | `#eaeae6` | 카드/면 배경 (중성 베이지 회색) |
+| `--white` | `#fbfbfa` | 다크 위 텍스트 / 최밝은 면 |
+| `--line` | `rgba(26,26,26,0.10)` | 구분선 |
+| `--accent` | `#6a6234` | 포인트 컬러 (Dark Olive Brown). 페이지당 ≤2회 |
 
-- 그 외 `--quote-a`/`--quote-b`는 legacy(quote scene 잔재) — 신규 작업에서 쓰지 않는다.
-- 다크 신 배경: 워밍 그라디언트 `#0b0908 → #2a2018 → #1b140f` + SVG 그레인 텍스처 8% opacity.
-- 결과 carousel은 룩별로 배경 톤이 바뀐다 (Office=베이지·세이지, Date=로즈·와인, Sport=세이지·올리브).
-  `body.look-{office|date|sport}` 클래스 토글로 UI 컨트롤도 그 톤에 반전된다.
-- 랜딩 섹션별 톤: hero=다크 워밍, how-it-works=크림 페이퍼, curated-preview=light cream, footer=짙은 인크.
+- v0.6의 `--sage`, `--stone`, `--quote-a`, `--quote-b`, **`--rose`** 토큰은 전부 삭제. rose 톤이 배경에 깔리는 느낌이 사용자분 시선에 거슬려 중성 팔레트로 전환.
+- 다크 신 배경(Hero / Auth / Loading): 동일한 다크 워밍 그라디언트 공유 — `radial(rgba(180,140,88,0.18)) + radial(rgba(0,0,0,0.68)) + linear(#0b0908 → #2a2018 → #1b140f)` + grain 텍스처 8% opacity. "잠시 멈춤·기다림"면이 한 톤으로 통일.
+- **결과 carousel**: 룩별 배경 톤 토글 폐기. 3 슬라이드(Office/Date/Sport) 모두 `var(--paper)` 단일 배경 — 옷 SVG는 ink stroke으로 또렷이 보임. 룩 구분은 슬라이드 메타 텍스트와 가먼트 SVG 형태로만.
+- **Explore/Curated/Saved 카드**: tone-office (베이지·웜드 그레이) / tone-date (초콜릿·카멜) / tone-sport (다크 부라운·차콜). 분홍·자주·녹색 톤 전부 unhook.
+- **랜딩 hero**: 단색 `#121211` + grain noise만. v0.6의 radial 두 개(rose + sage) + heroDrift 애니메이션 삭제.
+- 랜딩 섹션별 톤: hero=다크 단색, how-it-works=페이퍼, curated-preview=페이퍼(동일 면), footer=ink.
 
-## 타이포그래피
+### 배경 ↔ 텍스트 궁합 매트릭스
 
-> **주의:** 아래는 v0.0~v0.6 시안에서 누적된 *현행값*이다. 폰트 종류·크기 위계·자간·행간·
-> 텍스트 배치를 의도를 갖고 처음부터 설계한 "정식 타이포 시스템"은 아직 없다 — 후속 과제.
+| 배경 | 1차 텍스트 | 2차 텍스트 | 캡션·메타 |
+|------|-----------|-----------|-----------|
+| `--paper` | `--ink` | `--ink-soft` | `--muted` |
+| `--cream` | `--ink` | `--ink-soft` | `--muted` |
+| `--ink` 다크 단색 | `--white` | `rgba(251,251,250,0.7)` | `rgba(251,251,250,0.5)` |
+| Hero/Auth/Loading 다크 워밍 | `--white` | `rgba(251,251,250,0.7)` | `rgba(251,251,250,0.5)` |
+| Date 카드 (다크 초콜릿·카멜) | `#f3eee2` warm off-white | — | — |
+| Sport 카드 (다크 부라운·차콜) | `#f3eee2` | — | — |
+| Office 카드 (라이트 베이지) | `--ink` | — | — |
 
-| 용도 | 스타일 |
-|------|--------|
-| 브랜드/헤드라인 | `Playfair Display` (italic 포함), `transform: scaleX(0.94)`로 살짝 눌린 비율 |
-| UI/본문 | `Manrope` (300~800) |
-| hero 타이틀 | `clamp(50px, 6.7vw, 106px)`, line-height 0.98, letter-spacing -0.025em |
-| 섹션 헤드라인 (How it works·curated) | `clamp(36px, 4.6vw, 64px)`, line-height 1.04 |
-| Explore brand headline | `clamp(28px, 3.6vw, 48px)`, line-height 1.06 |
-| 슬라이드 타이틀 | `clamp(32px, 3.6vw, 54px)`, line-height 1.02, scaleX(0.95) |
-| 로딩 타이틀 | `clamp(28px, 3.6vw, 48px)` — 영문 에디토리얼 카피 ("Reading the silhouette" 등) |
-| 본문 (랜딩·소개) | 15px, line-height 1.7~1.8 |
-| 본문 (상품 패널·드로어·캡션) | 12~13px — 정보 밀도 영역 |
-| eyebrow / nav 라벨 | 10~12px, font-weight 800, letter-spacing 0.13~0.32em, uppercase |
+카드 가먼트 SVG는 `currentColor` 사용 → 카드 배경 톤에 따라 자동 반전 (다크 카드 = 라이트 SVG, 라이트 카드 = 다크 SVG).
 
-폰트는 Google Fonts 로드, 오프라인 fallback은 Georgia/system-ui 계열. 한국어 본문은 장식성을
-줄이고 명확성을 우선한다.
+## 타이포그래피 (v0.7 — Mobile UI 7원칙 적용)
 
-## 컴포넌트 (v0.6 실제 값)
+폰트 가족·weight·size 토큰을 시스템으로 박제. v0.6의 누적 현행값 위계 → v0.7에서 의도된 토큰
+시스템으로 전환.
 
-- **CTA 버튼 (`.cta`)**: `inline-flex`, min 166×50px, `border-radius: 999px`(pill), border 1px,
-  hover 시 `translateY(-2px)`. `.cta-dark` 변형 = light 섹션용 다크 배경.
+### 폰트 가족 (단일 산세리프 통일)
+
+- 영문·숫자: `Inter` (Google Fonts, weight 400·600·800)
+- 한글: `Pretendard Variable` (CDN)
+- 시스템 fallback: `system-ui, -apple-system, BlinkMacSystemFont, sans-serif`
+- v0.6의 `Playfair Display`(에디토리얼 세리프) + `Manrope`(본문) 조합 폐기. 7원칙 §5(폰트 가족 1~2개).
+
+### Weight 스케일 (3단 고정)
+
+| 토큰 | weight | 용도 |
+|------|--------|------|
+| `--w-regular` | 400 | 본문, eyebrow 약, 메타데이터 |
+| `--w-semibold` | 600 | sub-headline, 카드 라벨, refine chip |
+| `--w-extrabold` | 800 | 헤드라인, CTA, eyebrow uppercase, step-num, 가격 |
+
+- **500/700 사용 금지** (7원칙 §6). Inter 자체에 light/medium/semibold/bold 다 있지만 의도적으로 3단만 노출.
+
+### Size 스케일
+
+| 토큰 | 값 | 용도 |
+|------|-----|------|
+| `--t1` | `clamp(56px, 9vw, 128px)` | hero title (한 줄 메시지) |
+| `--t2` | `clamp(40px, 5.4vw, 72px)` | 섹션 헤드라인 (How it works / Curated / Gate / Auth / Brand-strip / Slide-title) |
+| `--t3` | `clamp(24px, 2.4vw, 32px)` | sub-headline, History title, Bag title, Loading title, Modal-doc title |
+| `--t4` | 18px | sub copy 강 (section-sub, footer-tagline) |
+| `--t5` | 16px | 본문 — 모바일 최소 (7원칙 §7) |
+| `--t6` | 13px | 메타·캡션·refine chip·footer-link |
+| `--t7` | 12px | eyebrow uppercase, footer-copy, CTA 라벨 |
+| `--t8` | 11px | fineprint (auth-fineprint, modal 등) |
+
+- inline `clamp()` 분산 → 토큰화. hierarchy가 시안 안에서 일관됨 (7원칙 §4).
+
+### 정렬·강조 규칙
+
+- **3줄 이상 본문은 좌측 정렬 강제** (7원칙 §2). `section-sub`, `step-desc`, `footer-affiliate`,
+  `auth-fineprint`, `modal-doc` body, `slide-desc`, `bag-copy` 등 multi-line body 일괄.
+- 1~2줄 헤드라인·CTA 라벨·eyebrow·메타데이터는 섹션 안에서 통일된다면 center/left 모두 허용.
+- **강조 패턴은 3개만**: ①Bold(400 → 800 한 단어) ②Color(`var(--accent)` 한 단어, 페이지당 ≤2회) ③Size(hierarchy 토큰 차이). 그 외 (italic, scaleX, rotate, underline, 형광, 박스) 일체 금지.
+- italic 0건: `<em>`/`<i>`/`font-style: italic` CSS 시안 안에 0 hit.
+- 폰트 자체 비율 존중: `transform: scaleX(0.94/0.95)` 모두 제거 (v0.6 → v0.7).
+
+## 컴포넌트 (v0.7 실제 값)
+
+- **CTA 버튼 (`.cta`)**: `inline-flex`, **min 200×56px** (모바일 터치, 7원칙 §7), `border-radius: 999px`(pill),
+  border 1px currentColor, backdrop blur 제거, hover 시 `translateY(-2px)`.
+  - `.cta-dark` 변형 = light 섹션용 다크 ink 배경.
+  - `.cta-accent` 변형 = 다크 올리브 브라운 배경 + 흰 텍스트. **페이지당 최대 1개** 핵심 전환 CTA(Get Started)에만.
+- **브랜드 마크 (`.brand strong`)**: `IF` 두 글자 (점 제거), `font-size: 24px`, `font-weight: 800`,
+  `letter-spacing: -0.04em` (loiseau식 타이트한 lockup). v0.6의 `I.F` Playfair 500 30px → 변경.
+- **knot SVG 장식 (`<svg class="knot">`)**: brand-strip, auth-card, loading-wrap 3곳에서 제거 — italic 제거와 함께 Editorial 장식 일관성 차원.
 - **프롬프트 도크 (`.dock`)**: pill(`999px`), `width: min(690px, 86vw)`, 48px 원형 `.dock-btn`
   + `.dock-input`(h48, 15px). 슬라이드 톤에 따라 `.dock.cream`/`.dock.dim`.
 - **Explore 검색바 (`.explore-search`)**: dock과 동형, explore scene 상단 sticky(`top: 76px`).
@@ -138,7 +184,12 @@ V0는 풀 멀티턴 채팅 X. 싱글샷 워크스페이스 위에 3개 mini-acti
 
 | 금지 사항 | 이유 |
 |-----------|------|
-| 일반 쇼핑몰처럼 상품 그리드가 먼저 보이는 구조 | I.F는 룩 보드가 먼저 보여야 함 |
+| italic으로 단어 강조하기 | weight·color·size로만 강조한다 (v0.7 7원칙 §1·§3) |
+| `transform: scaleX/rotate`로 폰트·요소 인위 변형 | 폰트 자체 비율 존중. loiseau 영향. |
+| 포인트 컬러를 페이지당 3회 이상 사용 | 절제될수록 강조가 살아난다. accent ≤ 2회 강제. |
+| 따뜻한 베이지·rose·sage·wine 톤이 배경에 깔리는 것 | v0.7에서 중성 오프화이트·중성 회색·다크 카멜로 통일. |
+| weight 500·700 사용 | weight 3단(400/600/800)만 허용. |
+| 일반 쇼핑몰처럼 상품 그리드가 먼저 보이는 구조 | IF는 룩 보드가 먼저 보여야 함 |
 | 범용 AI 챗봇처럼 채팅창만 강조되는 구조 | 스타일 디렉터에게 요청하는 느낌이어야 함 |
 | 카드가 과도하게 많은 SaaS 랜딩 페이지 | 브랜드 감성이 죽음 (PRD §9.1 — How it works는 카드 그리드 X) |
 | 베이지/핑크 계열만 반복되는 단조로운 패션몰 느낌 | 톤이 진부해짐 |
