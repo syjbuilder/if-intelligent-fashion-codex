@@ -5,6 +5,19 @@
   Base: if-homepage-v0.6.html (2026-05-20)
   Date: 2026-05-26 (v0.7.1 patch 같은 날)
 
+  v0.7.1.2 CHANGELOG (스크린샷 피드백 재보정)
+  - [~] refine-chip: .chip base가 line 1786에서 덮어쓰는 specificity 충돌. .chip.refine-chip
+        (0,0,2,0)으로 selector 강화 + backdrop-filter:none 명시 + border 통째 재정의로 base의
+        rgba(255,255,255,0.12) 흐릿한 border 차단. 솔리드 흰 카드 느낌 확실히 보이게.
+  - [~] season-prompts .chip도 backdrop-filter:none + border 통째 재정의로 동일 처리.
+  - [~] hero-title 그라데이션 #fbfbfa → #c8c8c5(진한 회색) → #fbfbfa → #e8e8e6(아주 옅은).
+        descender(y, g 아래 다리)가 darker portion에서 다크 hero 배경에 묻혀 잘려 보이던 문제 해결.
+        padding-bottom: 0.12em 추가로 descender 렌더 여유 공간 확보.
+  - [~] scroll-hint: position:absolute + left:50% transform:-50% → scroll-hint-wrap(전폭) + flex
+        justify-center로 변경. letter-spacing 0.16em trailing space의 시각 ±1px 시프트, chip
+        width 변동, scrollbar 시프트 등 multiple 변수에서 자유로운 견고한 중앙 정렬.
+        text-indent: 0.16em으로 라벨 자체 시각 중심도 정확화.
+
   v0.7.1.1 CHANGELOG (스크린샷 피드백 3건 보정)
   - [~] refine-chip·season-prompts chip: rgba(255,255,255,0.7) 반투명 → #ffffff 솔리드 + border 0.18→0.25
         (paper #f5f5f3 위에서 거의 안 보이던 문제). hover도 var(--cream) + var(--ink) border로 또렷.
@@ -480,18 +493,19 @@
         text-transform: uppercase;
       }
 
-      /* v0.7.1: hero-title white → muted 미세 수직 그라데이션 — 거대 타이포에 깊이감.
-         @supports로 background-clip 폴백 (미지원 브라우저는 white 단색 유지).
-         v0.7.1.1: line-height 0.96 → 1.02 — 두 줄 wrap 시 상단 잘림 방지. */
+      /* v0.7.1.2: hero-title 그라데이션 완화 — #fbfbfa → #c8c8c5(진한 회색)는 descender(y,g)가
+         다크 hero 배경에 묻혀 잘린 듯 보임. #fbfbfa → #e8e8e6(아주 옅은)로 변경.
+         line-height 1.02로 두 줄 wrap 안전, padding-bottom 추가로 descender 여유 확보. */
       .hero-title {
         margin: 0;
+        padding-bottom: 0.12em;
         font-family: var(--font-display);
         font-size: var(--t1);
         font-weight: 800;
         line-height: 1.02;
         letter-spacing: -0.02em;
         color: var(--white); /* fallback */
-        background: linear-gradient(180deg, #fbfbfa 0%, #c8c8c5 100%);
+        background: linear-gradient(180deg, #fbfbfa 0%, #e8e8e6 100%);
         background-clip: text;
         -webkit-background-clip: text;
       }
@@ -507,14 +521,22 @@
         animation: fadeUp 900ms var(--ease-out-expo) 520ms both;
       }
 
-      /* v0.7.1: scroll-hint — .landing 직속 absolute. chevron(위) + 라벨(아래) 순서.
-         가시성 강화 (font 10→12, opacity 0.6→0.75, chevron 16→22, bottom 22→36). */
-      .scroll-hint {
+      /* v0.7.1.2: scroll-hint-wrap (전폭 컨테이너) + flex 중앙 정렬.
+         left:0 right:0로 .landing 전폭 차지 → letter-spacing/chip width 변동 무영향.
+         transform:translateX(-50%) 방식의 ±1px 시프트 위험 제거. */
+      .scroll-hint-wrap {
         position: absolute;
-        left: 50%;
+        left: 0;
+        right: 0;
         bottom: 36px;
-        transform: translateX(-50%);
         z-index: 10;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+        animation: fadeUp 900ms var(--ease-out-expo) 900ms both;
+      }
+      .scroll-hint {
+        pointer-events: auto;
         display: inline-flex;
         flex-direction: column;
         align-items: center;
@@ -524,12 +546,12 @@
         font-weight: 800;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        animation: fadeUp 900ms var(--ease-out-expo) 900ms both;
+        text-indent: 0.16em; /* letter-spacing trailing space 시각 보정 — 라벨 시각 중심 정확화 */
         transition: color 220ms ease, transform 220ms ease;
       }
       .scroll-hint:hover {
         color: var(--white);
-        transform: translate(-50%, 2px);
+        transform: translateY(2px);
       }
       .scroll-hint svg {
         width: 22px;
@@ -761,12 +783,14 @@
         animation: fadeUp 760ms var(--ease-out-expo) 320ms both;
       }
 
-      /* v0.7.1.1: season-prompts chip — paper 위 가시성 ↑ (반투명 흰 → 솔리드 흰 + 진한 border) */
+      /* v0.7.1.1: season-prompts chip — paper 위 가시성 ↑ (반투명 흰 → 솔리드 흰 + 진한 border)
+         v0.7.1.2: backdrop-filter 명시 해제 (chip base의 blur 잔존 방지) */
       .season-prompts .chip {
         cursor: pointer;
         color: var(--ink);
-        border-color: rgba(26, 26, 26, 0.22);
+        border: 1px solid rgba(26, 26, 26, 0.22);
         background: #ffffff;
+        backdrop-filter: none;
       }
 
       .season-prompts .chip:hover {
@@ -1409,14 +1433,16 @@
         pointer-events: auto;
         transition: opacity 360ms ease;
       }
-      /* v0.7.1.1: refine-chip — paper 위 가시성 ↑ (반투명 흰 → 솔리드 흰 + 진한 border) */
-      .refine-chip {
+      /* v0.7.1.2: refine-chip — .chip base가 line 1786에서 덮어쓰는 specificity 충돌 해결.
+         .chip.refine-chip (specificity 0,0,2,0) → .chip base (0,0,1,0)를 항상 이김. */
+      .chip.refine-chip {
         cursor: pointer;
         color: var(--ink);
-        border-color: rgba(26, 26, 26, 0.25);
+        border: 1px solid rgba(26, 26, 26, 0.25);
         background: #ffffff;
+        backdrop-filter: none;
       }
-      .refine-chip:hover {
+      .chip.refine-chip:hover {
         background: var(--cream);
         border-color: var(--ink);
       }
@@ -3254,14 +3280,16 @@
           <button class="cta cta-accent" id="btnGetStarted" type="button">Get Started</button>
         </div>
       </div>
-      <!-- v0.7.1: scroll-hint를 .landing 직속으로 이동(가로 viewport 기준 정확한 중앙).
-           chevron(위) + Scroll(아래) 순서 반전 — 화살표→라벨 자연스러운 navigation 흐름. -->
-      <a class="scroll-hint" href="#how-it-works" aria-label="Scroll to How it works">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M6 9l6 6 6-6"/>
-        </svg>
-        <span class="scroll-hint-label">Scroll</span>
-      </a>
+      <!-- v0.7.1.2: scroll-hint를 wrap div + left:0 right:0 + flex justify-center로 정렬.
+           letter-spacing trailing space와 chip width 변동에 영향 안 받는 견고한 중앙 정렬. -->
+      <div class="scroll-hint-wrap">
+        <a class="scroll-hint" href="#how-it-works" aria-label="Scroll to How it works">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+          <span class="scroll-hint-label">Scroll</span>
+        </a>
+      </div>
     </section>
 
     <!-- v0.6: How it works — Prompt → AI Look → Product 3-step 에디토리얼. 사람 사진 X, 가먼트/숫자 라벨만. -->

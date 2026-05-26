@@ -125,8 +125,9 @@
 - **프롬프트 도크 (`.dock`)**: pill(`999px`), `width: min(690px, 86vw)`, 48px 원형 `.dock-btn`
   + `.dock-input`(h48, 15px). 슬라이드 톤에 따라 `.dock.cream`/`.dock.dim`.
 - **Explore 검색바 (`.explore-search`)**: dock과 동형, explore scene 상단 sticky(`top: 76px`).
-- **칩 (`.chip`)**: `padding: 8px 14px`, `999px`, 12px, frosted(`blur(10px)`). 변형:
-  `season-prompts` 칩(라이트 배경, Explore), `refine-chip`(results scene 정제 칩).
+- **칩 (`.chip`)**: `padding: 8px 14px`, `999px`, 12px. 기본은 다크 배경용(반투명 흰).
+  라이트 배경 변형은 selector specificity 강화 — `.chip.refine-chip`·`.season-prompts .chip`
+  (각각 0,0,2,0)으로 base를 이김 + `backdrop-filter: none` 명시 + 솔리드 `#ffffff` 배경.
 - **Explore 카드 (`.explore-card`)**: `aspect-ratio: 3/4`, 룩별 톤 그라디언트 + 가먼트 SVG,
   `border-radius: 4px`, 등장 stagger(`cardIn`). Explore 12개 / curated-preview 6개.
 - **결과 carousel**: 풀블리드, 박스 경계 없음. `.carousel-nav`는 상단 중앙(topbar 아래),
