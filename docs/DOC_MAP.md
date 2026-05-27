@@ -39,7 +39,7 @@
 | `docs/AI_PIPELINE.md` | `기획/If discovery summary.md` §9 | 양방향 | 프롬프트 파싱·상품 매칭·데이터 레버 |
 | `docs/UI_GUIDE.md` | `디자인/I.F 디자인 계획 v0.0.md` | 단방향 (docs → archive) | 운영 값은 UI_GUIDE에만, archive는 버전 히스토리만 |
 
-매핑 데이터는 `.githooks/sync-pairs.json`에도 동일하게 들어 있다 (훅 자동 검사용).
+매핑 데이터의 단일 출처는 `.githooks/sync-pairs.tsv` (`영문<TAB>한글` 한 줄씩, `#` 주석 허용). 위 표는 사람용 미러 — **둘이 어긋나면 `.tsv`가 정본**. `/sync-docs`와 pre-commit 경고 훅 모두 `.tsv`를 직접 읽는다. 새 docs 추가 시: `.tsv` + 이 §2 표 **두 곳만** 같이 갱신.
 
 ## 3. Archive (참고용, 변경 안 함)
 

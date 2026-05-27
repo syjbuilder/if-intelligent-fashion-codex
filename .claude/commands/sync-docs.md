@@ -4,21 +4,15 @@ description: docs/ 영문 폴더와 기획/·기술/·디자인/ 한글 폴더 �
 
 I.F 프로젝트의 영문 docs와 한글 원본 폴더 간 sync를 검사·동기화하는 작업입니다. 사용자 메모리에 "문서 sync는 디퍼 금지"가 명시되어 있어 매번 즉시 처리합니다.
 
-## sync 매핑 (CLAUDE.md 기준)
+## sync 매핑 출처
 
 `docs/`가 공식 single source of truth, 한글 폴더가 원본 보관소.
 
-| docs/ 영문 (공식) | 한글 원본 (보관소) |
-|---|---|
-| `docs/PRD.md` | `기획/I.F V0 PRD.md` |
-| `docs/ADR.md` | `기획/I.F V0 PRD.md` (ADR 섹션) |
-| `docs/ARCHITECTURE.md` | `기술/I.F V0 TRD.md` |
-| `docs/DATA_MODEL.md` | `기술/I.F V0 TRD.md` |
-| `docs/API_CONTRACTS.md` | `기술/I.F V0 TRD.md` |
-| `docs/AI_PIPELINE.md` | `기술/I.F V0 TRD.md` |
-| `docs/UI_GUIDE.md` | `디자인/I.F 디자인 계획 v0.0.md` |
+**매핑은 이 슬래시 본문에 박지 않는다.** 단일 출처는 `.githooks/sync-pairs.tsv` (`영문<TAB>한글`, `#` 주석 허용). `docs/DOC_MAP.md` §2 거울 표가 사람용 미러. 새 docs를 추가하면 두 곳만 같이 갱신하면 됨 — 이 슬래시는 건드릴 일 없음.
 
 ## 절차
+
+0. **매핑 로드**: `.githooks/sync-pairs.tsv`를 읽어 `영문 ↔ 한글` 쌍 목록을 만든다 (주석/빈 줄 무시). 한 영문에 한글이 2개 이상 잡힐 수 있다(예: `docs/ADR.md`). 파일이 없거나 비어 있으면 즉시 중단하고 사용자에게 보고.
 
 1. **최근 변경 추출** (병렬 실행):
    - `git log --since="2 weeks ago" --name-only --pretty=format:"%h %ad %s" --date=short -- docs/ 기획/ 기술/ 디자인/`
@@ -26,7 +20,7 @@ I.F 프로젝트의 영문 docs와 한글 원본 폴더 간 sync를 검사·동�
    - `git diff HEAD -- docs/ 기획/ 기술/ 디자인/` (미커밋 diff)
 
 2. **drift 분석**:
-   - 각 매핑쌍을 비교해 한쪽만 최근에 변경되었는지 확인
+   - 0단계에서 로드한 매핑쌍을 비교해 한쪽만 최근에 변경되었는지 확인
    - drift 있는 쌍을 사용자에게 리스트로 보여줌:
      ```
      drift 감지:
