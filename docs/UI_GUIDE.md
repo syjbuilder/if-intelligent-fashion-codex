@@ -3,10 +3,10 @@
 > **이 문서는 IF의 유일한 살아있는 운영 디자인 스펙(operational design spec)이다.**
 > harness 워크플로우가 UI 작업의 기준으로 읽는다. 디자인이 바뀌면 **이 문서를 갱신한다.**
 >
-> 기준 시안: `디자인/if-homepage-v0.7.html` (Landing Long-form, 2026-05-26 — Typography 7원칙 재설계).
+> 기준 시안: `디자인/if-homepage-v0.7.html` (Landing Long-form, v0.7.3까지 누적 — Typography 7원칙 재설계 + 스크롤 모션 + muted slate accent).
 > 이전 시안(v0.0~v0.6)은 `디자인/archive/`에 보관 (참고만, 변경 안 함).
 > 디자인 탐색·의사결정 기록(어떻게 여기까지 왔는지)은 `디자인/I.F 디자인 계획 v0.0.md`(archive)에 있다.
-> 값이 시안과 충돌하면 v0.7 시안의 실제 값이 우선한다.
+> 값이 시안과 충돌하면 시안의 실제 값이 우선한다 (시안 상단 CHANGELOG 코멘트 블록 참조).
 
 ## 디자인 컨셉 & 원칙
 
@@ -44,14 +44,16 @@
 | `--cream` | `#eaeae6` | 카드/면 배경 (중성 베이지 회색) |
 | `--white` | `#fbfbfa` | 다크 위 텍스트 / 최밝은 면 |
 | `--line` | `rgba(26,26,26,0.10)` | 구분선 |
-| `--accent` | `#4a2e16` | 포인트 컬러 (Espresso Brown). 페이지당 ≤2회. *v0.7.0의 `#6a6234` 다크 올리브 브라운은 녹색 기미가 거슬려 v0.7.1에서 교체.* |
+| `--accent` | `#3d4f6b` | 포인트 컬러 (**Muted Slate**, v0.7.2 갱신). 페이지당 ≤2회. *v0.7.0 `#6a6234` 다크 올리브(녹색 기미) → v0.7.1 `#4a2e16` 에스프레소 브라운 → v0.7.2 `#3d4f6b` muted slate(따뜻한 톤을 차분한 푸른 톤으로 전환, 사용자 결정).* |
+| `--accent-rgb` | `61, 79, 107` | glass alpha 합성용 (v0.7.2 신규). `.cta-accent` 배경 `rgba(var(--accent-rgb), 0.55)`. |
 
-- v0.6의 `--sage`, `--stone`, `--quote-a`, `--quote-b`, **`--rose`** 토큰은 전부 삭제. rose 톤이 배경에 깔리는 느낌이 사용자분 시선에 거슬려 중성 팔레트로 전환.
-- 다크 신 배경(Hero / Auth / Loading): 동일한 다크 워밍 그라디언트 공유 — `radial(rgba(180,140,88,0.18)) + radial(rgba(0,0,0,0.68)) + linear(#0b0908 → #2a2018 → #1b140f)` + grain 텍스처 8% opacity. "잠시 멈춤·기다림"면이 한 톤으로 통일.
+- v0.6의 `--sage`, `--stone`, `--quote-a`, `--quote-b`, **`--rose`** 토큰은 전부 삭제. rose 톤이 배경에 깔리는 느낌이 사용자분 시선에 거슬려 중성 팔레트로 전환. v0.7.2에서 다시 한 단계 — 에스프레소 브라운까지 따뜻한 잔여 톤을 muted slate로 통일.
+- 다크 신 배경(Hero / Auth / Loading): 동일한 다크 슬레이트 그라디언트 공유 — `radial(rgba(61,79,107,0.18)) + radial(rgba(0,0,0,0.68)) + linear(#0a0c12 → #1e2733 → #0a0c10)` + grain 텍스처. v0.7.2까지의 워밍 브라운(`rgba(180,140,88) + #0b0908→#1b140f`)에서 전환. "잠시 멈춤·기다림"면이 한 톤으로 통일.
 - **결과 carousel**: 룩별 배경 톤 토글 폐기. 3 슬라이드(Office/Date/Sport) 모두 `var(--paper)` 단일 배경 — 옷 SVG는 ink stroke으로 또렷이 보임. 룩 구분은 슬라이드 메타 텍스트와 가먼트 SVG 형태로만.
-- **Explore/Curated/Saved 카드**: tone-office (베이지·웜드 그레이) / tone-date (초콜릿·카멜) / tone-sport (다크 부라운·차콜). 분홍·자주·녹색 톤 전부 unhook.
-- **랜딩 hero**: 단색 `#121211` + grain noise만. v0.6의 radial 두 개(rose + sage) + heroDrift 애니메이션 삭제.
-- 랜딩 섹션별 톤: hero=다크 단색, how-it-works=페이퍼, curated-preview=페이퍼(동일 면), footer=ink.
+- **Explore/Curated/Saved 카드**: tone-office (베이지·웜드 그레이) / tone-date (초콜릿·카멜) / tone-sport (다크 부라운·차콜). 카드는 룩의 무드를 표현하는 콘텐츠이므로 톤 다양성 유지 — 페이지 UI 크롬(다크 신·CTA·dock·강조 워드)만 슬레이트 통일.
+- **랜딩 hero**: v0.7.0 단색 `#121211` → **v0.7.2 3-layer 합성** — `radial(ellipse 70% 60% at 18% 30%, rgba(74,108,150,0.18), transparent 60%) + radial(ellipse 60% 60% at 82% 80%, rgba(0,0,0,0.55), transparent 70%) + linear-gradient(180deg, #14161c 0%, #0f1014 60%, #0a0b0e 100%)`. 좌상 푸른 글로우 + 우하 다크 비네트 + 수직 다크 그라디언트로 깊이감 확보. grain `::after` opacity 0.07 → 0.06 (합성과 균형).
+- **Hero panel·swatch (글래스 카드)**: border `rgba(255,255,255,0.16)`, opacity 0.48, `backdrop-filter: blur(8px) saturate(1.05)`. v0.7 단조로운 0.42 → v0.7.2 글래스 톤 강화.
+- 랜딩 섹션별 톤: hero=다크 3-layer 깊이감, how-it-works=페이퍼, curated-preview=페이퍼(동일 면), footer=ink. **섹션 사이 그라데이션 zone 없음** — v0.7.2의 42vh `.page-fade` zone은 v0.7.3에서 사용자 피드백(영역 과대)으로 제거됨. 대신 섹션 진입 시 `.section-in` stagger 애니메이션으로 부드러운 전환 제공 (애니메이션 섹션 참조).
 
 ### 배경 ↔ 텍스트 궁합 매트릭스
 
@@ -59,11 +61,13 @@
 |------|-----------|-----------|-----------|
 | `--paper` | `--ink` | `--ink-soft` | `--muted` |
 | `--cream` | `--ink` | `--ink-soft` | `--muted` |
-| `--ink` 다크 단색 | `--white` | `rgba(251,251,250,0.7)` | `rgba(251,251,250,0.5)` |
-| Hero/Auth/Loading 다크 워밍 | `--white` | `rgba(251,251,250,0.7)` | `rgba(251,251,250,0.5)` |
+| `--ink` 다크 단색 | `--white` | `rgba(255,255,255,0.7)` | `rgba(255,255,255,0.5)` |
+| Hero/Auth/Loading 다크 슬레이트 | `--white` | `rgba(255,255,255,0.7)` | `rgba(255,255,255,0.5)` |
 | Date 카드 (다크 초콜릿·카멜) | `#f3eee2` warm off-white | — | — |
 | Sport 카드 (다크 부라운·차콜) | `#f3eee2` | — | — |
 | Office 카드 (라이트 베이지) | `--ink` | — | — |
+
+- 워밍 화이트 `rgba(251,250,242,...)`(v0.7까지 사용)는 v0.7.3에서 중성 화이트 `rgba(255,255,255,...)`로 일괄 교체. 페이지 톤 일관성 — 다크 신은 슬레이트, 텍스트는 순수 화이트.
 
 카드 가먼트 SVG는 `currentColor` 사용 → 카드 배경 톤에 따라 자동 반전 (다크 카드 = 라이트 SVG, 라이트 카드 = 다크 SVG).
 
@@ -116,15 +120,16 @@
 ## 컴포넌트 (v0.7 실제 값)
 
 - **CTA 버튼 (`.cta`)**: `inline-flex`, **min 200×56px** (모바일 터치, 7원칙 §7), `border-radius: 999px`(pill),
-  border 1px currentColor, backdrop blur 제거, hover 시 `translateY(-2px)`.
+  border 1px currentColor, hover 시 `translateY(-2px)` + `rgba(255,255,255,0.18)` glass 톤.
   - `.cta-dark` 변형 = light 섹션용 다크 ink 배경.
-  - `.cta-accent` 변형 = 다크 올리브 브라운 배경 + 흰 텍스트. **페이지당 최대 1개** 핵심 전환 CTA(Get Started)에만.
+  - `.cta-accent` 변형 = **muted slate 글래스** (v0.7.2 갱신, 이전 솔리드 다크 브라운에서 전환). `background: rgba(var(--accent-rgb), 0.55)` + `backdrop-filter: blur(14px) saturate(1.1)` + `border: 1px solid rgba(255,255,255,0.18)` + 부드러운 box-shadow. hover 시 alpha 0.72. **페이지당 최대 1개** 핵심 전환 CTA(Get Started)에만.
 - **브랜드 마크 (`.brand strong`)**: `IF` 두 글자 (점 제거), `font-size: 24px`, `font-weight: 800`,
   `letter-spacing: -0.04em` (loiseau식 타이트한 lockup). v0.6의 `I.F` Playfair 500 30px → 변경.
+- **랜딩 topbar (`.landing-topbar`, v0.7.2 신규 위치)**: `<body data-page="landing">` 직속 (`.landing` 섹션 바깥). `position: fixed; mix-blend-mode: difference; color: #ffffff`. 다크 영역에선 흰색 그대로, 페이퍼 영역에선 자동 검정으로 반전. *왜 body 직속인가 — `.landing`이 `z-index:1`로 자체 stacking context를 만들어서 그 안에 두면 형제 섹션(`.how-it-works` 등) 위에서 difference가 작동 안 함.* studio·auth·history 진입 시 `display: none`.
 - **knot SVG 장식 (`<svg class="knot">`)**: brand-strip, auth-card, loading-wrap 3곳에서 제거 — italic 제거와 함께 Editorial 장식 일관성 차원.
 - **프롬프트 도크 (`.dock`)**: pill(`999px`), `width: min(690px, 86vw)`, 48px 원형 `.dock-btn`
-  + `.dock-input`(h48, 15px). 슬라이드 톤에 따라 `.dock.cream`/`.dock.dim`.
-- **Explore 검색바 (`.explore-search`)**: dock과 동형, explore scene 상단 sticky(`top: 76px`).
+  + `.dock-input`(h48, 15px). 슬라이드 톤에 따라 `.dock.cream`/`.dock.dim`. **v0.7.3 색감**: 기본 background `rgba(13, 16, 22, 0.58)` cool slate dark, `.dock.dim` `rgba(40, 50, 65, 0.46)` 슬레이트. 이전 워밍 `rgba(17,15,13,0.54)` / `rgba(76,60,46,0.42)` 폐기.
+- **Explore 검색바 (`.explore-search`)**: dock과 동형, explore scene 상단 sticky(`top: 76px`). v0.7.3에서 워밍 `rgba(255,250,242,0.92)` → 중성 `rgba(255,255,255,0.92)`.
 - **칩 (`.chip`)**: `padding: 8px 14px`, `999px`, 12px. 기본은 다크 배경용(반투명 흰).
   라이트 배경 변형은 selector specificity 강화 — `.chip.refine-chip`·`.season-prompts .chip`
   (각각 0,0,2,0)으로 base를 이김 + `backdrop-filter: none` 명시 + 솔리드 `#ffffff` 배경.
@@ -132,15 +137,16 @@
   `border-radius: 4px`, 등장 stagger(`cardIn`). Explore 12개 / curated-preview 6개.
 - **결과 carousel**: 풀블리드, 박스 경계 없음. `.carousel-nav`는 상단 중앙(topbar 아래),
   버튼 34px. 키보드 ← → 이동. 슬라이드별 `slide-meta`(태그·타이틀·설명) + 액션 버튼.
+- **상품 패널 (`.product-panel`)**: v0.7.3에서 워밍 `rgba(255,250,242,0.68)` → 중성 `rgba(255,255,255,0.68)`. `.panel-copy`/`.product-item small` 워밍 회색(`#776f66`·`#7b746b`·`#6f685f`) → 슬레이트 회색 `#5a5f68` 일괄.
 - **상품 드로어 (`.drawer-bag`)**: 슬라이드별 `View products` CTA(우상단 고정)로 우측 슬라이드 인.
   룩별 4개 카테고리 상품 카드 + ₩ 가격. **모바일에서는 하단 바텀시트**(`translateY`, grab handle).
-- **랜딩 How it works**: 3-step 세로 풀폭 — 큰 number(01/02/03, `--rose`) + Playfair 헤딩
-  + Manrope 본문 + 라인 드로잉 SVG. 카드 그리드 아님.
+- **랜딩 hero kicker**: v0.7.3 카피 갱신 — "AI Lookbook / Seoul Daily Wear" → **"Only AI Lookbook / Built for your day"**. 지역(Seoul) 마커 제거, 명시적 차별화(Only) + 개인화(your day) 강조.
+- **랜딩 hero title**: v0.7.3에서 `background-clip: text` 그라데이션 텍스트 폐기 → 솔리드 `var(--white)`. *.reveal-words split-word reveal과 충돌해 단어가 안 보이던 이슈 해결.* v0.7.1.2 그라데이션은 이미 매우 옅었기에 시각 손실 거의 없음.
+- **랜딩 How it works**: 3-step **풀폭 단일 컬럼 (v0.7.2 재정렬)** — eyebrow + section-headline + section-sub(17px, 가독성 ↑) + steps 모두 좌측 시작선 정렬. v0.7까지의 2-column grid(0.82fr 1.18fr)는 헤드라인↔step-num이 좌우 분리돼 어색하던 문제 해결. 각 step grid `88px | 1fr | 200px`. 큰 number(01/02/03)는 자동 `--accent` 슬레이트. 카드 그리드 아님.
 - **Site footer**: 짙은 인크 톤. 브랜드 + 이용약관/개인정보/문의 링크 + **어필리에이트 고지** + ©.
 - **약관/개인정보 모달 (`.modal-doc`)**: 풀스크린 dim + 페이퍼 톤 카드, 내부 스크롤.
   이용약관 6섹션 / 개인정보처리방침 8섹션.
-- **auth-screen**: 다크 워밍 그라디언트 + 중앙 카드 + knot SVG + 소셜 3버튼
-  (Google 화이트 / Kakao `#FEE500` / Naver `#03C75A`).
+- **auth-screen**: **다크 슬레이트 그라디언트 (v0.7.3 갱신)** + 중앙 카드 + 소셜 3버튼 (Google 화이트 / Kakao `#FEE500` / Naver `#03C75A`). 이전 워밍 브라운 그라디언트(`rgba(180,140,88) + #0b0908→#1b140f`) 폐기.
 - **history-page**: 로그인 시 `saved-grid`(저장 룩 카드), 비로그인 시 `history-gate`
   (가입 유도 — 헤드라인 + sample 룩 흐림 + CTA).
 - **scroll-hint**: hero 하단 chevron + 라벨, `scrollChevron` 무한 애니메이션.
@@ -169,6 +175,8 @@ V0는 풀 멀티턴 채팅 X. 싱글샷 워크스페이스 위에 3개 mini-acti
 - 허용: 느린 이미지 스케일, blur/fade 텍스트 등장(`welcomeIn` 1.1초), 패널 슬라이드,
   카드 stagger reveal(`cardIn`), scene 전환(`explore → loading → results`),
   스크롤 진입 fade-in(`IntersectionObserver` + `.reveal`/`.in-view`).
+- **`.reveal-words` (v0.7.2 신규)**: 텍스트를 단어 단위 span으로 분해 후 `overflow:hidden` wrap 안에서 `translateY(110% → 0)` 60ms stagger 슬라이드 업. `<strong class="accent">` 같은 인라인 요소는 단어 1개 단위로 보존. 적용: hero-title, how-it-works headline, curated headline. *v0.7.3에서 `.word { padding-bottom: 0.18em; margin-bottom: -0.18em }`로 descender 보존(g·y·p 잘림 방지).*
+- **`.section-in` (v0.7.3 신규, 섹션 진입 stagger)**: `.how-it-works`·`.curated-preview`·`.site-footer` 자체를 별도 `sectionObserver`로 관찰 (`threshold: 0.15, rootMargin: 0 0 -10%`). 진입 시 내부 콘텐츠(`.step`·`.explore-card`·`.footer-brand/links/affiliate`)가 transition-delay stagger로 fade+translateY. v0.7.2의 42vh `.page-fade` 그라데이션 zone을 대체 (사용자 피드백 — 그라데이션 영역 과대).
 - easing: `--ease: cubic-bezier(0.22,1,0.36,1)`, `--ease-out-expo: cubic-bezier(0.16,1,0.3,1)`.
 - 로딩 신은 도시/건축 라인이 아니라 패션 작업 언어(옷걸이 가먼트 라인업) 선형 애니메이션.
 - 스케일되는 stroked SVG는 `vector-effect: non-scaling-stroke`로 선 굵기 일정 유지.
@@ -189,6 +197,7 @@ V0는 풀 멀티턴 채팅 X. 싱글샷 워크스페이스 위에 3개 mini-acti
 | `transform: scaleX/rotate`로 폰트·요소 인위 변형 | 폰트 자체 비율 존중. loiseau 영향. |
 | 포인트 컬러를 페이지당 3회 이상 사용 | 절제될수록 강조가 살아난다. accent ≤ 2회 강제. |
 | 따뜻한 베이지·rose·sage·wine 톤이 배경에 깔리는 것 | v0.7에서 중성 오프화이트·중성 회색·다크 카멜로 통일. |
+| 워밍 브라운·에스프레소 톤이 다시 등장하는 것 (rgba 180,140,88·17,15,13·76,60,46·#776f66·#7b746b 등) | v0.7.2/v0.7.3에서 페이지 전체 UI 크롬을 **muted slate(#3d4f6b)**으로 통일. accent·CTA·dock·다크 신·강조 워드가 모두 푸른/중성 한 톤. (룩 카드의 tone-date/sport 가먼트 콘텐츠는 무드 표현이므로 예외.) |
 | weight 500·700 사용 | weight 3단(400/600/800)만 허용. |
 | 일반 쇼핑몰처럼 상품 그리드가 먼저 보이는 구조 | IF는 룩 보드가 먼저 보여야 함 |
 | 범용 AI 챗봇처럼 채팅창만 강조되는 구조 | 스타일 디렉터에게 요청하는 느낌이어야 함 |
