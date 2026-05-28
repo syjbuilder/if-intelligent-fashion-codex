@@ -837,10 +837,12 @@ payments
 - id
 - user_id
 - transaction_type
-- amount
+- amount  (ADR-012: 모든 generation spend는 항상 -10)
 - reason
 - related_generation_id
 - created_at
+
+> §15 plans·token_transactions의 V0 초기 시드 값과 차감 매트릭스는 `docs/DATA_MODEL.md`·`docs/ADR.md` ADR-012 참조. 본 §15는 high-level reference.
 
 ## 16. Initial API Spec
 
@@ -852,7 +854,7 @@ POST /api/auth/callback
 
 GET  /api/explore                       (NEW — Explore 진입 피드)
 POST /api/prompts/interpret             (chip_refinements·parent_history_id 파라미터 추가)
-POST /api/looks/generate                (trigger_type·parent_history_id 파라미터 추가)
+POST /api/looks/generate                (trigger_type·parent_history_id; max_looks 제거, 항상 룩 3개 — ADR-012)
 GET  /api/looks/:id
 GET  /api/looks/:id/products
 POST /api/looks/:id/save
@@ -987,6 +989,7 @@ TRD 이후 개발 전 확정해야 할 질문:
 - **docs ADR-009 (신규)**: V0는 싱글턴 워크스페이스 + mini-action 패턴 채택, 풀 멀티턴 채팅은 V1 검토. 세부 결정·이유·트레이드오프는 `docs/ADR.md` 참조.
 - **docs ADR-010 (신규)**: 1인 비개발자 commander × AI 에이전트 협업 모델. 자동 가드 4종(`main-branch-guard`, `secret-guard`, `tdd-guard`, `sync-warn`) + 3 step 이상 작업은 Harness 워크플로우(`phases/`, `scripts/execute.py`)로 분해. 세부는 `docs/ADR.md` 참조.
 - **docs ADR-011 (신규)**: 문서 거버넌스 — `docs/` 영문 7개 정본 + 한국어 원본(`기획/`, `기술/`) 이중 유지. 신원·sync 짝꿍 단일 지도는 `docs/DOC_MAP.md`. drift 감지는 `.githooks/sync-pairs.tsv` + `sync-warn.sh`. UI_GUIDE는 단일 운영 디자인 스펙, `디자인/I.F 디자인 계획 v0.0.md`는 archive로 역할 분리. 세부는 `docs/ADR.md` 참조.
+- **docs ADR-012 (신규, 2026-05-27)**: 토큰 차감 정책 — **1회 검색 = 10토큰 = 룩 3개** 일률 차감(fresh/regenerate/chip_refine/MLT/demo 동일). 결제 모델은 free(가입 1회 10토큰) + Pro(9,900원/월, 100토큰) + Max(19,900원/월, 200토큰) 2-tier. OpenAI GPT Image 2 Medium quality 고정(약 74원/이미지). B-path 무료 정책 폐기, topup 미도입(V0.5+ 검토). 운영 마진 Pro 77%·Max 78% 안전. 환율 1USD≥1,700원 또는 OpenAI 단가 인상 ≥20% 시 재검토. 세부 매트릭스·결제 모델·소진 UX는 `docs/ADR.md` 참조, API/DB 반영은 `docs/API_CONTRACTS.md`·`docs/DATA_MODEL.md` 참조. 기획/PRD §19 Open Q#2 해결.
 
 ## 22. Development Readiness Criteria
 
