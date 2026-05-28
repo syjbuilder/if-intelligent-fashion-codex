@@ -39,6 +39,14 @@
 ### Idempotency
 - `POST /api/looks/generate`, `/more-like-this` 호출 시 `X-Idempotency-Key` 헤더 권장 (중복 토큰 차감 방지).
 
+### 토큰 차감 정책 (ADR-012)
+- **1회 검색 = 10토큰 = 룩 3개** (OpenAI image generation 3회 호출). 검색 단위 일률 차감.
+- 모든 generation 액션(fresh / regenerate / chip_refine / MLT / demo) **동일 10토큰** 차감. B-path 적중 여부 무관.
+- `save` / `view explore·look·products` / `share`는 **0토큰**.
+- `max_looks` 사용자 노출 파라미터 없음 — 서버는 항상 3개 룩 반환.
+- 응답 `pipeline_source` 필드는 telemetry 용도(curated_only / mixed / generated_only). **사용자 노출 X**.
+- 자세한 결제 모델·소진 UX는 ADR-012.
+
 ---
 
 ## 1. GET /api/explore
@@ -135,8 +143,7 @@ Explore 진입 피드 — 큐레이션 룩 + 시즌 데모 프롬프트.
 {
   "intent_id": "uuid",
   "trigger_type": "fresh",
-  "parent_history_id": null,
-  "max_looks": 3
+  "parent_history_id": null
 }
 ```
 
@@ -145,7 +152,8 @@ Explore 진입 피드 — 큐레이션 룩 + 시즌 데모 프롬프트.
 | `intent_id` | uuid | yes | `/prompts/interpret` 응답의 `intent_id` |
 | `trigger_type` | enum | yes | `'fresh'` / `'regenerate'` / `'chip_refine'` |
 | `parent_history_id` | uuid \| null | no | regenerate·chip_refine 시 부모 turn |
-| `max_looks` | int | no | 1~3, 기본 3 |
+
+(ADR-012: `max_looks` 파라미터 제거 — 서버는 항상 룩 3개 반환. 1회 검색 = 10토큰 일률 차감.)
 
 **서버 동작:**
 1. intent 조회 → curated DB에서 의미적 매칭(B-path) 시도
@@ -174,15 +182,24 @@ Explore 진입 피드 — 큐레이션 룩 + 시즌 데모 프롬프트.
         "generated_image_url": "https://...",
         "source": "generated",
         "mood_tags": ["lovely", "feminine"]
+      },
+      {
+        "id": "uuid",
+        "title": "여름 데이트 시크",
+        "generated_image_url": "https://...",
+        "source": "curated_remixed",
+        "mood_tags": ["chic", "modern"]
       }
     ],
-    "tokens_spent": 1,
-    "tokens_balance_after": 2
+    "tokens_spent": 10,
+    "tokens_balance_after": 90,
+    "pipeline_source": "mixed"
   }
 }
 ```
 
-`source`: `'curated'` | `'curated_remixed'` | `'generated'`
+`source` (룩 단위): `'curated'` | `'curated_remixed'` | `'generated'`
+`pipeline_source` (응답 단위, telemetry용 — UI 노출 X): `'curated_only'`(모두 curated) | `'mixed'`(curated + generated 혼재) | `'generated_only'`(모두 A-path 생성). ADR-012 기준 모든 케이스 동일 10토큰 차감.
 
 **에러:**
 - `INSUFFICIENT_TOKENS` — free 3회 소진
@@ -325,11 +342,14 @@ Explore 진입 피드 — 큐레이션 룩 + 시즌 데모 프롬프트.
       { "id": "uuid", "title": "...", "generated_image_url": "https://...", "variation_summary": "원본 + 오버핏" },
       { "id": "uuid", "title": "...", "generated_image_url": "https://...", "variation_summary": "원본 + 미니멀 무드" }
     ],
-    "tokens_spent": 1,
-    "tokens_balance_after": 1
+    "tokens_spent": 10,
+    "tokens_balance_after": 80,
+    "pipeline_source": "mixed"
   }
 }
 ```
+
+(ADR-012: MLT도 일반 generate와 동일 10토큰 차감.)
 
 ---
 

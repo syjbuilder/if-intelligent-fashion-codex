@@ -25,7 +25,7 @@ src/
 
 - Server Components 기본. 인터랙션이 필요한 곳만 Client Component.
 - API-first: 로그인, 프롬프트 처리, AI 룩 생성, 상품 추천, 저장, 토큰 차감은 특정 웹 화면에
-  종속되지 않는 API 중심 기능으로 분리한다 (React Native/Expo 전환 가능성 유지).
+  종속되지 않는 API 중심 기능으로 분리한다 (React Native/Expo 전환 가능성 유지). 토큰 차감 정책은 ADR-012(1회 검색=10토큰=룩 3개 일률) — `token_transactions.amount`는 generation spend 시 항상 -10.
 - 환경 분리: local / staging / production. production DB 직접 쿼리 금지, migration은
   local·staging 검증 후 반영.
 

@@ -111,3 +111,68 @@ MVP 속도 최우선. 외부 의존성 최소화. 한국 시장 로컬화 우선
 - UI_GUIDE 단일화로 디자인 의사결정 archive 가치가 디자인계획 v0.0.md에 격리 → 이 파일을 "디자인 archive 정본"으로 명시
 
 **관련**: `docs/DOC_MAP.md`, `.githooks/sync-pairs.tsv`, `.githooks/sync-warn.sh`, `.claude/commands/sync-docs.md`, ADR-010(가드 일부로 sync-warn 포함), ADR-009(디자인 v0.6 기준선).
+
+### ADR-012: 토큰 차감 정책 — 1회 검색 = 10토큰 일률, free/Pro/Max 3-tier
+
+**결정**:
+- **토큰 단위 정의**: **1회 검색 = 10토큰 = 룩 3개** (OpenAI image generation API 3회). 검색 단위 일률 차감. `max_looks` 사용자 노출 파라미터 없음, 서버는 항상 3개 반환.
+- **차감 매트릭스 (모든 generation 액션 동일 10토큰)**:
+
+| 액션 | 차감량 | `token_transactions.reason` |
+|---|---|---|
+| fresh / regenerate / chip_refine | 10토큰 | `generation` |
+| MLT (More Like This) | 10토큰 | `more_like_this` |
+| demo seed → generate | 10토큰 | `demo_prompt` |
+| save / view explore·look·products / share | 0토큰 | 차감 없음 |
+
+- **결제 모델 (2-tier + 가입 grant, topup 미도입)**:
+
+| 플랜 | 가격 | 그랜트 | 검색/월 | 갱신 | Saved | Quality | V0 단계 |
+|---|---|---|---|---|---|---|---|
+| free | 0원 | 가입 1회 10토큰 | 1회 | 없음 | 5개 슬롯 | Medium | V0 Core |
+| Pro | 9,900원/월 | 월 100토큰 | 10회 | 매월 1일 cron + 익월 expire | 5개 슬롯 | Medium | V0 Extended |
+| Max | 19,900원/월 | 월 200토큰 | 20회 | 매월 1일 cron + 익월 expire | 무제한 | Medium | V0 Extended |
+
+- **이미지 quality**: 모든 tier OpenAI GPT Image 2 Medium 고정 (1024×1024, $0.053 = 약 74원/이미지).
+- **B-path 무료 정책 폐기**: 검색 단위 일률 차감 단순성을 우선. curated DB는 마진 기여로만 활용, UI 노출 없음.
+- **topup (단발 충전)**: V0.5+ 후순위 검토 (Leonardo·Botika 모델 참고, 사용량 데이터 6개월 후 결정).
+- **재검토 트리거**: 환율 1USD ≥ 1,700원 또는 OpenAI 단가 인상 ≥ 20% 시 ADR-012 갱신 필수.
+
+**이유**:
+- **운영 원가 안전**: Medium 74원/이미지 × 3 = 222원/검색. Pro 100토큰 최악(월 10회 풀 소진) cost 2,220원, 마진 7,680원(77%). Max 200토큰 최악 cost 4,440원, 마진 15,460원(78%). SaaS 표준(70-80%) 안전 확보 — B-path 무료 정책 없어도 흑자.
+- **시장 가격 적합**: 9,900원은 한국 SaaS 황금 포인트(밀리의 서재·T우주패스). 19,900원은 Netflix Korea 기본형 동심리대. 경쟁 패션 AI Botika $22≈31,000원 대비 3분의 1 가격으로 압도적 포지셔닝.
+- **사용자 인지 단순성**: "1회 검색=10토큰=룩 3개" 일률화로 토큰 계산 부담 없음. UI에 "이번은 무료" / "MLT는 0.5토큰" 같은 변동 표시 없음. ADR-009 mini-action 단순성 원칙과 동조.
+- **GPT Image 2 한국 패션 적합성**: 한글 텍스트 정확도 99%+, 동양인 인물·한국 무드 표현 Midjourney 대비 우위. ADR-003 모델 선정 근거 강화.
+
+**트레이드오프**:
+- B-path 적중 시에도 10토큰 차감 → curated DB 차별점이 사용자 가치로 노출되지 않음. 단순성 vs 차별점 노출 사이에서 단순성 선택. V1에서 "curated 적중률 표시" 재검토 가능.
+- free 10토큰은 1회 검색만 가능 → "체험판" 성격, 빠른 conversion 압박. 단 V0 검증 단계엔 conversion funnel 데이터 수집에 유리.
+- topup 미도입으로 헤비 유저는 Max로만 흡수 → 결제·환불·세금계산서 등 운영 부담 최소화.
+- OpenAI 단가/환율 변동 영향 직접 노출 → 재검토 트리거 명시로 hedge.
+
+**관련 docs 변경 (ADR-012 머지 시 함께)**:
+
+`docs/API_CONTRACTS.md` 5개 변경:
+1. §공통 규칙에 토큰 단위 정의 박제 (1회 검색=10토큰=룩 3개)
+2. §3 `/api/looks/generate` 응답 `tokens_spent: 10` 고정
+3. §3 request에서 `max_looks` 파라미터 제거 (서버는 항상 3 반환)
+4. §7 `/api/looks/:id/more-like-this` 응답 `tokens_spent: 10`
+5. `pipeline_source` 필드는 telemetry용으로만 유지, 사용자 노출 X
+
+`docs/DATA_MODEL.md` 4개 변경:
+1. `plans` 시드에 `'max'` row 신규 추가
+2. free `monthly_token_grant` 3 → 10
+3. Pro `max_saved_looks` null → 5
+4. `plans.monthly_token_grant`·`token_transactions.amount` 주석에 "의미는 ADR-012 참조" 명시
+
+**소진 후 UX**:
+- free 소진: "체험을 마쳤습니다. Pro/Max 출시 시 알림" wait list 모달
+- Pro/Max 소진: "이번 달 토큰 소진. 다음 달 1일 자동 충전 또는 Max 업그레이드"
+- V0 Core 단계엔 wait list만, V0 Extended에서 결제 활성
+
+**향후 검토 (별도 ADR 후보)**:
+- V0.5+ topup 도입 결정 (사용량 데이터 6개월 후)
+- Max tier 차별화 확장 (priority queue, 고급 필터 등)
+- OpenAI Tier 2 (분당 20 IPM) 진입 시점 — $100 누적, V0 출시 후 자연 도달
+
+**관련**: `docs/PRD.md` §8(토큰·구독), `docs/API_CONTRACTS.md` §공통 규칙·§3·§7, `docs/DATA_MODEL.md` §15.8(token_transactions)·§15.9(plans), `docs/AI_PIPELINE.md`(B-path/A-path 모델), ADR-003(OpenAI 모델 선정), ADR-009(mini-action 차감 트리거 행위).

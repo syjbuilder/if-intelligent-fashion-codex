@@ -200,7 +200,7 @@ mini-action 패턴 지원을 위해 TRD 원본 대비 컬럼 2개 추가 (`paren
 | `id` | `uuid` | PK | |
 | `user_id` | `uuid` | not null, FK → users.id ON DELETE CASCADE | |
 | `transaction_type` | `text` | not null | 'grant', 'spend', 'refund', 'expire' |
-| `amount` | `int` | not null | spend는 음수, grant는 양수 |
+| `amount` | `int` | not null | spend는 음수, grant는 양수. **모든 generation spend는 -10 (ADR-012 토큰 단위)** |
 | `reason` | `text` | not null | 'demo_prompt', 'generation', 'more_like_this', 'monthly_grant' 등 |
 | `related_generation_id` | `uuid` | nullable, FK → generation_history.id | |
 | `created_at` | `timestamptz` | not null, default `now()` | |
@@ -213,9 +213,9 @@ mini-action 패턴 지원을 위해 TRD 원본 대비 컬럼 2개 추가 (`paren
 
 | 컬럼 | 타입 | 제약 | 설명 |
 |---|---|---|---|
-| `code` | `text` | PK | 'free', 'pro' 등 |
+| `code` | `text` | PK | 'free', 'pro', 'max' |
 | `display_name` | `text` | not null | 한국어 표시명 |
-| `monthly_token_grant` | `int` | not null, default 0 | 매월 충전 토큰 |
+| `monthly_token_grant` | `int` | not null, default 0 | 토큰 그랜트량. **의미는 ADR-012 참조** (free=가입 시 1회만, Pro/Max=매월 1일 cron grant + 익월 expire) |
 | `monthly_price_krw` | `int` | not null, default 0 | |
 | `max_saved_looks` | `int` | nullable | null = 무제한 |
 | `features` | `jsonb` | not null, default `'{}'` | 기능 플래그 |
@@ -224,9 +224,10 @@ mini-action 패턴 지원을 위해 TRD 원본 대비 컬럼 2개 추가 (`paren
 
 **RLS:** anonymous read 허용.
 
-**V0 초기 데이터:**
-- `('free', '무료', 3, 0, 5, '{}', true)` — 무료 3회 데모/생성
-- `('pro', 'Pro', 100, 9900, null, '{"advanced_filters":true}', true)` — V0 Extended
+**V0 초기 데이터 (ADR-012 기준):**
+- `('free', '무료', 10, 0, 5, '{}', true)` — 가입 시 1회 10토큰(=1회 검색), saved 5개 누적 슬롯
+- `('pro', 'Pro', 100, 9900, 5, '{"advanced_filters":true}', true)` — V0 Extended, 월 100토큰(=10회 검색), saved 5개 슬롯
+- `('max', 'Max', 200, 19900, null, '{"advanced_filters":true,"unlimited_saved":true}', true)` — V0 Extended, 월 200토큰(=20회 검색), saved 무제한
 
 ---
 
