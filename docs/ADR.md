@@ -21,11 +21,38 @@ MVP 속도 최우선. 외부 의존성 최소화. 한국 시장 로컬화 우선
 **이유**: 단일 SDK로 Auth+Postgres+Storage 처리, 초기 무료 티어, RLS 보안, 1인 운영에 적합.
 **트레이드오프**: vendor lock-in. 복잡한 쿼리/AI 로직은 이후 별도 서버가 필요해질 수 있음.
 
-### ADR-003: AI 이미지는 OpenAI GPT Image 2를 우선 테스트하고 하이브리드 생성을 채택한다
-**결정**: 이미지 생성 모델은 OpenAI GPT Image 2 우선 테스트(Nano Banana는 비교 후보). 데모/인기
-프롬프트는 사전 생성·검수 룩, 자유 프롬프트는 실시간 생성하는 하이브리드 방식.
-**이유**: 첫 경험 실패율·생성 비용 통제, 의류 표현 품질과 한국 패션 무드 반영 검증 필요.
-**트레이드오프**: 모델 API 모델명·가격·조건은 구현 직전 공식 문서로 재확인 필요. 사전 검수 룩 운영 부담.
+### ADR-003: AI 이미지는 OpenAI GPT Image 2 Medium을 V0 운영 기준으로 고정하고 하이브리드 생성을 채택한다
+
+**결정**:
+- **운영 기준 모델**: **OpenAI GPT Image 2 · Medium quality · 1024×1024 고정**. 단가 $0.053 ≈ 74원/이미지 — ADR-012 토큰·마진 계산의 단가 기준점과 동일. (이전 "Nano Banana 비교 후보" 표현은 철회 — 아래 모델 지형도 참조.)
+- **생성 방식 (하이브리드)**: 데모/인기 프롬프트는 curated look DB 검색(B-path, 약 90%), 자유 프롬프트는 실시간 생성(A-path, fallback). `docs/AI_PIPELINE.md` 기준 — ADR-005(룩 단위)·ADR-012(검색 단위 일률 차감)와 정합.
+- **단가 매트릭스** (1024×1024, USD/이미지, 2026-05 조사):
+
+| 모델 | Low | Medium | High |
+|---|---|---|---|
+| **GPT Image 2** | $0.005 | **$0.053 ← 운영 고정** | $0.211 |
+| GPT Image 1.5 | $0.009 | $0.034 | $0.133 |
+
+  부가 비용: 프롬프트 input $5/1M token · 이미지 input(편집·variation) $8/1M · 이미지 output $30/1M.
+- **Rate limit (Tier별 IPM = Images Per Minute)**: Tier 1 = 5 / Tier 2 = 20 / Tier 3 = 50 / Tier 4 = 150 / Tier 5 = 250. **V0 출시 월 1,000 검색 = 3,000 이미지(일평균 ~100) → Tier 2(20 IPM) 필요**. $100 누적으로 즉시 도달 예상.
+- **GPT Image 1.5는 비용 최적화 "후보"로만 기록**: Medium 기준 36% 저렴($0.053 → $0.034)이나, 한국 패션 적합성(동양인 인물·한국 무드) 후기는 GPT Image 2 우위. V0 운영 기준은 GPT Image 2 유지, 전환 검토는 출시 후 한국 패션 품질 A/B 데이터로만.
+- **재검토 트리거**: 환율 1USD ≥ 1,700원 또는 OpenAI 단가 인상 ≥ 20% → **ADR-003·ADR-012 동시 갱신** (ADR-012 재검토 트리거와 동일 라인).
+
+**이유**:
+- **품질·비용 균형점 = Medium**: Low는 의류 디테일·텍스처 부족, High는 V0 검증 대비 단가 4배로 과함. Medium이 CLAUDE.md 품질 CRITICAL(한국 20-30대 여성 데일리, 전체 착장 가시성)을 충족하는 최저 비용 지점.
+- **한국 패션 적합성**: GPT Image 2는 한글 텍스트 정확도 99%+, 동양인 인물·한국 무드 표현이 Midjourney(텍스트 ~70%) 대비 우위. 신규 채택 모델 중 한국 데일리 패션에 가장 적합.
+- **현행 모델 지형도(2026-05)**: GPT Image 2(flagship·활성) / GPT Image 1.5(활성, 중·고품질 저렴·PNG 투명배경) / GPT Image 1(2026-10-23 deprecated 예정) / DALL-E 3(2026-05-12 API 종료). → 신규 채택의 합리적 선택지는 GPT Image 2.
+- **시장 가격 정합**: ChatGPT Plus 한국 ₩29,000/월 대비 I.F Pro 9,900원이 압도적 가성비(ADR-012 가격 결정과 정합).
+
+**트레이드오프**:
+- Medium 고정으로 High급 디테일은 포기 → V0 검증 후 특정 프리미엄 경로에서 High 선택 재검토 가능.
+- GPT Image 2가 1.5보다 Medium 36% 비쌈 → 한국 적합성·품질 우선으로 수용. 1.5 전환 여지는 A/B 트리거로 hedge.
+- OpenAI 단일 벤더 종속 → `src/services/` 모델 래퍼로 교체 경계 격리(ADR-007). Nano Banana 등 후보는 인터페이스 뒤에서 교체 가능하게 유지.
+- 단가·rate limit·deprecation 일정은 2026-05 외부 조사 기준 → **Phase 5(AI 룩 생성) 진입 게이트에서 OpenAI 공식 문서로 최종 재확인** 후 결제 카드·API key 발급.
+
+**출처 (2026-05 조사)**: developers.openai.com/api/docs/models/gpt-image-2 · costgoat.com/pricing/openai-images · wavespeed.ai(gpt-image-2 rate limits 2026) · evolink.ai(gpt-image-2 vs gpt-image-1.5 2026) · eesel.ai(gpt-image-2 vs midjourney vs dall-e-3 2026).
+
+**관련**: ADR-012(토큰·마진 단가 기준 $0.053=74원/이미지 + 재검토 트리거 공유), ADR-005(룩 단위 생성), ADR-006(업로드·합성·피팅 제외 — 생성 입력은 텍스트 프롬프트만), ADR-007(`src/services/` 모델 래퍼 경계), `docs/AI_PIPELINE.md`(A-path/B-path 하이브리드), CLAUDE.md AI 룩 품질 CRITICAL. 단가·rate limit 최종 확인 시점 = Phase 5 진입 게이트.
 
 ### ADR-004: V0에서는 자체 결제를 통한 상품 구매를 제공하지 않는다
 **결정**: I.F는 자사몰이 아님. 상품 카드의 구매 버튼은 외부 쇼핑몰/브랜드 페이지로 이동. 결제는 V0 Extended.
