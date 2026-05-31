@@ -47,7 +47,7 @@ I.F. V0는 Next.js 기반 웹 MVP로 시작한다. 데이터베이스, 인증, �
 - FastAPI는 V0부터 분리하지 않고, AI 파이프라인 복잡도가 커질 때 나중에 붙인다.
 - 결제는 V0 Core가 아니라 V0 Extended로 둔다.
 - 로그인은 Google을 먼저 구현하고, 이후 Kakao, Naver 순서로 구현한다.
-- AI 이미지 생성 모델은 OpenAI GPT Image 2를 우선 테스트한다.
+- AI 이미지 생성 모델은 OpenAI GPT Image 2 · Medium · 1024×1024를 V0 운영 기준으로 고정한다 (docs/ADR.md ADR-003, GPT Image 1.5는 비용 후보).
 - AI 이미지는 사전 생성/검수 룩과 실시간 생성을 함께 사용하는 하이브리드 방식으로 시작한다.
 - 프롬프트 해석은 LLM + JSON schema + taxonomy 방식으로 설계한다.
 - AI 룩 생성은 한국 20-30대 여성 데일리 패션, 전체 착장 가시성, 국내 상품 매칭 가능성을 핵심 품질 기준으로 둔다.
@@ -59,7 +59,7 @@ I.F. V0는 Next.js 기반 웹 MVP로 시작한다. 데이터베이스, 인증, �
 
 주의:
 
-- OpenAI GPT Image 2의 실제 API 모델명, 가격, 사용 조건은 구현 직전 공식 문서 기준으로 확인한다.
+- OpenAI GPT Image 2의 실제 API 모델명·단가·rate limit은 Phase 5(AI 룩 생성) 진입 게이트에서 OpenAI 공식 문서로 최종 재확인한다 (현재 사양은 docs/ADR.md ADR-003 박제).
 
 ## 3. Critical Rules
 
@@ -424,16 +424,20 @@ V0 목표:
 
 ### 10.4 Image Generation Model
 
-후보:
+후보(검토 당시):
 
 - OpenAI GPT Image 2
 - Nano Banana
 - 기타 이미지 생성 모델
 
-TRD 초기 결정:
+확정 결정 (docs/ADR.md ADR-003):
 
 ```text
-V0에서는 OpenAI GPT Image 2를 우선 테스트한다. Nano Banana는 비교 후보로 유지한다.
+V0 운영 기준 모델 = OpenAI GPT Image 2 · Medium · 1024×1024 고정
+($0.053 ≈ 74원/이미지, ADR-012 단가 기준점과 동일).
+GPT Image 1.5는 Medium 36% 저렴하나 한국 적합성 열위 → 비용 후보로만 기록.
+Nano Banana 등 대체 후보는 src/services/ 모델 래퍼 뒤 교체 경계로만 유지(ADR-007).
+단가·rate limit Tier·출처 세부는 docs/ADR.md ADR-003 참조.
 ```
 
 모델 선택 기준:
@@ -950,8 +954,8 @@ V0에서 최소한 기록해야 할 이벤트:
 
 TRD 이후 개발 전 확정해야 할 질문:
 
-1. OpenAI GPT Image 2의 실제 API 모델명, 가격, 사용 조건은 구현 시점 공식 문서 기준으로 무엇인가?
-2. Nano Banana는 어떤 품질/비용 차이가 있으며, V0 비교 후보로 유지할 가치가 있는가?
+1. OpenAI GPT Image 2의 실제 API 모델명·가격·사용 조건 — 현재 사양·단가·Tier는 `docs/ADR.md` ADR-003 박제(2026-05 조사), **Phase 5(AI 룩 생성) 진입 게이트에서 공식 문서로 최종 재확인**.
+2. ~~Nano Banana는 어떤 품질/비용 차이가 있으며, V0 비교 후보로 유지할 가치가 있는가?~~ → **해결: `docs/ADR.md` ADR-003 (GPT Image 2 운영 고정, Nano Banana 비교 후보 철회 — `src/services/` 래퍼 뒤 교체 후보로만 유지)**
 3. 결제 provider는 Toss Payments, PortOne, Stripe 중 무엇을 우선할 것인가?
 4. Supabase Auth로 Kakao/Naver 구현이 충분한가, 별도 OAuth 처리가 필요한가?
 5. curated look DB 500개의 초기 입력 방식은 어드민 직접 입력과 CSV import 중 무엇을 우선할 것인가?
@@ -980,7 +984,7 @@ TRD 이후 개발 전 확정해야 할 질문:
 
 - docs ADR-001: V0는 웹 MVP로 시작
 - docs ADR-002: Next.js + Supabase + Vercel
-- docs ADR-003: OpenAI GPT Image 2 + 하이브리드
+- **docs ADR-003 (갱신, 2026-06-01)**: AI 이미지는 **OpenAI GPT Image 2 · Medium · 1024×1024**를 V0 운영 기준으로 고정($0.053≈74원/이미지, ADR-012 단가 기준점과 동일) + curated B-path·실시간 A-path 하이브리드. rate limit는 출시 규모(월 1,000 검색 = 3,000 이미지)상 Tier 2(20 IPM) 필요. GPT Image 1.5는 Medium 36% 저렴이나 한국 적합성 열위로 비용 후보로만 기록. 환율 1USD≥1,700원 또는 OpenAI 단가 인상 ≥20% 시 ADR-003·ADR-012 동시 재검토. 단가·Tier·출처 세부는 `docs/ADR.md` 참조.
 - docs ADR-004: V0 자체 결제 제외
 - docs ADR-005: 룩 단위 추천 + curated 500개
 - docs ADR-006: 이미지 업로드·얼굴 합성·셀럽 생성 제외

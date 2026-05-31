@@ -12,7 +12,7 @@
 - Next.js (App Router) + TypeScript — React Server Components 기본, API Route/Server Actions 통합
 - Supabase — PostgreSQL + Auth + Storage
 - Vercel 배포 (Web), Supabase (DB/Auth/Storage)
-- AI: OpenAI GPT Image 2 우선 테스트 (이미지 생성, Nano Banana는 비교 후보) / 프롬프트 해석은 LLM + JSON schema + 한국어 패션 taxonomy
+- AI: OpenAI GPT Image 2 · Medium · 1024×1024 운영 고정 (이미지 생성, $0.053≈74원/이미지, GPT Image 1.5는 비용 후보 — `docs/ADR.md` ADR-003·ADR-012) / 프롬프트 해석은 LLM + JSON schema + 한국어 패션 taxonomy
 - 스타일링: Tailwind CSS + Playfair Display(헤드라인) + Manrope(본문)
 - FastAPI는 V0 Core에서 분리하지 않는다. AI 파이프라인 복잡도가 커지면 그때 도입.
 
