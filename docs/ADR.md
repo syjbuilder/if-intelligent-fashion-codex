@@ -203,3 +203,73 @@ MVP 속도 최우선. 외부 의존성 최소화. 한국 시장 로컬화 우선
 - OpenAI Tier 2 (분당 20 IPM) 진입 시점 — $100 누적, V0 출시 후 자연 도달
 
 **관련**: `docs/PRD.md` §8(토큰·구독), `docs/API_CONTRACTS.md` §공통 규칙·§3·§7, `docs/DATA_MODEL.md` §15.8(token_transactions)·§15.9(plans), `docs/AI_PIPELINE.md`(B-path/A-path 모델), ADR-003(OpenAI 모델 선정), ADR-009(mini-action 차감 트리거 행위).
+
+### ADR-013: AI 생성 실행 모델 — 동기 처리 + maxDuration 상향
+
+**결정**: `/api/looks/generate`를 Node.js runtime + maxDuration 상향(60초 목표, Vercel 플랜 한도 내) 동기 처리로 시작한다. 멱등성 키(ADR-014)로 재시도 중복을 차단하고, 룩 3장은 `Promise.all` 병렬 생성으로 지연을 단축한다.
+
+**이유**: OpenAI 이미지 생성은 호출당 10~30초가 걸린다. 정석은 비동기 작업큐(즉시 응답 + 클라이언트 폴링) 패턴이지만, 큐·워커·상태 폴링 인프라는 V0 Tier 2 볼륨(월 약 3,000 이미지)에는 과하다. 동기 + maxDuration 상향이 가장 단순하면서 V0 볼륨을 감당한다.
+
+**트레이드오프**: 정석은 비동기 작업큐지만 V0 케이스는 동기 + maxDuration이 가장 단순하다(추가 인프라 0). 재검토 트리거: p95 지연이 함수 한도의 70%에 도달하거나 동시 생성이 급증하면 비동기(작업큐 + 폴링)로 전환한다.
+
+**열린 항목**: maxDuration 60초는 Vercel 플랜에 묶인다(Hobby 플랜에서는 제한될 수 있음) — Phase 5 진입 전 Vercel Pro 필요 여부를 PO가 확인한다.
+
+**관련**: ADR-002(Next.js + Vercel 실행 환경), ADR-007(`src/services/` AI 래퍼 경계), ADR-014(멱등성 키로 재시도 중복 차단), `docs/AI_PIPELINE.md`(A-path 실시간 생성), `docs/ARCHITECTURE.md`(AI 생성 실행 모델).
+
+### ADR-014: 토큰 차감 정합성 — Postgres RPC + 멱등성 + 환불
+
+**결정**:
+- **(1) 단일 Postgres RPC `consume_tokens()` (SECURITY DEFINER)**: `SELECT ... FOR UPDATE`로 `users` 행을 잠그고 → 잔액 확인 → `token_transactions` insert → balance update를 하나의 트랜잭션으로 처리한다.
+- **(2) `CHECK(token_balance >= 0)` 제약**을 backstop으로 둔다.
+- **(3) 멱등성 키 필수화**: `X-Idempotency-Key` 헤더 → `token_transactions.idempotency_key` 컬럼 + `unique(user_id, idempotency_key)`. 같은 키 재요청은 캐시된 응답을 반환(중복 차감 없음).
+- **(4) 생성 실패 / 3장 미달 시 자동 환불**: `refund_tokens()` RPC(환불 거래 기록 + 잔액 복구). 룩 3장은 all-or-nothing(부분 성공 = 실패로 처리 후 환불).
+
+**이유**: 동시 요청·더블클릭 시 이중 차감·음수 잔액 위험이 있다. 정석은 분산락 / 외부 큐지만, 단일 Postgres 트랜잭션 + 행 잠금이면 Supabase 단독으로 충분하며 추가 인프라가 0이다.
+
+**트레이드오프**: 정석은 분산락 / 외부 큐지만 V0 케이스는 단일 Postgres 트랜잭션 + 행 잠금으로 충분하다(추가 인프라 0). 정합 원칙: ADR-012의 10토큰 일률·"항상 3개"를 바꾸지 않는다 — 차감 "방식"만 안전하게 한다.
+
+**관련**: ADR-012(10토큰 일률·"항상 3개" 정책 불변), `docs/DATA_MODEL.md`(token_transactions·007_token_rpc.sql), `docs/API_CONTRACTS.md`(멱등성·환불 스펙).
+
+### ADR-015: AI 비용 안전장치 — 일일 cap + kill switch + billing alert
+
+**결정**:
+- **(1) OpenAI 대시보드 billing hard limit + email alert** (무료, PO 수작업, Phase 5 진입 전 설정).
+- **(2) 전역 일일 spend cap**: 당일 누적 생성 호출 수를 `generation_history`에서 카운트해, 상한 초과 시 `generate`가 503으로 안내한다.
+- **(3) 수동 kill switch**: 즉시 전체 생성을 차단한다.
+- **(4) 설정값(일일 상한 수치 + kill switch on/off)은 env 환경변수에 둔다** (`app_config` 테이블 아님). 일일 상한 초기값 예시: 정상 일평균(~33 검색/일 = ~100 이미지)의 약 5~6배(예: 일 200 검색 = 600 이미지)로 시작, 실트래픽 데이터로 조정한다.
+
+**이유**: per-user 토큰 한도는 한 사용자만 막는다. 버그나 악의로 전체 호출이 폭주하면 전역 상한이 없을 때 적자가 난다. 정석은 실시간 비용 대시보드지만 V0에는 과하다.
+
+**트레이드오프**: env 선택은 10테이블 freeze 유지 + 가장 단순함 vs kill switch 토글 시 Vercel 재배포 약 1분(비상장치라 드물게 사용). 재검토 트리거: kill switch를 자주 토글해야 하거나 비개발 운영자가 무재배포로 토글해야 하면 그때 `app_config` 테이블로 승격한다. 정합 원칙: ADR-003 단가·ADR-012 마진 수치를 건드리지 않는다 — runaway "상한"만 추가한다.
+
+**관련**: ADR-003(단가 기준), ADR-012(마진 수치), `docs/ARCHITECTURE.md`(운영 안전장치), PO 수작업 체크리스트.
+
+### ADR-016: 보안 경계 — RLS 전수 + service_role + 어드민 role + 가입 abuse
+
+**결정**:
+- **(1) RLS 전수**: `006_rls_policies.sql`에 전 테이블 RLS enable, 읽기는 본인/공개만, 쓰기는 전부 service_role(서버 라우트)만 허용한다.
+- **(2) 어드민 role**: Supabase `app_metadata.role=admin` JWT 클레임 → `/api/admin/*` 가드, `users.role` 컬럼.
+- **(3) 가입 grant 멱등**: Supabase Auth trigger에서 `INSERT ... ON CONFLICT DO NOTHING`로 1회만 10토큰을 지급한다.
+- **(4) 기본 rate limit 초기값**: 유저당 10회/분, IP당 30회/분, 가입 IP당 5개/일(초기 기본값, 운영 데이터로 조정).
+
+**이유**: RLS 정책이 산문으로만 있고 `006_rls_policies.sql`이 미작성 상태다. service_role 경계·어드민 모델이 모호하고, 무료 토큰 파밍 방지 장치가 없다. 정석은 별도 인증 서비스 / WAF지만 Supabase RLS + 라우트 레벨 rate limit로 V0에 충분하다.
+
+**트레이드오프**: 정석은 별도 인증 서비스 / WAF지만 V0 케이스는 Supabase RLS + 라우트 레벨 rate limit로 충분하다(추가 인프라 0). rate limit·가입 grant 수치는 초기 기본값이며 운영 데이터로 조정한다.
+
+**관련**: ADR-002(Supabase Auth·RLS 기반), ADR-010(자동 가드 모델), `docs/DATA_MODEL.md`(006_rls·users.role), `docs/API_CONTRACTS.md`(rate limit·에러코드).
+
+### ADR-017: 이미지 생성 모델 build-vs-buy — V0는 GPT Image(buy), 자체 모델은 V1+
+
+**결정**: V0는 OpenAI GPT Image 2(ADR-003) API 사용(buy)을 유지한다. 자체 패션 전용 이미지 모델 학습 / 파인튜닝은 V0 범위 밖이며 V1+ 후보로 둔다.
+
+**이유**:
+- **(1)** 처음부터 자체 모델 학습은 비현실적이다(수백만 $·GPU 클러스터·ML 팀). 오픈 모델(FLUX/SD) 파인튜닝은 기술적으로 가능하나 V0 단계에 과투자다.
+- **(2)** 저볼륨에서는 API(월 약 22만 원, Tier 2 추정)가 자체 GPU 호스팅(월 40만~200만+원)보다 싸다.
+- **(3)** 해자(moat)는 모델이 아니라 데이터다(AI_PIPELINE 데이터 레버: 상품 태그·캡션·역프롬프트·멀티모달 임베딩·피드백). 모델은 교체 가능한 상품이다.
+- **(4)** 전환 경로: 관리형 GPU(Replicate·fal.ai) + LoRA/ControlNet. ADR-007의 `src/services` 래퍼 경계로 교체를 격리한다.
+
+**재검토 트리거**: ① OpenAI 비용이 자체 호스팅 손익분기를 초과(볼륨 급증) ② 한국 패션 품질이 파인튜닝으로 유의미하게 개선됨이 입증 ③ 벤더 리스크(가격 인상·deprecation — DALL-E 3 API 종료가 증거). ADR-003 재검토 트리거와 연동한다.
+
+**트레이드오프**: 정석 논의는 "자체 모델 = 차별화"지만 V0 케이스는 속도·비용·해자(데이터) 측면에서 buy가 정답이다.
+
+**관련**: ADR-003(OpenAI GPT Image 2 운영 고정), ADR-007(`src/services/` 모델 래퍼 경계), ADR-012(토큰·마진), `docs/AI_PIPELINE.md`(데이터 레버).

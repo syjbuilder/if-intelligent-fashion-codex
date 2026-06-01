@@ -344,6 +344,24 @@ if-product/
 - 어드민은 처음에는 `apps/web` 내부 admin route로 시작할 수 있다.
 - FastAPI가 필요해지면 `apps/api` 또는 별도 repo로 분리한다.
 
+### 8.1 AI 생성 실행 모델 (ADR-013)
+
+- `/api/looks/generate`는 **Node.js runtime + maxDuration 상향(60초 목표, Vercel 플랜 한도 내) 동기 처리**로 시작한다(OpenAI 생성은 호출당 10~30초). 정석은 비동기 작업큐(즉시 응답 + 폴링)지만 V0 Tier 2 볼륨(월 약 3,000 이미지)엔 과하다.
+- 룩 3장은 `Promise.all` 병렬 생성으로 지연을 단축하고, 멱등성 키(ADR-014)로 재시도 중복을 차단한다. 3장 all-or-nothing — 부분 성공은 실패 처리 후 자동 환불.
+- 재검토 트리거: p95 지연이 함수 한도의 70% 도달 또는 동시 생성 급증 시 비동기 전환. **열린 항목**: maxDuration 60초는 Vercel 플랜에 묶임(Hobby 제한 가능) — Phase 5 진입 전 Pro 필요 여부 PO 확인.
+
+### 8.2 운영 안전장치 (ADR-015)
+
+- **OpenAI billing alert**: 대시보드 billing hard limit + email alert(무료, PO 수작업).
+- **전역 일일 spend cap**: 당일 누적 생성 호출 수를 `generation_history` 당일치 조회로 카운트, 상한 초과 시 `generate`가 503으로 안내.
+- **수동 kill switch**: 즉시 전체 생성 차단.
+- per-user 토큰 한도는 한 사용자만 막으므로, 버그·악의로 인한 전체 호출 폭주를 막는 전역 runaway 상한이 필요하다. ADR-003 단가·ADR-012 마진 수치는 불변 — runaway "상한"만 추가.
+
+### 8.3 환경 / 마이그레이션 절차
+
+- **env 변수(추가)**: `DAILY_GENERATION_CAP`(일일 생성 상한), `GENERATION_KILL_SWITCH`(전체 생성 차단 토글). 비용 안전장치 설정값은 `app_config` 테이블이 아니라 env에 둔다(10테이블 freeze 유지, ADR-015).
+- **마이그레이션 순서**: 001~005(스키마·시드) → 006_rls_policies.sql(RLS 전수, ADR-016) → 007_token_rpc.sql(`consume_tokens()`/`refund_tokens()`, ADR-014).
+
 ## 9. Authentication
 
 V0 목표:
@@ -751,7 +769,8 @@ payments
 - email
 - nickname
 - plan_type
-- token_balance
+- token_balance  (`CHECK(token_balance >= 0)` 제약 backstop — 음수 잔액 방지, ADR-014)
+- role  (NEW — 'user' / 'admin', default 'user'; `app_metadata.role=admin` JWT 클레임과 정합, `/api/admin/*` 가드, ADR-016)
 - created_at
 - updated_at
 
@@ -760,7 +779,7 @@ payments
 - id
 - title
 - base_prompt
-- generated_image_url
+- generated_image_url  (OpenAI URL이 아니라 **Supabase Storage 경로/서명 URL**로 저장 — 생성 즉시 영속화, OpenAI URL 24h 만료 대응, ADR-013·DATA_MODEL/AI_PIPELINE 보강)
 - season
 - situation_tags
 - mood_tags
@@ -820,6 +839,8 @@ payments
 - status
 - parent_history_id (NEW — mini-action turn 추적, ADR-009)
 - trigger_type (NEW — 'fresh' / 'regenerate' / 'chip_refine' / 'more_like_this')
+- pipeline_source (NEW 2026-06-01 — telemetry: 'curated_only'/'mixed'/'generated_only', API 응답과 동일 enum, UI 비노출)
+- match_score (NEW 2026-06-01 — telemetry: B-path 최고 매칭 점수, 임계값 0.70 튜닝 근거)
 - created_at
 
 상세는 `docs/DATA_MODEL.md` §15.6 참조. mini-action 패턴(다시 생성·정제 칩=conversation turn·More Like This)을 부모-자식 관계로 추적.
@@ -844,9 +865,19 @@ payments
 - amount  (ADR-012: 모든 generation spend는 항상 -10)
 - reason
 - related_generation_id
+- idempotency_key  (NEW — `X-Idempotency-Key` 헤더 저장, `unique(user_id, idempotency_key)` 제약. 같은 키 재요청은 캐시 응답으로 중복 차감 차단, ADR-014)
 - created_at
 
 > §15 plans·token_transactions의 V0 초기 시드 값과 차감 매트릭스는 `docs/DATA_MODEL.md`·`docs/ADR.md` ADR-012 참조. 본 §15는 high-level reference.
+
+### 15.9 백엔드 안전 보강 (006 RLS · 007 토큰 RPC · 비용 안전장치 env, ADR-014/015/016)
+
+> 10테이블 freeze 유지 — 새 테이블 추가 없이 정책·함수·env 스펙으로만 보강. 세부는 `docs/DATA_MODEL.md`, 추적 지도는 `docs/BACKEND_HARDENING_V0.md` 참조.
+
+- **006_rls_policies.sql (RLS 전수, ADR-016)**: 전 테이블 RLS enable. 읽기는 본인/공개(visibility)만, 쓰기는 전부 service_role(서버 라우트)만 허용. 클라이언트 직접 쓰기 차단.
+- **007_token_rpc.sql (토큰 RPC, ADR-014)**: `consume_tokens()`(SECURITY DEFINER) = `SELECT ... FOR UPDATE`로 `users` 행 잠금 → 잔액 확인 → `token_transactions` insert → balance update를 한 트랜잭션으로 처리(동시 요청·더블클릭 이중 차감·음수 잔액 방지). `refund_tokens()` = 생성 실패/3장 미달 시 환불 거래 기록 + 잔액 복구(룩 3장 all-or-nothing). ADR-012의 10토큰 일률·"항상 3개"는 불변, 차감 "방식"만 안전화.
+- **비용 안전장치 설정값 = env 환경변수 (ADR-015)**: 일일 생성 상한(`DAILY_GENERATION_CAP`)·kill switch(`GENERATION_KILL_SWITCH`)는 `app_config` 테이블이 아니라 env에 둔다(새 테이블 없음). 당일 누적 생성 카운트는 `generation_history` 당일치 조회로 계산.
+- **마이그레이션 순서**: 001~005(기존 스키마·시드) → 006_rls_policies.sql → 007_token_rpc.sql.
 
 ## 16. Initial API Spec
 
@@ -883,6 +914,15 @@ PATCH /api/admin/products/:id
 ```
 
 상세 request/response 스키마는 `docs/API_CONTRACTS.md`가 정식 문서. 본 섹션은 엔드포인트 목록 reference.
+
+**백엔드 안전 계약 (ADR-013/014/015/016, 2026-06-01 보강)** — 차감 양/개수(10토큰·항상 3개·`max_looks` 미노출)는 불변, 차감 "방식"의 계약만 안전화:
+
+- **멱등성 필수화**: 모든 generation 요청(`/api/looks/generate`, `/api/looks/:id/more-like-this`)은 `X-Idempotency-Key` 헤더 필수. 같은 키 재요청은 캐시된 응답을 반환(중복 차감 없음, ADR-014).
+- **동기 실행 모델**: `/api/looks/generate`는 Node.js runtime + maxDuration 상향 동기 처리, 룩 3장 병렬 생성(ADR-013).
+- **부분 실패·자동 환불**: 룩 3장 all-or-nothing — 3장 미달/생성 실패 시 10토큰 자동 환불 + 에러 응답(ADR-014).
+- **Rate limit**: 유저당 10회/분, IP당 30회/분, 가입 IP당 5개/일(초기 기본값, 운영 데이터로 조정, ADR-016).
+- **입력 validation**: 프롬프트 길이 등 입력 제약을 라우트에서 검증.
+- **에러 코드**: 402(잔액 부족), 429(rate limit 초과), 503(전역 일일 cap 도달 / kill switch on, ADR-015).
 
 ## 17. Main Screens
 
@@ -994,6 +1034,11 @@ TRD 이후 개발 전 확정해야 할 질문:
 - **docs ADR-010 (신규)**: 1인 비개발자 commander × AI 에이전트 협업 모델. 자동 가드 4종(`main-branch-guard`, `secret-guard`, `tdd-guard`, `sync-warn`) + 3 step 이상 작업은 Harness 워크플로우(`phases/`, `scripts/execute.py`)로 분해. 세부는 `docs/ADR.md` 참조.
 - **docs ADR-011 (신규)**: 문서 거버넌스 — `docs/` 영문 7개 정본 + 한국어 원본(`기획/`, `기술/`) 이중 유지. 신원·sync 짝꿍 단일 지도는 `docs/DOC_MAP.md`. drift 감지는 `.githooks/sync-pairs.tsv` + `sync-warn.sh`. UI_GUIDE는 단일 운영 디자인 스펙, `디자인/I.F 디자인 계획 v0.0.md`는 archive로 역할 분리. 세부는 `docs/ADR.md` 참조.
 - **docs ADR-012 (신규, 2026-05-27)**: 토큰 차감 정책 — **1회 검색 = 10토큰 = 룩 3개** 일률 차감(fresh/regenerate/chip_refine/MLT/demo 동일). 결제 모델은 free(가입 1회 10토큰) + Pro(9,900원/월, 100토큰) + Max(19,900원/월, 200토큰) 2-tier. OpenAI GPT Image 2 Medium quality 고정(약 74원/이미지). B-path 무료 정책 폐기, topup 미도입(V0.5+ 검토). 운영 마진 Pro 77%·Max 78% 안전. 환율 1USD≥1,700원 또는 OpenAI 단가 인상 ≥20% 시 재검토. 세부 매트릭스·결제 모델·소진 UX는 `docs/ADR.md` 참조, API/DB 반영은 `docs/API_CONTRACTS.md`·`docs/DATA_MODEL.md` 참조. 기획/PRD §19 Open Q#2 해결.
+- **docs ADR-013 (신규, 2026-06-01)**: AI 생성 실행 모델 — `/api/looks/generate`를 Node.js runtime + maxDuration 상향(60초 목표, Vercel 플랜 한도 내) **동기 처리**로 시작. 룩 3장은 `Promise.all` 병렬 생성으로 지연 단축, 멱등성 키(ADR-014)로 재시도 중복 차단. 정석은 비동기 작업큐지만 V0 Tier 2 볼륨(월 약 3,000 이미지)엔 큐·워커·폴링이 과함. 재검토 트리거: p95 지연이 함수 한도의 70% 도달 또는 동시 생성 급증 시 비동기 전환. **열린 항목**: maxDuration 60초는 Vercel 플랜에 묶임(Hobby 제한 가능) — Phase 5 진입 전 Pro 필요 여부 PO 확인. 세부는 `docs/ADR.md`·`docs/ARCHITECTURE.md` 참조.
+- **docs ADR-014 (신규, 2026-06-01)**: 토큰 차감 정합성 — (1) 단일 Postgres RPC `consume_tokens()`(SECURITY DEFINER): `SELECT ... FOR UPDATE` 행 잠금 → 잔액 확인 → `token_transactions` insert → balance update를 한 트랜잭션. (2) `CHECK(token_balance >= 0)` backstop. (3) 멱등성 키 필수화(`X-Idempotency-Key` 헤더 → `token_transactions.idempotency_key` + `unique(user_id, idempotency_key)`, 같은 키 재요청은 캐시 응답). (4) 생성 실패/3장 미달 시 `refund_tokens()` 자동 환불(3장 all-or-nothing). 정석은 분산락/외부 큐지만 V0는 단일 Postgres 트랜잭션+행 잠금으로 충분(추가 인프라 0). 정합: ADR-012의 10토큰 일률·"항상 3개" 불변 — 차감 "방식"만 안전화. 세부는 `docs/DATA_MODEL.md`(007_token_rpc.sql)·`docs/API_CONTRACTS.md` 참조.
+- **docs ADR-015 (신규, 2026-06-01)**: AI 비용 안전장치 — (1) OpenAI 대시보드 billing hard limit + email alert(무료, PO 수작업). (2) 전역 일일 spend cap: 당일 누적 생성 호출 수를 `generation_history`에서 카운트, 초과 시 `generate`가 503. (3) 수동 kill switch로 즉시 전체 생성 차단. (4) 설정값(일일 상한·kill switch on/off)은 **env 환경변수**에 둠(`app_config` 테이블 아님, 새 테이블 추가 없음). 일일 상한 초기값 예시: 정상 일평균(~33 검색/일=~100 이미지)의 5~6배(예 일 200 검색=600 이미지). per-user 토큰은 한 사용자만 막으므로 전역 runaway 상한 필요. 정합: ADR-003 단가·ADR-012 마진 수치 불변 — runaway "상한"만 추가. 세부는 `docs/ADR.md`·`docs/ARCHITECTURE.md` 참조.
+- **docs ADR-016 (신규, 2026-06-01)**: 보안 경계 — (1) `006_rls_policies.sql`에 전 테이블 RLS enable, 읽기는 본인/공개만, 쓰기는 전부 service_role(서버 라우트)만. (2) 어드민 role: Supabase `app_metadata.role=admin` JWT 클레임 → `/api/admin/*` 가드, `users.role` 컬럼. (3) 가입 grant 멱등: Supabase Auth trigger에서 `INSERT ... ON CONFLICT DO NOTHING`로 1회만 10토큰. (4) 기본 rate limit 초기값: 유저당 10회/분, IP당 30회/분, 가입 IP당 5개/일. 정석은 별도 인증 서비스/WAF지만 V0는 Supabase RLS + 라우트 레벨 rate limit로 충분. 세부는 `docs/DATA_MODEL.md`(006_rls·users.role)·`docs/API_CONTRACTS.md`(rate limit·에러코드) 참조.
+- **docs ADR-017 (신규, 2026-06-01)**: 이미지 생성 모델 build-vs-buy — V0는 OpenAI GPT Image 2(ADR-003) API 사용(**buy**) 유지, 자체/파인튜닝 모델은 V0 범위 밖 V1+ 후보. 이유: 처음부터 자체 학습은 비현실(수백만 $·GPU·ML 팀), 저볼륨에선 API(월 약 22만 원)가 자체 GPU 호스팅(월 40만~200만+원)보다 쌈, 해자는 모델이 아니라 데이터(AI_PIPELINE 데이터 레버), 전환 경로는 관리형 GPU(Replicate·fal.ai)+LoRA/ControlNet을 ADR-007 `src/services` 래퍼로 격리. 재검토 트리거: ① 자체 호스팅 손익분기 초과 ② 파인튜닝 품질 우위 입증 ③ 벤더 리스크(가격 인상·deprecation), ADR-003 트리거와 연동. 정석 논의는 "자체 모델=차별화"지만 V0는 속도·비용·해자 측면에서 buy가 정답. 세부는 `docs/ADR.md` 참조.
 
 ## 22. Development Readiness Criteria
 
