@@ -1059,6 +1059,18 @@ V0에서는 이미지 업로드 기능을 핵심 범위에서 제외하므로, �
 9. 향후 앱 전환을 고려한 API 경계, 인증 callback, redirect URI, deep link 전략은 어떻게 설계할 것인가?
 10. 웹 MVP 이후 React Native/Expo 앱 확장과 앱 래퍼 출시 중 어떤 경로를 우선 검토할 것인가?
 
+### 19.1 백엔드 안전 보강 결정 (ADR-013~017)
+
+V0 출시 전 발견한 백엔드 V0-critical 구멍 6개에 대한 결정. 세부 스펙·SQL·엔드포인트 계약은 `docs/ADR.md`와 `docs/BACKEND_HARDENING_V0.md`가 single source of truth이며, 본 절은 PRD 레벨 요약이다. 모든 결정은 ADR-012의 토큰 양/개수(1회 검색=10토큰=룩 3개, 항상 3개, `max_looks` 미노출)와 ADR-003의 단가·마진 수치를 **건드리지 않고** 차감 "방식"과 운영 안전성만 보강한다.
+
+- **ADR-013 (AI 생성 실행 모델)**: `/api/looks/generate`를 Node.js runtime + maxDuration 상향(60초 목표, Vercel 플랜 한도 내) **동기** 처리로 시작하고, 룩 3장은 `Promise.all` 병렬 생성으로 지연을 단축한다. 정석은 비동기 작업큐지만 V0 Tier 2 볼륨(월 약 3,000 이미지)엔 큐/워커 인프라가 과해 동기 + maxDuration이 가장 단순. 재검토 트리거: p95 지연이 함수 한도의 70% 도달 또는 동시 생성 급증. (열린 항목: maxDuration 60초는 Vercel 플랜 의존 — Phase 5 진입 전 Vercel Pro 필요 여부 PO 확인.)
+- **ADR-014 (토큰 차감 정합성)**: 단일 Postgres RPC `consume_tokens()`(행 잠금 → 잔액 확인 → 거래 기록 → 잔액 갱신을 한 트랜잭션), `CHECK(token_balance >= 0)` 제약, `X-Idempotency-Key` 헤더 기반 멱등성 키(`token_transactions.idempotency_key` + `unique(user_id, idempotency_key)`), 생성 실패/3장 미달 시 자동 환불(`refund_tokens()`, 3장 all-or-nothing)을 도입한다. 동시 요청·더블클릭의 이중 차감·음수 잔액을 분산락 없이 Supabase 단독으로 막는다. ADR-012의 10토큰 일률·"항상 3개"는 불변, 차감 "방식"만 안전화.
+- **ADR-015 (AI 비용 안전장치)**: OpenAI 대시보드 billing hard limit + email alert(무료, PO 수작업), 전역 일일 spend cap(당일 누적 생성 호출 수를 `generation_history`에서 카운트해 초과 시 503 안내), 수동 kill switch를 둔다. 설정값(일일 상한·kill switch on/off)은 **env 환경변수**에 두어 새 테이블 추가 없이 10테이블 freeze를 유지한다. per-user 토큰 한도는 한 사용자만 막으므로 버그·악의로 인한 전체 호출 폭주 방지용 전역 상한이 필요. ADR-003 단가·ADR-012 마진은 불변, runaway 상한만 추가.
+- **ADR-016 (보안 경계)**: `006_rls_policies.sql`에 전 테이블 RLS enable(읽기는 본인/공개만, 쓰기는 전부 service_role), 어드민 role(`app_metadata.role=admin` JWT + `users.role` 컬럼 + `/api/admin/*` 가드), 가입 grant 멱등(`INSERT ... ON CONFLICT DO NOTHING`로 1회만 10토큰), 기본 rate limit 초기값(유저 10회/분·IP 30회/분·가입 IP 5개/일)을 둔다. 정석은 별도 인증 서비스/WAF지만 Supabase RLS + 라우트 레벨 rate limit로 V0 충분. 무료 토큰 파밍 방지 포함.
+- **ADR-017 (이미지 모델 build-vs-buy)**: V0는 OpenAI GPT Image 2(ADR-003) API 사용(**buy**)을 유지하고, 자체 패션 전용 이미지 모델 학습/파인튜닝은 V0 범위 밖 V1+ 후보로 둔다. 자체 학습은 비현실적(수백만 $·GPU·ML 팀)이고 저볼륨에선 API가 자체 GPU 호스팅보다 싸며, 해자(moat)는 모델이 아니라 데이터(상품 태그·캡션·역프롬프트·멀티모달 임베딩·피드백)다. 정석 논의는 "자체 모델=차별화"지만 V0 케이스는 속도·비용·해자 측면에서 buy가 정답. 재검토 트리거: 비용 손익분기 초과·파인튜닝 품질 개선 입증·벤더 리스크(DALL-E 3 API 종료가 증거).
+
+DB·계약 측면 주요 변경: `users`에 `CHECK(token_balance >= 0)`·`role` 컬럼, `token_transactions`에 `idempotency_key` + `unique(user_id, idempotency_key)`, 신규 `006_rls_policies.sql`·`007_token_rpc.sql`(consume/refund RPC), `looks.generated_image_url`은 OpenAI URL이 아니라 Supabase Storage 경로/서명 URL로 영속화(OpenAI URL 24h 만료 대응), B-path 매칭 임계값 초기값 0.70. 새 테이블은 추가하지 않는다(10테이블 freeze 유지). 전체 추적표는 `docs/BACKEND_HARDENING_V0.md`(영문 단독 설계 추적 문서).
+
 ## 20. V0 Acceptance Criteria
 
 V0가 성공적으로 구현되었다고 판단하는 기준:

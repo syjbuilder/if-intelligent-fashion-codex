@@ -38,11 +38,16 @@
 | `email` | `text` | unique, not null | OAuth로부터 |
 | `nickname` | `text` | nullable | 사용자 설정 |
 | `plan_type` | `text` | not null, default 'free' | 'free', 'pro' 등 (`plans.code` 참조) |
-| `token_balance` | `int` | not null, default 0 | 현재 토큰 잔액 |
+| `token_balance` | `int` | not null, default 0, **CHECK (`token_balance >= 0`)** | 현재 토큰 잔액. CHECK는 음수 잔액 backstop (ADR-014) |
+| `role` | `text` | not null, default 'user' | 'user', 'admin'. 어드민 가드용 (ADR-016) |
 | `created_at` | `timestamptz` | not null, default `now()` | |
 | `updated_at` | `timestamptz` | not null, default `now()` | trigger로 자동 |
 
 **RLS:** `auth.uid() = id`인 row만 select/update 가능. insert는 trigger로 Supabase Auth와 연동.
+
+**제약·컬럼 보강 (ADR-014·ADR-016):**
+- `CHECK (token_balance >= 0)` — 동시 요청·더블클릭으로 RPC 잠금이 뚫리는 극단 경우를 위한 DB 레벨 backstop. 1차 방어는 `consume_tokens()` RPC의 행 잠금(§007). 위반 시 트랜잭션이 롤백되어 음수 잔액이 절대 커밋되지 않음.
+- `role` 컬럼 — JWT `app_metadata.role=admin` 클레임과 동기화되는 어드민 식별자. `/api/admin/*` 라우트 가드 + 운영자 전용 쿼리(RLS service_role 경계)와 함께 사용. 기본값 `'user'`, 운영자만 `'admin'`.
 
 ---
 
@@ -53,7 +58,7 @@
 | `id` | `uuid` | PK | |
 | `title` | `text` | nullable | 룩 이름 (예: "여름 데이트 꾸안꾸 룩") |
 | `base_prompt` | `text` | not null | 사용자 입력 원문 또는 curated 룩의 대표 프롬프트 |
-| `generated_image_url` | `text` | not null | Supabase Storage URL 또는 외부 CDN |
+| `generated_image_url` | `text` | not null | **Supabase Storage 경로(또는 서명 URL)만 저장**. OpenAI 생성 URL은 24h 만료되므로 직접 저장 금지 (아래 영속화 규칙 참조) |
 | `season` | `text` | nullable | 'spring' / 'summer' / 'fall' / 'winter' / 'all' |
 | `situation_tags` | `text[]` | default `{}` | 'date', 'office', 'picnic' 등 표준 enum |
 | `mood_tags` | `text[]` | default `{}` | 'casual', 'minimal', 'lovely' 등 |
@@ -75,6 +80,11 @@
 - `(is_curated, visibility)` — Explore 쿼리 최적화
 - `(season, situation_tags)` GIN — 시즌·상황 검색
 - `(created_by, created_at DESC)` — 사용자 히스토리
+
+**이미지 영속화 규칙 (A-path 생성, ADR-013 정합):**
+- OpenAI GPT Image 2가 반환하는 생성 URL은 **24시간 후 만료**된다. 따라서 생성 직후 즉시 Supabase Storage에 업로드하고, `generated_image_url`에는 Storage 경로(또는 거기서 발급한 서명 URL)를 저장한다. OpenAI URL을 그대로 저장하면 다음 날 깨진 이미지가 된다.
+- 토큰은 생성 호출 전에 **선차감**되므로(ADR-014·API_CONTRACTS §3 서버 동작 순서: cap 확인 → `consume_tokens()` 선차감 → 생성 → 실패 시 `refund_tokens()` 환불), 영속화는 응답을 성공으로 확정하기(= 선차감분을 환불하지 않고 확정하기) 전에 완료한다. 3장 all-or-nothing(ADR-014)이므로, 한 장이라도 Storage 저장에 실패하면 부분 성공으로 보지 않고 실패 처리 후 `refund_tokens()`로 환불한다.
+- curated 룩(`is_curated=true`)도 동일하게 Storage 경로 보관 (외부 만료 URL 의존 금지).
 
 ---
 
@@ -138,7 +148,7 @@
 
 ## 15.6 generation_history
 
-mini-action 패턴 지원을 위해 TRD 원본 대비 컬럼 2개 추가 (`parent_history_id`, `trigger_type`).
+mini-action 패턴 지원을 위해 TRD 원본 대비 `parent_history_id`·`trigger_type` 추가. 2026-06-01 telemetry 컬럼 `pipeline_source`·`match_score` 추가(B/A 비율·매칭 점수 로깅, UI 비노출 — 새 테이블 아님, 10테이블 freeze 유지).
 
 | 컬럼 | 타입 | 제약 | 설명 |
 |---|---|---|---|
@@ -150,6 +160,8 @@ mini-action 패턴 지원을 위해 TRD 원본 대비 컬럼 2개 추가 (`paren
 | `status` | `text` | not null | 'pending', 'success', 'failed' |
 | `parent_history_id` | `uuid` | nullable, FK → generation_history.id | mini-action turn 추적용 |
 | `trigger_type` | `text` | not null, default 'fresh' | 'fresh', 'regenerate', 'chip_refine', 'more_like_this' |
+| `pipeline_source` | `text` | nullable | B/A 분기 telemetry: `'curated_only'`/`'mixed'`/`'generated_only'` (API_CONTRACTS 응답 `pipeline_source`와 동일 enum, ADR-012 — UI 노출 X) |
+| `match_score` | `real` | nullable | B-path 최고 매칭 가중합 점수 (임계값 0.70·가중치 튜닝 telemetry, `docs/AI_PIPELINE.md` §4) |
 | `created_at` | `timestamptz` | not null, default `now()` | |
 
 **RLS:** `user_id = auth.uid()`.
@@ -203,9 +215,15 @@ mini-action 패턴 지원을 위해 TRD 원본 대비 컬럼 2개 추가 (`paren
 | `amount` | `int` | not null | spend는 음수, grant는 양수. **모든 generation spend는 -10 (ADR-012 토큰 단위)** |
 | `reason` | `text` | not null | 'demo_prompt', 'generation', 'more_like_this', 'monthly_grant' 등 |
 | `related_generation_id` | `uuid` | nullable, FK → generation_history.id | |
+| `idempotency_key` | `text` | nullable | 클라이언트 `X-Idempotency-Key` 헤더 값. **`unique(user_id, idempotency_key)`** (ADR-014). spend·refund 거래에 필수, grant/expire 등 cron 거래는 null 허용 |
 | `created_at` | `timestamptz` | not null, default `now()` | |
 
 **RLS:** `user_id = auth.uid()` read만. write는 service_role (서버에서만 트리거).
+
+**제약·멱등성 (ADR-014):**
+- `unique(user_id, idempotency_key)` — 동일 사용자가 같은 멱등성 키로 재요청하면(더블클릭·네트워크 재시도) insert가 unique 위반으로 막혀 이중 차감이 발생하지 않는다. 서버는 위반을 감지하면 기존 거래의 결과를 캐시 응답으로 돌려준다(중복 차감 없음).
+- `idempotency_key`는 spend(`generation`·`more_like_this`·`demo_prompt`)와 그 환불(refund)에 필수. 환불 거래는 원 spend 키에서 파생한 키(예: `<key>:refund`)로 멱등 보장. cron grant·expire 등 서버 배치 거래는 키 없이(null) 허용 — partial unique index `WHERE idempotency_key IS NOT NULL`로 다수 null을 허용한다.
+- **ADR-012 불변**: 이 멱등성 컬럼은 차감 "방식"의 안전장치일 뿐, 1회 검색=10토큰·항상 룩 3개 차감 "양/개수"는 그대로다.
 
 ---
 
@@ -251,19 +269,90 @@ V0 Core에서는 사용하지 않음. V0 Extended/V1 도입 시 활성화.
 
 ---
 
+## 15.11 RLS 정책 전수 (006_rls_policies.sql 미리보기)
+
+> ADR-016. `006_rls_policies.sql`은 **전 테이블 RLS enable**을 일괄 적용한다. 공통 원칙: **읽기는 본인/공개만, 쓰기는 전부 service_role(서버 라우트)만**. 클라이언트가 anon/authenticated 키로 직접 INSERT/UPDATE/DELETE 하는 경로는 없다(API 키 노출 방지 CRITICAL과 정합).
+
+각 테이블 정책 요약 (모든 테이블 `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`):
+
+| 테이블 | SELECT (read) | INSERT/UPDATE/DELETE (write) |
+|---|---|---|
+| `users` | `auth.uid() = id` 본인만 | service_role만 (가입 trigger·서버 라우트) |
+| `looks` | `is_curated AND visibility='public'` anon read + `created_by = auth.uid()` 본인 | service_role만 (생성·curated 등록) |
+| `products` | anon read 허용 | service_role만 (운영자 어드민) |
+| `look_products` | look 정책 상속 (공개·본인 look의 매핑만) | service_role만 |
+| `saved_looks` | `user_id = auth.uid()` 본인만 | service_role만 |
+| `generation_history` | `user_id = auth.uid()` 본인만 | service_role만 |
+| `prompt_intents` | `user_id = auth.uid()` 본인만 | service_role만 |
+| `token_transactions` | `user_id = auth.uid()` 본인만 | service_role만 (RPC 경유) |
+| `plans` | anon read 허용 | service_role만 |
+| `payments` | `user_id = auth.uid()` 본인만 | service_role만 |
+
+- **service_role 경계**: 모든 write는 `src/app/api/` 서버 라우트가 service_role 키로 수행한다. RLS는 클라이언트 직접 쓰기를 원천 차단하는 마지막 방어선.
+- **어드민 가드 (ADR-016)**: 운영자 전용 작업(`products` 등록, curated `looks` 검수)은 JWT `app_metadata.role=admin` + `users.role='admin'` 확인 후 `/api/admin/*`에서 service_role로 수행. RLS 정책 자체는 service_role을 신뢰하므로, 어드민 권한 검사는 라우트 레벨에서 한다.
+- **가입 grant 멱등 (ADR-016)**: Supabase Auth trigger가 신규 가입 시 1회만 10토큰(ADR-012)을 부여한다. trigger 내 `INSERT ... ON CONFLICT DO NOTHING`으로 재실행·중복 이벤트에도 한 번만 grant되게 한다.
+
+---
+
+## 15.12 토큰 RPC 명세 (007_token_rpc.sql)
+
+> ADR-014. 동시 요청·더블클릭에서 이중 차감·음수 잔액·환불 누락을 막기 위해, 토큰 차감/환불을 **단일 Postgres 트랜잭션 + 행 잠금**으로 처리하는 두 RPC를 추가한다. 추가 인프라(분산락·외부 큐) 없이 Supabase 단독으로 정합성을 확보한다. **새 테이블은 만들지 않는다** — 기존 `users`·`token_transactions`만 사용.
+
+### `consume_tokens()`
+
+- **시그니처(개념)**: `consume_tokens(p_user_id uuid, p_amount int, p_reason text, p_idempotency_key text, p_related_generation_id uuid) RETURNS token_transactions`
+- **속성**: `SECURITY DEFINER` (RLS를 우회해 service_role 경계 안에서만 실행). 서버 라우트만 호출.
+- **동작 (한 트랜잭션)**:
+  1. `SELECT ... FROM users WHERE id = p_user_id FOR UPDATE` — 해당 사용자 행을 잠가 동시 차감을 직렬화.
+  2. 멱등성 체크: `(p_user_id, p_idempotency_key)`로 기존 `token_transactions`가 있으면 **차감 없이 그 거래를 그대로 반환**(중복 차감 방지).
+  3. 잔액 확인: `token_balance < p_amount`이면 잔액 부족 에러(서버는 402 매핑, API_CONTRACTS).
+  4. `INSERT INTO token_transactions (...) ` — `transaction_type='spend'`, `amount = -p_amount`(음수), `reason`, `idempotency_key`, `related_generation_id`.
+  5. `UPDATE users SET token_balance = token_balance - p_amount` — `CHECK (token_balance >= 0)`가 최종 backstop.
+- **호출 시점**: `/api/looks/generate`·`/more-like-this`가 **생성 호출 전 선차감**으로 1회(API_CONTRACTS §3 서버 동작 순서 — cap 확인 → `consume_tokens()` 선차감 → 생성 → 부분실패 시 `refund_tokens()` 환불). `p_amount`는 항상 10 (ADR-012 불변).
+
+### `refund_tokens()`
+
+- **시그니처(개념)**: `refund_tokens(p_user_id uuid, p_amount int, p_idempotency_key text, p_related_generation_id uuid) RETURNS token_transactions`
+- **속성**: `SECURITY DEFINER`. 서버 라우트만 호출.
+- **동작 (한 트랜잭션)**:
+  1. `SELECT ... FOR UPDATE`로 사용자 행 잠금.
+  2. 멱등성 체크: 환불 키(예: 원 spend 키 + `:refund`)로 기존 환불 거래가 있으면 그대로 반환(이중 환불 방지).
+  3. `INSERT INTO token_transactions (...)` — `transaction_type='refund'`, `amount = +p_amount`(양수), `reason='generation'`(원 사유 승계), `idempotency_key`, `related_generation_id`.
+  4. `UPDATE users SET token_balance = token_balance + p_amount` — 잔액 복구.
+- **환불 트리거 (3장 all-or-nothing)**: AI 생성 실패 또는 룩 3장 미달(부분 성공) 시 부분 성공으로 보지 않고 **실패 처리 후 자동 환불**한다. 한 검색=10토큰 단위이므로 부분 환불은 없다(전액 10토큰 환불).
+
+> **ADR-012 정합**: 위 RPC는 차감 "방식"의 안전장치다. 차감 "양/개수"(1회 검색=10토큰=룩 3개, 서버 항상 3개)는 변경하지 않는다.
+
+---
+
+## 15.13 비용 안전장치 설정값 — env (테이블 아님)
+
+> ADR-015. 전역 일일 spend cap·수동 kill switch의 **설정값은 환경변수(env)에 둔다**. `app_config` 같은 새 테이블을 만들지 않는다(10테이블 freeze 유지).
+
+- **일일 cap 카운트 출처**: 당일 생성 호출 수는 별도 카운터 테이블 없이 **`generation_history`의 당일치(`created_at`) 행 수 조회**로 계산한다. 상한 초과 시 `/api/looks/generate`가 503으로 안내(API_CONTRACTS).
+- **env 변수(예시)**:
+  - `DAILY_GENERATION_CAP` — 전역 일일 생성 호출 상한(이미지/검색 기준). 초기값 예시: 정상 일평균(~33 검색/일 = ~100 이미지)의 약 5~6배(예: 일 200 검색 = 600 이미지). 실트래픽으로 조정.
+  - `GENERATION_KILL_SWITCH` — `on`/`off`. on이면 전체 생성 즉시 차단(비상장치). 토글 시 Vercel 재배포 ~1분 소요(드물게 사용하는 비상장치라 수용).
+- **트레이드오프(ADR-015)**: env 선택 = 10테이블 freeze 유지·가장 단순. 비개발 운영자가 무재배포로 토글해야 하거나 토글이 잦아지면 그때 `app_config` 테이블로 승격 재검토.
+- **ADR-003·ADR-012 정합**: 단가($0.053=74원/이미지)·마진 수치는 건드리지 않는다 — runaway "상한"만 추가.
+
+---
+
 ## 마이그레이션 권고
 
 V0 부트스트랩 시 다음 순서로 마이그레이션:
 
-1. `001_init_users.sql` — users + Supabase Auth trigger
+1. `001_init_users.sql` — users (`CHECK token_balance >= 0`·`role` 포함) + 가입 grant 멱등 Supabase Auth trigger
 2. `002_init_looks_products.sql` — looks, products, look_products
 3. `003_init_saved_history.sql` — saved_looks, generation_history (parent_history_id 포함), prompt_intents
-4. `004_init_tokens_plans.sql` — token_transactions, plans + free/pro 시드
+4. `004_init_tokens_plans.sql` — token_transactions (`idempotency_key`·`unique(user_id, idempotency_key)` 포함), plans + free/pro/max 시드
 5. `005_init_payments.sql` — payments (V0 Extended)
-6. `006_rls_policies.sql` — 모든 RLS 정책 일괄 적용
+6. `006_rls_policies.sql` — 전 테이블 RLS enable + 정책 일괄 적용 (읽기 본인/공개, 쓰기 service_role — §15.11)
+7. `007_token_rpc.sql` — `consume_tokens()`·`refund_tokens()` RPC (행 잠금·멱등성·환불 — §15.12)
 
-각 마이그레이션은 local → staging → production 순서로 검증.
+각 마이그레이션은 local → staging → production 순서로 검증. 일일 cap·kill switch 설정값은 마이그레이션이 아니라 **env 환경변수**로 관리한다(§15.13, 새 테이블 없음).
 
 ## 변경 이력
 
 - 2026-05-17: 초기 작성 (TRD 15장 promote). `generation_history`에 mini-action 추적용 `parent_history_id`, `trigger_type` 컬럼 추가.
+- 2026-06-01: 백엔드 V0 안전 보강 (ADR-013~017). `users`에 `CHECK (token_balance >= 0)`·`role` 컬럼 추가, `token_transactions`에 `idempotency_key`·`unique(user_id, idempotency_key)` 추가, `looks.generated_image_url` Storage 경로 영속화 규칙 명시(OpenAI URL 24h 만료 대응). §15.11 RLS 전수 정책(006), §15.12 토큰 RPC 명세(007 `consume_tokens`/`refund_tokens`), §15.13 비용 안전장치 env 설정값(테이블 추가 없음) 신설. `generation_history`에 telemetry 컬럼 `pipeline_source`·`match_score` 추가(B/A 비율·매칭 점수 로깅, UI 비노출). 10테이블 freeze·ADR-012 차감 양 불변 유지.

@@ -121,6 +121,21 @@ V0에서는 `products` 테이블에 `caption_simple` / `caption_searchable` 컬�
 
 가중치는 V0 출시 후 사용자 클릭/저장/구매링크 클릭 데이터로 튜닝.
 
+### B-path 매칭 임계값 (초기값 0.70)
+
+curated look DB 검색(B-path)에서 위 가중합 점수가 **0.70 이상**일 때만 B-path 적중으로 간주하고, 미달이면 A-path(실시간 생성)로 fallback한다.
+
+- **0.70은 초기값** — 출시 후 사용자 피드백·클릭/저장 데이터로 튜닝한다(가중치 튜닝과 동일 루프).
+- 임계값을 높이면 B-path 품질↑·적중률↓(생성 비용↑), 낮추면 적중률↑·오매칭 위험↑. V0는 적중률(약 90% 목표)과 품질의 절충점으로 0.70에서 시작.
+
+### B/A 비율·매칭 점수 telemetry 로깅
+
+파이프라인 튜닝의 근거 데이터를 매 생성 요청마다 적재한다.
+
+- **B-path / A-path 분기 기록** — `docs/DATA_MODEL.md` `generation_history.pipeline_source`에 분기 결과(`curated_only`/`mixed`/`generated_only` — API 응답 `pipeline_source`와 동일 enum)를 남겨 B/A 비율을 추적한다.
+- **매칭 점수 기록** — B-path 후보의 최고 가중합 점수를 `generation_history.match_score`에 로깅해 임계값(0.70)·가중치 튜닝 근거로 사용한다(차원별 세부 점수는 V0 범위 밖, 데이터 축적 후 검토).
+- 이 telemetry는 사용자에게 노출하지 않는다(ADR-012 — `pipeline_source`는 telemetry 전용, UI 노출 X).
+
 ### V0 우선 적용
 
 V0 출시 시점에는 멀티모달 임베딩보다 **curated look DB의 의미적 검색**(태그 + 캡션 키워드 매칭)이 우선. 임베딩은 V0.5 데이터 축적 후 도입.
@@ -186,6 +201,14 @@ I.F는 사용자가 정확한 의류명을 입력하지 않아도 작동해야 �
   → 예상 아이템: 린넨 셔츠, 반팔 니트, 와이드 슬랙스, 연청 데님, 버뮤다 팬츠, 미니멀 스니커즈, 샌들
   → 예상 색상: 화이트, 스카이블루, 네이비, 베이지, 그레이
 ```
+
+### enum 화이트리스트 검증 (파싱 결과 정합)
+
+프롬프트 의도 파싱(LLM + JSON schema) 결과를 **그대로 신뢰하지 않고** 한국어 패션 taxonomy enum 화이트리스트로 검증한다.
+
+- 분해 결과의 {계절·무드·상황·아이템·색상·핏·소재·카테고리} 값을 §1 표준 enum(`products` 태그와 동일 화이트리스트)에 대조한다.
+- 화이트리스트에 없는 값(LLM hallucination·오타·자유 입력)은 버리거나 가장 가까운 enum으로 정규화한 뒤에만 B-path 검색·A-path 생성에 투입한다.
+- §1의 상품 태그 enum 검증과 **같은 화이트리스트**를 공유해, 프롬프트 측과 상품 측 어휘가 어긋나지 않게 한다(매칭 정확도 보장).
 
 ### 외부 trend data 활용
 
@@ -254,6 +277,15 @@ V0 부트스트랩부터 V1+까지 순서대로:
 
 이 순서를 지키는 이유: I.F의 경쟁력은 **범용 이미지 생성 모델 자체가 아니라 "사용자가 상상한 스타일을 실제 구매 가능한 국내 패션 상품으로 얼마나 잘 번역하는가"**에 있기 때문.
 
+### B-path / A-path 운영 메모
+
+- **B-path (curated 검색, 약 90%)** — §4 가중합 점수 ≥ 0.70 시 적중. 미달이면 A-path로 fallback.
+- **A-path (실시간 AI 생성, fallback)** — **OpenAI GPT Image 2 · Medium · 1024×1024 고정**($0.053 ≈ 74원/이미지). 모델·quality·해상도는 운영 기준으로 고정이며 변경은 ADR-003에서만 다룬다. → `docs/ADR.md` ADR-003 참조.
+
+### 생성 이미지 영속화
+
+A-path로 생성한 룩 이미지는 **생성 즉시 Supabase Storage에 저장**하고, `docs/DATA_MODEL.md` `looks.generated_image_url`에는 OpenAI URL이 아니라 Storage 경로(서명 URL)를 보관한다 — OpenAI 임시 URL은 24시간 후 만료되므로 그대로 두면 저장·공유 시점에 깨진다.
+
 ---
 
 ## I.F의 핵심 데이터 자산
@@ -279,3 +311,4 @@ V0 부트스트랩부터 V1+까지 순서대로:
 ## 변경 이력
 
 - 2026-05-17: 초기 작성. `기획/If discovery summary.md` §9.1-9.8을 docs로 promote. Daydream ensemble 매칭 점수 인사이트 추가(§4).
+- 2026-06-01: 백엔드 안전 보강 sync — §4에 B-path 매칭 임계값(초기값 0.70) + B/A 비율·매칭 점수 telemetry 로깅(generation_history.pipeline_source) 추가. §6에 프롬프트 파싱 결과 enum 화이트리스트 검증 추가. §8에 B/A-path 운영 메모(A-path = GPT Image 2 Medium·1024 고정, ADR-003 참조) + 생성 이미지 Supabase Storage 영속화(OpenAI URL 24h 만료 대응) 추가. (ADR-013·ADR-015·ADR-017, `docs/BACKEND_HARDENING_V0.md` 정합.)
