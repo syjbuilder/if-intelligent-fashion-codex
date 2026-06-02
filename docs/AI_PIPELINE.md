@@ -33,7 +33,7 @@ I.F의 장기 경쟁력은 범용 이미지 생성 모델이 아니라 **"사용
 | 핏 | over, slim, hip_cover, semi_wide, high_waist 등 |
 | 소재 | cotton, nylon, denim, knit, linen 등 |
 | 무드 | casual, lovely, minimal, street, ballet_core, old_money 등 |
-| 상황 | date, work, travel, sport, gehakdaeng(하객), picnic 등 |
+| 상황 | date, work, travel, sport, wedding_guest(하객), picnic 등 |
 | 계절 | spring, summer, fall, winter |
 
 ### docs/DATA_MODEL.md `products` 테이블 매핑
@@ -323,7 +323,7 @@ A-path로 생성한 룩 이미지는 **생성 즉시 Supabase Storage에 저장*
 
 #### 상황 · `situation` — 94개
 
-> 고정 key(§1 보존, ★): `date`, `work`, `travel`, `sport`, `gehakdaeng`, `picnic`
+> 고정 key(§1 보존, ★): `date`, `work`, `travel`, `sport`, `wedding_guest`, `picnic`
 
 | `key` | 한국어 라벨 | 사용자 표현(별칭) | 비고 |
 |---|---|---|---|
@@ -390,8 +390,8 @@ A-path로 생성한 룩 이미지는 **생성 즉시 Supabase Storage에 저장*
 | `fan_event` | 팬미팅 | 팬싸, 팬사인회, 덕질, 팬미팅룩 | 팬미팅·팬사인회 참석 착장 |
 | `shopping_mall_event` | 팝업 행사 | 팝업스토어룩, 팝업룩, 브랜드 행사룩, 오픈런룩 | 팝업스토어·브랜드 행사 방문 착장 |
 | `market_flea` | 플리마켓 | 마켓, 벼룩시장, 야시장룩, 마켓나들이 | 플리마켓·야시장·로컬 마켓 캐주얼 나들이. festival_market 통합 |
-| `gehakdaeng` ★ | 하객 | 하객룩, 결혼식, 결혼식 하객, 지인 결혼식, 예식장, 예식, 축하객 | 결혼식 하객 착장 (고정 key) |
-| `wedding_guest_formal` | 정장 하객 | 하객 정장룩, 단정한 하객, 포멀 하객룩 | 격식 강조한 정장형 하객 (gehakdaeng 정장 변형) |
+| `wedding_guest` ★ | 하객 | 하객룩, 결혼식, 결혼식 하객, 지인 결혼식, 예식장, 예식, 축하객 | 결혼식 하객 착장 (고정 key, 구 `gehakdaeng` 정규화) |
+| `wedding_guest_formal` | 정장 하객 | 하객 정장룩, 단정한 하객, 포멀 하객룩 | 격식 강조한 정장형 하객 (wedding_guest 정장 변형) |
 | `engagement` | 상견례 | 상견례룩, 양가 인사, 어른 만날때, 약혼, 약혼식, 부모님인사, 어른인사 | 상견례·양가/부모님 인사 단정 착장. meet_parents 통합 |
 | `funeral` | 장례식 | 장례식룩, 상복, 조문룩, 검은옷, 조문, 문상, 상가 | 장례식·조문 단정 착장 |
 | `graduation` | 졸업 | 졸업룩, 졸업식, 졸업사진, 학위수여식 | 졸업식·졸업 사진 착장 |
@@ -670,8 +670,8 @@ A-path로 생성한 룩 이미지는 **생성 즉시 Supabase Storage에 저장*
 
 본 초안은 "누락보다 과수집" 원칙으로 망라적으로 담았다(빈도 데이터로 컷하는 게 누락을 채우는 것보다 쉽다). `.ts` enum 확정 전 다음을 정리한다.
 
-- **교차차원 직교성 (적용 완료)**: 무드에 섞여 있던 상황 미러(`*_look`)·`tennis_core`는 제거하고 situation으로 일원화했다(한국어 별칭은 이미 situation에 보존됨). 꾸안꾸는 mood(`kkuankku`) 한 곳으로, 하객은 situation(`gehakdaeng`) 한 곳으로 통일했다. `여리여리`는 mood(`yeori_yeori`, 분위기)와 fit(`wispy`, 실루엣)으로 의미를 분리해 동일 key 문자열 충돌을 제거했다.
-- **`gehakdaeng` 로마자 (PO 결정 보류)**: 기존 §1·거울(§9.1)에 박힌 고정 key라 본 초안은 그대로 보존했다. 다만 "하객"의 표준 로마자(hagaek/wedding_guest)와 어긋나는 표기로 보이므로, `.ts` 전환 시 `wedding_guest`로 정규화할지 PO가 결정한다(결정 시 §1·§9.1 동시 갱신).
+- **교차차원 직교성 (적용 완료)**: 무드에 섞여 있던 상황 미러(`*_look`)·`tennis_core`는 제거하고 situation으로 일원화했다(한국어 별칭은 이미 situation에 보존됨). 꾸안꾸는 mood(`kkuankku`) 한 곳으로, 하객은 situation(`wedding_guest`) 한 곳으로 통일했다. `여리여리`는 mood(`yeori_yeori`, 분위기)와 fit(`wispy`, 실루엣)으로 의미를 분리해 동일 key 문자열 충돌을 제거했다.
+- **`wedding_guest` 정규화 (PO 결정, 적용 완료)**: 하객 key는 본래 `gehakdaeng`이었으나 "하객"의 표준 로마자와 어긋나는 표기여서, PO 결정(2026-06-02)으로 `wedding_guest`로 정규화했다 — §1·부록 A·거울 §9.9 동시 갱신. 정장형 변형은 `wedding_guest_formal`.
 - **situation 상한 근접(94개)**: 50~100 범위 내이나 상한에 가깝다. `climbing`·`cycling`·`coming_of_age`·`market_flea`, 그리고 수영복 제외 겉옷군(`beach`·`water_park`·`swimming`)은 V0 4카테고리(top/bottom/dress/outer) 상품 매칭이 빈약할 수 있어 V1 사용 로그로 통합·컷을 재검토한다.
 - **fit 비(非)핏 항목 분리 후보**: 코디 조합 힌트(`loose_top`·`fitted_top`·`wide_bottom`·`slim_bottom`·`loose_fit_overall`·`fitted_overall`·`balanced_proportion`)와 체형 보완 효과(`tummy_cover`·`leg_lengthening`·`slim_look`)는 `products.fit` 단일값에 부적합하다 — 프롬프트 파싱 전용 또는 별도 필드(`proportion_hint`)로 분리할지 검토한다. (`hip_cover`는 고정 key라 유지.)
 - **color 태깅 가이드**: 그레이지·뉴트럴 경계(`taupe`·`warm_gray`·`stone_gray`·`khaki_beige`)와 흙빛 적/오렌지(`brick`·`terracotta`·`rust`)는 텍스트 설명만으로 분별이 어렵다 — 상품 태깅 가이드에 대표 hex 샘플을 붙인다. `multicolor`는 단일 색 원칙의 예외(escape hatch, 진짜 다색일 때만). `gold`·`silver`의 강한 메탈릭 광택 차단은 색상값이 아니라 material/finish 또는 생성 가드에서 통제한다.
@@ -683,4 +683,4 @@ A-path로 생성한 룩 이미지는 **생성 즉시 Supabase Storage에 저장*
 
 - 2026-05-17: 초기 작성. `기획/If discovery summary.md` §9.1-9.8을 docs로 promote. Daydream ensemble 매칭 점수 인사이트 추가(§4).
 - 2026-06-01: 백엔드 안전 보강 sync — §4에 B-path 매칭 임계값(초기값 0.70) + B/A 비율·매칭 점수 telemetry 로깅(generation_history.pipeline_source) 추가. §6에 프롬프트 파싱 결과 enum 화이트리스트 검증 추가. §8에 B/A-path 운영 메모(A-path = GPT Image 2 Medium·1024 고정, ADR-003 참조) + 생성 이미지 Supabase Storage 영속화(OpenAI URL 24h 만료 대응) 추가. (ADR-013·ADR-015·ADR-017, `docs/BACKEND_HARDENING_V0.md` 정합.)
-- 2026-06-02: 부록 A(한국어 패션 taxonomy enum, V0 초안) 신설 — `situation`(94)·`mood`(75)·`color`(72)·`fit`(76) 총 317개 enum 초안 작성(§6 화이트리스트의 실제 값 목록). §1 고정 key 전부 보존(★). 교차차원 직교성 정리(상황 미러 무드 제거, 꾸안꾸=mood, 하객=situation, 여리여리 mood/fit 분리), `gehakdaeng` 로마자 정규화는 PO 결정 보류. **아직 `.ts` 미전환**(Phase 4 진입 직전 변환). 한국어 거울 `기획/If discovery summary.md` §9.9 동시 sync.
+- 2026-06-02: 부록 A(한국어 패션 taxonomy enum, V0 초안) 신설 — `situation`(94)·`mood`(75)·`color`(72)·`fit`(76) 총 317개 enum 초안 작성(§6 화이트리스트의 실제 값 목록). §1 고정 key 보존(★, 하객 key는 `gehakdaeng`→`wedding_guest`로 PO 결정 정규화 — §1 동시 갱신). 교차차원 직교성 정리(상황 미러 무드 제거, 꾸안꾸=mood, 하객=situation, 여리여리 mood/fit 분리). **아직 `.ts` 미전환**(Phase 4 진입 직전 변환). 한국어 거울 `기획/If discovery summary.md` §9.9 동시 sync.

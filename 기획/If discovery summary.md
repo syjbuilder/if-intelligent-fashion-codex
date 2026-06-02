@@ -403,7 +403,7 @@ PRD 반영 항목:
 
 #### 상황 · `situation` — 94개
 
-> 고정 key(9.1 보존, ★): `date`, `work`, `travel`, `sport`, `gehakdaeng`, `picnic`
+> 고정 key(9.1 보존, ★): `date`, `work`, `travel`, `sport`, `wedding_guest`, `picnic`
 
 | `key` | 한국어 라벨 | 사용자 표현(별칭) | 비고 |
 |---|---|---|---|
@@ -470,8 +470,8 @@ PRD 반영 항목:
 | `fan_event` | 팬미팅 | 팬싸, 팬사인회, 덕질, 팬미팅룩 | 팬미팅·팬사인회 참석 착장 |
 | `shopping_mall_event` | 팝업 행사 | 팝업스토어룩, 팝업룩, 브랜드 행사룩, 오픈런룩 | 팝업스토어·브랜드 행사 방문 착장 |
 | `market_flea` | 플리마켓 | 마켓, 벼룩시장, 야시장룩, 마켓나들이 | 플리마켓·야시장·로컬 마켓 캐주얼 나들이. festival_market 통합 |
-| `gehakdaeng` ★ | 하객 | 하객룩, 결혼식, 결혼식 하객, 지인 결혼식, 예식장, 예식, 축하객 | 결혼식 하객 착장 (고정 key) |
-| `wedding_guest_formal` | 정장 하객 | 하객 정장룩, 단정한 하객, 포멀 하객룩 | 격식 강조한 정장형 하객 (gehakdaeng 정장 변형) |
+| `wedding_guest` ★ | 하객 | 하객룩, 결혼식, 결혼식 하객, 지인 결혼식, 예식장, 예식, 축하객 | 결혼식 하객 착장 (고정 key, 구 `gehakdaeng` 정규화) |
+| `wedding_guest_formal` | 정장 하객 | 하객 정장룩, 단정한 하객, 포멀 하객룩 | 격식 강조한 정장형 하객 (wedding_guest 정장 변형) |
 | `engagement` | 상견례 | 상견례룩, 양가 인사, 어른 만날때, 약혼, 약혼식, 부모님인사, 어른인사 | 상견례·양가/부모님 인사 단정 착장. meet_parents 통합 |
 | `funeral` | 장례식 | 장례식룩, 상복, 조문룩, 검은옷, 조문, 문상, 상가 | 장례식·조문 단정 착장 |
 | `graduation` | 졸업 | 졸업룩, 졸업식, 졸업사진, 학위수여식 | 졸업식·졸업 사진 착장 |
@@ -750,8 +750,8 @@ PRD 반영 항목:
 
 본 초안은 "누락보다 과수집" 원칙으로 망라적으로 담았다(빈도 데이터로 컷하는 게 누락을 채우는 것보다 쉽다). `.ts` enum 확정 전 다음을 정리한다. (docs/AI_PIPELINE.md 부록 A "정제·운영 메모"와 정합.)
 
-- **교차차원 직교성 (적용 완료)**: 무드에 섞여 있던 상황 미러(`*_look`)·`tennis_core`는 제거하고 situation으로 일원화했다(한국어 별칭은 이미 situation에 보존됨). 꾸안꾸는 mood(`kkuankku`) 한 곳으로, 하객은 situation(`gehakdaeng`) 한 곳으로 통일했다. `여리여리`는 mood(`yeori_yeori`, 분위기)와 fit(`wispy`, 실루엣)으로 의미를 분리해 동일 key 문자열 충돌을 제거했다.
-- **`gehakdaeng` 로마자 (PO 결정 보류)**: 기존 9.1에 박힌 고정 key라 본 초안은 그대로 보존했다. 다만 "하객"의 표준 로마자(hagaek/wedding_guest)와 어긋나는 표기로 보이므로, `.ts` 전환 시 `wedding_guest`로 정규화할지 PO가 결정한다(결정 시 9.1·docs §1 동시 갱신).
+- **교차차원 직교성 (적용 완료)**: 무드에 섞여 있던 상황 미러(`*_look`)·`tennis_core`는 제거하고 situation으로 일원화했다(한국어 별칭은 이미 situation에 보존됨). 꾸안꾸는 mood(`kkuankku`) 한 곳으로, 하객은 situation(`wedding_guest`) 한 곳으로 통일했다. `여리여리`는 mood(`yeori_yeori`, 분위기)와 fit(`wispy`, 실루엣)으로 의미를 분리해 동일 key 문자열 충돌을 제거했다.
+- **`wedding_guest` 정규화 (PO 결정, 적용 완료)**: 하객 key는 본래 `gehakdaeng`이었으나 "하객"의 표준 로마자와 어긋나는 표기여서, PO 결정(2026-06-02)으로 `wedding_guest`로 정규화했다 — docs §1·부록 A·본 §9.9 동시 갱신. 정장형 변형은 `wedding_guest_formal`.
 - **situation 상한 근접(94개)**: 50~100 범위 내이나 상한에 가깝다. `climbing`·`cycling`·`coming_of_age`·`market_flea`, 그리고 수영복 제외 겉옷군(`beach`·`water_park`·`swimming`)은 V0 4카테고리 상품 매칭이 빈약할 수 있어 V1 사용 로그로 통합·컷을 재검토한다.
 - **fit 비(非)핏 항목 분리 후보**: 코디 조합 힌트(`loose_top`·`fitted_top`·`wide_bottom`·`slim_bottom`·`loose_fit_overall`·`fitted_overall`·`balanced_proportion`)와 체형 보완 효과(`tummy_cover`·`leg_lengthening`·`slim_look`)는 `products.fit` 단일값에 부적합하다 — 프롬프트 파싱 전용 또는 별도 필드(`proportion_hint`)로 분리할지 검토한다. (`hip_cover`는 고정 key라 유지.)
 - **color 태깅 가이드**: 그레이지·뉴트럴 경계(`taupe`·`warm_gray`·`stone_gray`·`khaki_beige`)와 흙빛 적/오렌지(`brick`·`terracotta`·`rust`)는 텍스트 설명만으로 분별이 어렵다 — 상품 태깅 가이드에 대표 hex 샘플을 붙인다. `multicolor`는 단일 색 원칙의 예외(escape hatch, 진짜 다색일 때만). `gold`·`silver`의 강한 메탈릭 광택 차단은 색상값이 아니라 material/finish 또는 생성 가드에서 통제한다.
