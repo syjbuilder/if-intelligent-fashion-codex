@@ -212,7 +212,7 @@ MVP 속도 최우선. 외부 의존성 최소화. 한국 시장 로컬화 우선
 
 **트레이드오프**: 정석은 비동기 작업큐지만 V0 케이스는 동기 + maxDuration이 가장 단순하다(추가 인프라 0). 재검토 트리거: p95 지연이 함수 한도의 70%에 도달하거나 동시 생성이 급증하면 비동기(작업큐 + 폴링)로 전환한다.
 
-**열린 항목**: maxDuration 60초는 Vercel 플랜에 묶인다(Hobby 플랜에서는 제한될 수 있음) — Phase 5 진입 전 Vercel Pro 필요 여부를 PO가 확인한다.
+**열린 항목 → 해결 (2026-06-04)**: 검증 결과 Vercel Hobby(무료) 플랜도 `maxDuration` 1~60초를 허용하며, Fluid Compute 사용 시 Hobby에서도 300초까지 열린다. 룩 3장 `Promise.all` 병렬 생성은 ~30초로 60초 안에 들어오므로 **V0는 무료 Hobby 플랜으로 출시한다(Vercel Pro 불필요)**. 재검토 트리거는 동일 — p95가 함수 한도의 70%(~42초)에 도달하거나 동시 생성이 급증하면 Pro(300초)·Fluid Compute·비동기 전환을 검토한다.
 
 **관련**: ADR-002(Next.js + Vercel 실행 환경), ADR-007(`src/services/` AI 래퍼 경계), ADR-014(멱등성 키로 재시도 중복 차단), `docs/AI_PIPELINE.md`(A-path 실시간 생성), `docs/ARCHITECTURE.md`(AI 생성 실행 모델).
 
@@ -233,7 +233,7 @@ MVP 속도 최우선. 외부 의존성 최소화. 한국 시장 로컬화 우선
 ### ADR-015: AI 비용 안전장치 — 일일 cap + kill switch + billing alert
 
 **결정**:
-- **(1) OpenAI 대시보드 billing hard limit + email alert** (무료, PO 수작업, Phase 5 진입 전 설정).
+- **(1) OpenAI 대시보드 billing hard limit + email alert** (무료, PO 수작업, Phase 5 진입 전 설정). OpenAI는 선불 크레딧 + Settings→Limits의 **월 예산(Monthly budget) hard cap** 구조다(도달 시 API가 429로 차단, 매월 1일 리셋). **초기값 월 $200**, 이메일 알림 50%·80%로 설정한다(2026-06-04 PO 결정). 이는 앱 내부 일일 cap(2)·kill switch(3)와 별개의 **계정 레벨 최후 백스톱**이다.
 - **(2) 전역 일일 spend cap**: 당일 누적 생성 호출 수를 `generation_history`에서 카운트해, 상한 초과 시 `generate`가 503으로 안내한다.
 - **(3) 수동 kill switch**: 즉시 전체 생성을 차단한다.
 - **(4) 설정값(일일 상한 수치 + kill switch on/off)은 env 환경변수에 둔다** (`app_config` 테이블 아님). 일일 상한 초기값 예시: 정상 일평균(~33 검색/일 = ~100 이미지)의 약 5~6배(예: 일 200 검색 = 600 이미지)로 시작, 실트래픽 데이터로 조정한다.
