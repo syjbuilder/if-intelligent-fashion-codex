@@ -811,6 +811,8 @@ payments
 - created_at
 - updated_at
 
+> 캡션 컬럼(`caption_simple`/`caption_searchable`, AI_PIPELINE 캡셔닝 산출물)은 현재 스키마에 없다 — V0에선 `data/curated/products.csv` 템플릿에 선수집, 컬럼 추가는 부트스트랩 `002`에서 실제 데이터로 검증 후 확정(10테이블 freeze). 운영 방식: docs/AI_PIPELINE.md §9.
+
 ### 15.4 look_products
 
 - id

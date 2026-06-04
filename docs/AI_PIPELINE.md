@@ -65,7 +65,7 @@ I.F의 장기 경쟁력은 범용 이미지 생성 모델이 아니라 **"사용
 
 ### 저장 위치
 
-V0에서는 `products` 테이블에 `caption_simple` / `caption_searchable` 컬럼 추가 권장 (DATA_MODEL.md 확장 시 반영).
+V0에서는 두 캡션을 먼저 `data/curated/products.csv` 수집 템플릿(§9)에 선수집한다. `products` 테이블 `caption_simple` / `caption_searchable` 컬럼 **추가는 V0 부트스트랩(`002_init_looks_products.sql`)에서 실제 수집 데이터로 타입·길이를 검증한 뒤 확정**한다 — frozen 스키마(10테이블)를 데이터 없이 미리 열지 않는다. 결정 근거는 `docs/DATA_MODEL.md` §15.3 메모 참조.
 
 ---
 
@@ -306,6 +306,90 @@ A-path로 생성한 룩 이미지는 **생성 즉시 Supabase Storage에 저장*
 ```
 
 이 데이터가 쌓이면 I.F는 단순 AI 패션 이미지 생성 서비스가 아니라 **한국 여성 패션에 특화된 프롬프트-상품 연결 엔진**으로 발전할 수 있다.
+
+---
+
+## §9. 데이터 수집 SOP (운영 방식)
+
+§8 우선순위 2·3번(초기 상품 데이터 수집 → 캡셔닝)의 **운영 방식**을 정의한다. `개발_전_진행_체크리스트.md` §6 "500개 curated look DB 운영 방식 정리(수집·검수·태깅·공개/비공개·상품 링크 관리)"에 대응한다. 이 SOP는 **설계·룰**이며, 실제 50→500 수집과 매칭 검증은 앱 부트스트랩 + DB 마이그레이션 이후에 같은 룰로 실행한다.
+
+### 9-0. 소싱 워크플로우
+
+- **분담**: 사람(PO/운영자) = 소싱·최종검수, AI = 구조화·초안. PO가 29CM·무신사·브랜드 자사몰에서 룩 컨셉에 맞는 실제 판매 상품을 **직접 고르고** URL·상품명·가격을 입력하면, AI가 enum 태깅·캡션·역프롬프트 초안을 생성하고 PO가 검수·확정한다.
+- **자동 크롤링 금지**: "전체 쇼핑몰 자동 크롤링"은 V0 Non-Goal(CLAUDE.md, `docs/PRD.md`). 사람이 고른 것을 AI가 구조화하는 것이지 자동 수집이 아니다.
+- **`source_platform`**: '29CM' · 'MUSINSA' · '브랜드자사몰' 3종 enum과 정확히 일치(다른 값 추가는 스키마 변경 사안).
+
+### 9-1. 상품 이미지 정책 (저작권·ToS)
+
+- `image_url`에는 **외부 몰 CDN URL을 그대로** 두고, 상품 카드는 외부 `product_url`로 이동시킨다. **사본 저장·핫링킹 사본 금지**(무단 복제 저작권 리스크 회피).
+- 한계: 몰이 referer를 차단하거나 이미지를 교체·삭제하면 끊길 수 있다 → 부트스트랩 후 제휴/파트너 자산·캐싱 정책으로 재검토.
+- `docs/DATA_MODEL.md` §15.3 `image_url`은 NOT NULL만 규정하고 출처를 강제하지 않으므로, 출처 정책은 이 SOP가 정본.
+
+### 9-2. 태깅 룰 — "Session 4 안정 화이트리스트"
+
+부록 A taxonomy(317개)는 아직 `.ts` 미전환이고 펜딩 정제(situation 저빈도 컷, fit 비핏 항목 `proportion_hint` 분리, color 경계 hex 가이드)로 key가 바뀔 수 있다. **펜딩 영향이 없는 안정 부분집합으로만 태깅**해 재작업 리스크를 0으로 만든다.
+
+- **허용 (고정 key ★, §1 보존)**
+  - situation — `date` · `work` · `travel` · `sport` · `wedding_guest` · `picnic`
+  - mood — `casual` · `lovely` · `minimal` · `street` · `ballet_core` · `old_money`
+  - color — `navy` · `ivory` · `light_blue`
+  - fit — `over` · `slim` · `hip_cover` · `semi_wide` · `high_waist`
+- **허용 (이미 닫힌 enum)**: category `top/bottom/dress/outer` · season `spring/summer/fall/winter`
+- **금지·보류**: fit 비핏 항목(`tummy_cover` · `leg_lengthening` · `wide_bottom` 등 — proportion_hint 분리 검토 중), situation 저빈도 컷 후보(`climbing` · `cycling` · 수영복 제외 겉옷군), color 경계 톤(`taupe` · `brick` · `terracotta` — hex 미확정)
+- 수집 시작 후 PO와 화이트리스트를 점진 확장하고, Phase 4 `.ts` 전환 시 전체 정합한다.
+
+### 9-3. 캡션 룰
+
+- 상품당 2종을 모두 작성: `caption_simple`(객관 속성) + `caption_searchable`(상황+무드+색+핏 합성). 예시·형식은 §2.
+- AI 자동 초안 + PO 스팟체크(잘못된 색/소재/핏 인식 수정).
+- **저장**: V0에선 `data/curated/products.csv` 템플릿에 선수집. 실제 `products` 컬럼 확정은 부트스트랩 `002`에서(§2 저장 위치 · `docs/DATA_MODEL.md` §15.3 메모).
+
+### 9-4. 역프롬프트 룰
+
+- 검색 매칭용 역프롬프트(사용자가 칠 법한 표현 — "벚꽃 데이트룩" · "여리여리" · "하체커버")는 **`looks`의 태그 배열(`situation_tags`/`mood_tags`/`color_tags`/`fit_tags`)과 `base_prompt`로 흡수**한다. 신규 컬럼은 만들지 않는다(10테이블/컬럼 freeze 존중, §3).
+- 이미지 생성용 역프롬프트는 룩 이미지 생성 시 사용(부트스트랩 후, A-path/OpenAI).
+
+### 9-5. curated-look 빌드 절차 (1건 end-to-end)
+
+1. **컨셉** — 한국 20-30대 여성 데일리. `looks.title` + `base_prompt` 초안.
+2. **룩 이미지** — 전신 착장(상의+하의 또는 원피스+아우터) 가시. 상반신 클로즈업·하의 잘림·런웨이/코스튬은 FAIL → 재생성. (실제 생성은 부트스트랩 후 A-path.)
+3. **이미지 영속화** — Storage 경로만 저장, OpenAI 24h URL 저장 금지("생성 이미지 영속화" · `docs/DATA_MODEL.md` §15.2). 사전 단계에선 placeholder `pending_storage:looks/<id>.png`.
+4. **역프롬프트**(9-4) — 태그·`base_prompt`로 흡수.
+5. **태깅**(9-2) — 안정 화이트리스트 안에서.
+6. **상품 3-5개 큐레이션**(9-0) — NOT NULL: `product_name` · `product_url` · `image_url` · `category`.
+7. **캡션 2종**(9-3).
+8. **look_products 매핑** — `item_role`(main_top/main_bottom/main_outer/similar/related) · `recommendation_type`(main_combo/similar/related) · `sort_order`. **UNIQUE(look_id, product_id, item_role) 준수.**
+9. **QA 게이트** — 9-6 체크리스트 통과해야 룩 "확정".
+
+### 9-6. 스키마 정합 수집 템플릿 + QA
+
+앱·DB 부트스트랩 전이라 수집물은 **frozen 스키마에 1:1 정합되는 중간 템플릿(CSV)**으로 모으고, 부트스트랩 후 시드 스크립트로 주입한다. 템플릿·매핑·QA 체크리스트는 `data/` 운영 자산으로 제공한다:
+
+- `data/schema/{products,looks,look_products}.columns.md` — CSV 헤더 ↔ `docs/DATA_MODEL.md` §15.2~15.4 컬럼 매핑. 배열 컬럼은 **파이프 구분**(`casual|minimal`), 조인은 로컬 ID(`look_local_id`/`product_local_id`, 시드 시 uuid 부여).
+- `data/curated/*.csv` — 헤더만 있는 빈 템플릿(PO가 Sheets/Excel로 채움).
+- `data/QA_CHECKLIST.md` — 룩 1건당 통과 게이트.
+
+**QA 게이트(룩 1건)**: ① NOT NULL 누락 0 ② 태그가 안정 화이트리스트 안(위반 0) ③ 룩 이미지 품질 기준 통과 ④ 상품 3-5개 + 캡션 2종 존재 ⑤ look_products UNIQUE 위반 0 ⑥ 상품 이미지 사본 저장 0.
+
+### 9-7. 설명용 예시 (가상 1건 — 데이터 행 아님)
+
+| 필드 | 값 |
+|---|---|
+| `looks.title` | 벚꽃 데이트 여리여리 룩 |
+| `looks.base_prompt` | 봄 벚꽃 배경, 여리여리한 무드의 데이트룩. 아이보리 니트 가디건 + 라이트블루 플레어 스커트 |
+| `looks.season` | spring |
+| `looks.situation_tags` | date |
+| `looks.mood_tags` | lovely |
+| `looks.color_tags` | ivory \| light_blue |
+| `looks.fit_tags` | semi_wide |
+| 상품1 (main_top) | `category=top` · `subcategory=cardigan` · `color=ivory` · `fit=over` · `material=knit` · caption_simple "아이보리 루즈핏 케이블 니트 가디건" |
+| 상품2 (main_bottom) | `category=bottom` · `color=light_blue` · `fit=high_waist` · `recommendation_type=main_combo` |
+
+모든 태그가 9-2 안정 화이트리스트 안에 있다. 룰 적용을 보여주기 위한 설명용이며 실제 수집 데이터가 아니다.
+
+### 9-8. 범위 메모
+
+이 SOP는 **운영 방식 설계**까지다. 실제 룩·상품 수집(파일럿 50 → 500), 룩 이미지 생성, B-path 매칭(≥0.70) 검증은 앱 부트스트랩 + DB 마이그레이션(`002_init_looks_products.sql`) 이후 같은 룰로 실행한다.
 
 ---
 
@@ -684,3 +768,4 @@ A-path로 생성한 룩 이미지는 **생성 즉시 Supabase Storage에 저장*
 - 2026-05-17: 초기 작성. `기획/If discovery summary.md` §9.1-9.8을 docs로 promote. Daydream ensemble 매칭 점수 인사이트 추가(§4).
 - 2026-06-01: 백엔드 안전 보강 sync — §4에 B-path 매칭 임계값(초기값 0.70) + B/A 비율·매칭 점수 telemetry 로깅(generation_history.pipeline_source) 추가. §6에 프롬프트 파싱 결과 enum 화이트리스트 검증 추가. §8에 B/A-path 운영 메모(A-path = GPT Image 2 Medium·1024 고정, ADR-003 참조) + 생성 이미지 Supabase Storage 영속화(OpenAI URL 24h 만료 대응) 추가. (ADR-013·ADR-015·ADR-017, `docs/BACKEND_HARDENING_V0.md` 정합.)
 - 2026-06-02: 부록 A(한국어 패션 taxonomy enum, V0 초안) 신설 — `situation`(94)·`mood`(75)·`color`(72)·`fit`(76) 총 317개 enum 초안 작성(§6 화이트리스트의 실제 값 목록). §1 고정 key 보존(★, 하객 key는 `gehakdaeng`→`wedding_guest`로 PO 결정 정규화 — §1 동시 갱신). 교차차원 직교성 정리(상황 미러 무드 제거, 꾸안꾸=mood, 하객=situation, 여리여리 mood/fit 분리). **아직 `.ts` 미전환**(Phase 4 진입 직전 변환). 한국어 거울 `기획/If discovery summary.md` §9.9 동시 sync.
+- 2026-06-02: §9 데이터 수집 SOP(운영 방식) 신설 — 소싱 분담(사람 소싱·AI 구조화, 자동 크롤링 금지)·상품 이미지 정책(외부 링크만)·Session 4 안정 화이트리스트 태깅·캡션 2종·역프롬프트 흡수·빌드 절차·스키마 정합 CSV 템플릿(`data/`)·QA 게이트. §2 캡션 저장은 부트스트랩 `002`로 deferral(`docs/DATA_MODEL.md` §15.3 메모 정합). 한국어 거울 §9.10 동시 sync. (`개발_전_진행_체크리스트.md` §6 "운영 방식 정리" 대응.)

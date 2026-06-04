@@ -83,8 +83,9 @@
 | `.claude/settings.json` | hooks 등록·timeout |
 | `.githooks/pre-commit` | git pre-commit 검사 (lint/build/test + sync-warn) |
 | `.githooks/sync-warn.sh` | docs ↔ 한국어 sync drift 경고 |
-| `.githooks/sync-pairs.json` | 거울 매핑 데이터 (위 표 §2 미러) |
+| `.githooks/sync-pairs.tsv` | 거울 매핑 데이터 (위 표 §2 미러) |
 | `scripts/execute.py` | Harness phase 실행기 |
+| `data/` | curated 룩·상품 수집 자산 — 스키마 정합 CSV 템플릿·컬럼 매핑·QA 체크리스트. DB 부트스트랩 후 시드 주입 (`docs/AI_PIPELINE.md` §9) |
 
 ## 6. 제외 (Untracked, 의도적)
 

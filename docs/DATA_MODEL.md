@@ -114,6 +114,8 @@
 
 **인덱스:** `(category, subcategory)`, `(source_platform)`, GIN on `(mood_tags, season_tags, situation_tags)`.
 
+**캡션 컬럼 (확장 예정):** `caption_simple` / `caption_searchable`(AI_PIPELINE §2 캡셔닝 산출물)은 현재 스키마에 없다. V0에선 `data/curated/products.csv` 수집 템플릿에 선수집하고, 컬럼 추가는 V0 부트스트랩(`002_init_looks_products.sql`)에서 실제 수집 데이터로 타입·길이를 검증한 뒤 확정한다 — 10테이블 freeze 원칙상 데이터 없이 컬럼을 미리 열지 않는다. 운영 방식은 `docs/AI_PIPELINE.md` §9.
+
 ---
 
 ## 15.4 look_products
