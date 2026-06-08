@@ -124,6 +124,11 @@ while IFS=$'\t' read -r action file_path; do
   [ -z "$file_path" ] && continue
   [ "$action" = "delete" ] && continue
 
+  # Windows 경로(역슬래시) 정규화 — */layout.tsx, */page.tsx, */types/* 같은
+  # 슬래시 기반 면제 패턴과 dirname/basename 테스트 탐색이 cross-platform에서
+  # 동작하도록 한다 (PO 승인, 부트스트랩 Phase 0).
+  file_path=$(printf '%s' "$file_path" | tr '\\' '/')
+
   case "$file_path" in
     *test*|*spec*|*.test.*|*.spec.*|*__tests__*) continue ;;
   esac
