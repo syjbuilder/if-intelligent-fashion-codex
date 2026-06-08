@@ -3,7 +3,7 @@
   "phase": "0-bootstrap",
   "steps": [
     { "step": 0, "name": "project-setup", "status": "completed", "summary": "Next.js 15.5 App Router + TS(strict) + Tailwind v3(Playfair/Manrope 폰트 변수) + Vitest/RTL 스캐폴딩. src/{app,components,lib,services,types} 뼈대, .env.example(시크릿 placeholder). lint/build/test 전부 통과(smoke 1). TDD 가드 Windows 역슬래시 경로 버그 1줄 수정(PO 승인) — 면제/테스트 탐색이 cross-platform 동작." },
-    { "step": 1, "name": "core-types", "status": "pending" },
+    { "step": 1, "name": "core-types", "status": "completed", "summary": "src/types/db.ts — 10테이블 Row 타입 + 닫힌 enum 15종(const 배열 단일 출처→유니온 파생). DATA_MODEL §15 컬럼 1:1 정합, products 캡션 컬럼 optional. 자유 어휘 태그는 string[](서버 화이트리스트). enum 회귀 테스트 11개. lint/build/test 통과(총 12 tests)." },
     { "step": 2, "name": "supabase-client", "status": "pending" },
     { "step": 3, "name": "migrations-schema", "status": "pending" },
     { "step": 4, "name": "migrations-rls-rpc", "status": "pending" },
