@@ -124,6 +124,17 @@ while IFS=$'\t' read -r action file_path; do
   [ -z "$file_path" ] && continue
   [ "$action" = "delete" ] && continue
 
+  # Windows 경로(역슬래시) 정규화 — */layout.tsx, */page.tsx, */types/* 같은
+  # 슬래시 기반 면제 패턴과 dirname/basename 테스트 탐색이 cross-platform에서
+  # 동작하도록 한다 (PO 승인, 부트스트랩 Phase 0).
+  file_path=$(printf '%s' "$file_path" | tr '\\' '/')
+
+  # 비ASCII(한글 "코덱스") 상위 경로가 has_test_for의 [ -f ] 탐색을 깨므로, /src/ 기준
+  # 상대 경로로 바꾼다(글로브 매칭이라 인코딩 무관, 훅 cwd=repo 루트라 상대 [ -f ] OK).
+  case "$file_path" in
+    */src/*) file_path="src/${file_path#*/src/}" ;;
+  esac
+
   case "$file_path" in
     *test*|*spec*|*.test.*|*.spec.*|*__tests__*) continue ;;
   esac
