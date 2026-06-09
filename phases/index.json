@@ -1,5 +1,6 @@
 {
   "phases": [
-    { "dir": "0-bootstrap", "status": "pending" }
+    { "dir": "0-bootstrap", "status": "completed" },
+    { "dir": "1-ui-shell", "status": "completed" }
   ]
 }
