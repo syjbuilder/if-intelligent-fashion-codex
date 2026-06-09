@@ -13,7 +13,7 @@
 - Supabase — PostgreSQL + Auth + Storage
 - Vercel 배포 (Web), Supabase (DB/Auth/Storage)
 - AI: OpenAI GPT Image 2 · Medium · 1024×1024 운영 고정 (이미지 생성, $0.053≈74원/이미지, GPT Image 1.5는 비용 후보 — `docs/ADR.md` ADR-003·ADR-012) / 프롬프트 해석은 LLM + JSON schema + 한국어 패션 taxonomy
-- 스타일링: Tailwind CSS + Playfair Display(헤드라인) + Manrope(본문)
+- 스타일링: Tailwind CSS + Inter(영문·숫자, next/font) + Pretendard(한글, layout `<link>`) 단일 산세리프 — 헤드라인=본문 동일 매핑, weight 400/600/800만. (Playfair Display+Manrope는 v0.7 시안에서 폐기 — `디자인/if-homepage-v0.7.html`·`docs/UI_GUIDE.md` 7원칙 §5. 최신 시안이 디자인 기준선.) Phase 1 `1-ui-shell`에서 적용.
 - FastAPI는 V0 Core에서 분리하지 않는다. AI 파이프라인 복잡도가 커지면 그때 도입.
 
 ## 아키텍처 규칙
