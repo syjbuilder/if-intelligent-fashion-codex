@@ -58,6 +58,35 @@
   opacity: 0.08;
 }
 
+/* ── 디자인 시스템 컴포넌트 클래스 (Tailwind arbitrary로 표현 까다로운 글래스/그라디언트) ── */
+@layer components {
+  /* CTA accent — Muted Slate 글래스 (Get Started 전용, 페이지당 1개) */
+  .cta-accent {
+    background: rgba(var(--accent-rgb), 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fbfbfa;
+    backdrop-filter: blur(14px) saturate(1.1);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.32);
+  }
+  .cta-accent:hover {
+    background: rgba(var(--accent-rgb), 0.72);
+  }
+
+  /* 룩 카드 톤 — 그라디언트 면 + 텍스트/SVG(currentColor) 자동 반전 색 */
+  .tone-office {
+    background: linear-gradient(155deg, #eeeae1 0%, #c8cac0 58%, #8d968a 100%);
+    color: #2a241e; /* 라이트 카드 → 다크 가먼트 */
+  }
+  .tone-date {
+    background: linear-gradient(155deg, #a37650 0%, #6b4730 62%, #2a1d15 100%);
+    color: #f7eee2; /* 다크 카드 → 라이트 가먼트 (룩 무드 표현, 슬레이트 통일 예외) */
+  }
+  .tone-sport {
+    background: linear-gradient(155deg, #5a5650 0%, #38342f 60%, #1e1c19 100%);
+    color: #f3eede;
+  }
+}
+
 /* 접근성: 모션 최소화 선호 시 애니메이션/트랜지션 사실상 무력화 */
 @media (prefers-reduced-motion: reduce) {
   *,
