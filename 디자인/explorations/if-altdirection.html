@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>I.F — IMAGINE · the AI atelier (alt art-direction)</title>
+<!--
+  트랙 B — 제약 없는 자유 아트디렉션 비전 프로토타입.
+  UI_GUIDE/v0.7 미학에 제한받지 않고 docs(서비스)만 보고 "내가 디자인한다면"을 보여주는 데모.
+  제품/법 제약은 유지: 사람·얼굴 0(ADR-006), 외부 링크만·자체결제 0(ADR-004).
+  Next 코드베이스와 완전 분리(빌드 영향 0). 데모용 CDN(GSAP/Lenis) 사용.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..600&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  :root {
+    --obsidian: #0b0b0f;
+    --ink-2: #15151c;
+    --ivory: #f4efe6;
+    --ivory-dim: rgba(244, 239, 230, 0.58);
+    --ivory-faint: rgba(244, 239, 230, 0.32);
+    --accent: #e6c08a;            /* luminous champagne — fashion warmth */
+    --accent-rgb: 230, 192, 138;
+    --cool: #8f93ff;              /* AI glow — intelligence (생성 모먼트 한정) */
+    --cool-rgb: 143, 147, 255;
+    --line: rgba(244, 239, 230, 0.12);
+    --serif: "Fraunces", "Pretendard Variable", Georgia, serif;
+    --sans: "Inter", "Pretendard Variable", system-ui, -apple-system, sans-serif;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --expo: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scrollbar-width: none; }
+  html::-webkit-scrollbar { display: none; }
+
+  body {
+    background: var(--obsidian);
+    color: var(--ivory);
+    font-family: var(--sans);
+    font-weight: 400;
+    line-height: 1.5;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    cursor: none;
+  }
+  @media (pointer: coarse) { body { cursor: auto; } #cursor, #cursor-dot { display: none; } }
+
+  /* film grain over everything */
+  body::after {
+    content: "";
+    position: fixed; inset: 0; z-index: 90; pointer-events: none;
+    opacity: 0.05; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ───── cursor ───── */
+  #cursor {
+    position: fixed; top: 0; left: 0; z-index: 100; pointer-events: none;
+    width: 280px; height: 280px; margin: -140px 0 0 -140px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.16), transparent 65%);
+    mix-blend-mode: screen; transition: opacity 0.4s, transform 0.18s var(--ease); will-change: transform;
+  }
+  #cursor-dot {
+    position: fixed; top: 0; left: 0; z-index: 101; pointer-events: none;
+    width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
+    background: var(--ivory); transition: transform 0.08s linear, width 0.25s var(--ease), height 0.25s var(--ease); will-change: transform;
+  }
+  body.cursor-hot #cursor-dot { width: 46px; height: 46px; margin: -23px 0 0 -23px; background: transparent; border: 1px solid var(--accent); }
+
+  /* ───── progress + nav ───── */
+  #progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 80; background: linear-gradient(90deg, var(--accent), var(--cool)); }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 70;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 26px clamp(20px, 4vw, 54px); mix-blend-mode: difference; color: #fff;
+  }
+  .wordmark { font-family: var(--serif); font-weight: 600; font-size: 22px; letter-spacing: -0.03em; }
+  .wordmark sup { font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 0.22em; vertical-align: super; opacity: 0.8; }
+  .nav-right { display: flex; gap: 28px; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
+  .nav-right a { color: inherit; text-decoration: none; opacity: 0.85; }
+
+  section { position: relative; }
+  .wrap { max-width: 1340px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 54px); }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.34em; text-transform: uppercase; color: var(--accent); }
+
+  /* ───── HERO ───── */
+  #hero { min-height: 100svh; display: flex; align-items: center; overflow: hidden; }
+  #hero canvas { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; opacity: 0.9; }
+  #hero .veil { position: absolute; inset: 0; z-index: 1; background: radial-gradient(120% 90% at 50% 12%, transparent 30%, rgba(11,11,15,0.55) 78%, var(--obsidian) 100%); }
+  #hero .wrap { position: relative; z-index: 2; width: 100%; }
+  .hero-kicker { display: flex; align-items: center; gap: 14px; margin-bottom: 30px; }
+  .hero-kicker .rule { height: 1px; width: 54px; background: var(--accent); opacity: 0.7; }
+  .imagine {
+    font-family: var(--serif); font-weight: 300;
+    font-size: clamp(34px, 6.4vw, 104px); line-height: 1.04; letter-spacing: -0.025em; color: var(--ivory);
+    max-width: 16ch;
+  }
+  .imagine .morph { font-style: italic; font-weight: 400; color: var(--accent); position: relative; white-space: nowrap; }
+  .imagine .morph::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.08em; height: 1px; background: rgba(var(--accent-rgb), 0.4); }
+  .hero-sub { margin-top: 34px; max-width: 46ch; font-size: clamp(15px, 1.3vw, 18px); color: var(--ivory-dim); line-height: 1.75; }
+
+  .prompt-field {
+    margin-top: 44px; display: flex; align-items: center; gap: 12px;
+    width: min(560px, 92%); padding: 8px 8px 8px 24px;
+    border: 1px solid var(--line); border-radius: 999px;
+    background: rgba(244, 239, 230, 0.04); backdrop-filter: blur(14px);
+    transition: border-color 0.5s var(--ease), background 0.5s var(--ease);
+  }
+  .prompt-field:hover { border-color: rgba(var(--accent-rgb), 0.4); }
+  .prompt-field input { flex: 1; background: transparent; border: 0; outline: 0; color: var(--ivory); font-family: var(--sans); font-size: 15px; }
+  .prompt-field input::placeholder { color: var(--ivory-faint); }
+  .magnetic {
+    position: relative; flex-shrink: 0; height: 52px; padding: 0 26px; border-radius: 999px; border: 0;
+    background: var(--accent); color: #1a1408; font-family: var(--sans); font-weight: 700; font-size: 12px;
+    letter-spacing: 0.16em; text-transform: uppercase; cursor: none; will-change: transform;
+    transition: background 0.4s var(--ease);
+  }
+  .magnetic span { display: inline-block; will-change: transform; }
+  .scroll-cue { position: absolute; left: 50%; bottom: 30px; z-index: 2; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--ivory-faint); font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; }
+  .scroll-cue .bar { width: 1px; height: 46px; background: linear-gradient(var(--accent), transparent); animation: cue 2.4s var(--ease) infinite; transform-origin: top; }
+  @keyframes cue { 0%,100% { transform: scaleY(0.3); opacity: 0.4; } 50% { transform: scaleY(1); opacity: 1; } }
+
+  /* ───── reveal-words util ───── */
+  .rw { display: inline-block; }
+  .rw .w { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.12em; margin-bottom: -0.12em; }
+  .rw .w i { display: inline-block; font-style: inherit; transform: translateY(110%); }
+
+  /* ───── INTENTION ───── */
+  #intention { padding: clamp(120px, 18vh, 220px) 0; }
+  .intention-grid { display: grid; grid-template-columns: 1fr; gap: 56px; }
+  @media (min-width: 900px) { .intention-grid { grid-template-columns: 0.9fr 1.1fr; gap: 80px; align-items: end; } }
+  .big-statement { font-family: var(--serif); font-weight: 300; font-size: clamp(30px, 4.6vw, 68px); line-height: 1.08; letter-spacing: -0.02em; }
+  .big-statement b { font-weight: 500; font-style: italic; color: var(--accent); }
+  .intention-list { display: flex; flex-direction: column; gap: 0; }
+  .ic { display: grid; grid-template-columns: 56px 1fr; gap: 22px; padding: 28px 0; border-top: 1px solid var(--line); }
+  .ic .n { font-family: var(--serif); font-size: 30px; font-weight: 300; color: var(--accent); line-height: 1; }
+  .ic h3 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+  .ic p { margin-top: 8px; font-size: 14px; color: var(--ivory-dim); line-height: 1.7; max-width: 42ch; }
+
+  /* ───── WEAVING ───── */
+  #weave { min-height: 100svh; display: flex; align-items: center; background: linear-gradient(180deg, var(--obsidian), #0a0a12 50%, var(--obsidian)); overflow: hidden; }
+  #weave .glow { position: absolute; left: 50%; top: 50%; width: 70vw; height: 70vw; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(var(--cool-rgb), 0.10), transparent 60%); pointer-events: none; }
+  .weave-stage { display: grid; grid-template-columns: 1fr; gap: 40px; align-items: center; width: 100%; }
+  @media (min-width: 900px) { .weave-stage { grid-template-columns: 1.1fr 0.9fr; } }
+  .weave-art { position: relative; aspect-ratio: 4/5; display: grid; place-items: center; }
+  .weave-art svg { width: min(78%, 440px); height: auto; overflow: visible; }
+  .weave-art .thread { fill: none; stroke: var(--ivory); stroke-width: 1.1; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
+  .weave-art .thread.accent { stroke: var(--accent); }
+  .weave-copy .eyebrow { color: var(--cool); }
+  .weave-copy h2 { margin-top: 18px; font-family: var(--serif); font-weight: 300; font-size: clamp(30px, 4vw, 60px); line-height: 1.08; letter-spacing: -0.02em; }
+  .weave-copy p { margin-top: 20px; max-width: 40ch; color: var(--ivory-dim); font-size: 15px; line-height: 1.75; }
+  .weave-meter { margin-top: 30px; display: flex; align-items: center; gap: 14px; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ivory-faint); }
+  .weave-meter .track { flex: 1; height: 1px; background: var(--line); position: relative; max-width: 220px; }
+  .weave-meter .track i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--cool); }
+
+  /* ───── WEAR (results) ───── */
+  #wear { padding: clamp(110px, 16vh, 200px) 0; background: var(--ivory); color: var(--obsidian); }
+  #wear .eyebrow { color: #9a7b3c; }
+  .wear-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 60px; }
+  .wear-head h2 { font-family: var(--serif); font-weight: 300; font-size: clamp(32px, 4.4vw, 72px); line-height: 1.02; letter-spacing: -0.025em; max-width: 16ch; }
+  .wear-head p { max-width: 34ch; font-size: 14px; color: #5a554c; line-height: 1.7; }
+  .plates { display: grid; grid-template-columns: 1fr; gap: 18px; }
+  @media (min-width: 760px) { .plates { grid-template-columns: repeat(3, 1fr); } }
+  .plate { position: relative; aspect-ratio: 3/4; border-radius: 6px; overflow: hidden; cursor: none; transform-style: preserve-3d; transition: box-shadow 0.6s var(--ease); }
+  .plate:hover { box-shadow: 0 40px 80px rgba(0,0,0,0.22); }
+  .plate .field { position: absolute; inset: 0; display: grid; place-items: center; transition: transform 0.6s var(--expo); }
+  .plate svg { width: 64%; height: auto; }
+  .plate .garment { fill: none; stroke-width: 1.3; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
+  .plate .cap { position: absolute; left: 16px; bottom: 14px; z-index: 3; }
+  .plate .cap .t { font-size: 10px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.72; }
+  .plate .cap .d { font-family: var(--serif); font-size: 19px; font-weight: 400; margin-top: 2px; }
+  .plate .num { position: absolute; right: 14px; top: 12px; z-index: 3; font-family: var(--serif); font-size: 13px; opacity: 0.6; }
+
+  /* product surfacing overlay */
+  .shop { position: absolute; inset: 0; z-index: 4; background: rgba(10,10,14,0.72); backdrop-filter: blur(8px); color: var(--ivory); opacity: 0; transform: translateY(8px); transition: opacity 0.5s var(--ease), transform 0.5s var(--ease); display: flex; flex-direction: column; justify-content: flex-end; padding: 18px; pointer-events: none; }
+  .plate:hover .shop { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .shop .sh-h { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  .shop ul { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+  .shop li { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; border-bottom: 1px solid rgba(244,239,230,0.12); padding-bottom: 10px; }
+  .shop .pn { font-size: 13px; font-weight: 500; }
+  .shop .pb { font-size: 11px; color: var(--ivory-faint); }
+  .shop .pp { font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .shop .buy { margin-top: 14px; align-self: flex-start; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ivory-dim); border: 1px solid var(--line); border-radius: 999px; padding: 9px 16px; opacity: 0.6; }
+
+  /* tones (no people — abstract garment fields) */
+  .tone-a { background: linear-gradient(155deg, #efe7d9 0%, #cbc7ba 58%, #8e9286 100%); }
+  .tone-a .garment { stroke: #2a2620; }
+  .tone-b { background: linear-gradient(155deg, #b48a63 0%, #6f4c33 60%, #2c1f17 100%); }
+  .tone-b .garment { stroke: #f5ece0; }
+  .tone-c { background: linear-gradient(155deg, #5b5750 0%, #3a362f 60%, #1d1b18 100%); }
+  .tone-c .garment { stroke: #f1ecdf; }
+
+  /* ───── CLOSING ───── */
+  #closing { padding: clamp(130px, 22vh, 260px) 0; text-align: center; overflow: hidden; }
+  #closing .big { font-family: var(--serif); font-weight: 300; font-size: clamp(40px, 9vw, 150px); line-height: 0.98; letter-spacing: -0.035em; }
+  #closing .big em { font-style: italic; color: var(--accent); }
+  #closing .sub { margin-top: 30px; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ivory-faint); }
+  footer { border-top: 1px solid var(--line); padding: 50px 0; }
+  .foot { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: space-between; }
+  .foot .aff { max-width: 60ch; font-size: 11px; color: var(--ivory-faint); line-height: 1.7; }
+  .foot .cc { font-size: 11px; color: var(--ivory-faint); }
+
+  .badge { position: fixed; left: 16px; bottom: 14px; z-index: 95; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ivory-faint); background: rgba(11,11,15,0.6); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; backdrop-filter: blur(8px); }
+</style>
+</head>
+<body>
+  <div id="cursor"></div>
+  <div id="cursor-dot"></div>
+  <div id="progress"></div>
+  <div class="badge">Track B · 자유 아트디렉션 비전 (non-production)</div>
+
+  <nav>
+    <div class="wordmark">IF<sup>AI</sup></div>
+    <div class="nav-right">
+      <a href="#wear" data-hot>Looks</a>
+      <a href="#closing" data-hot>About</a>
+      <a href="#hero" data-hot>Begin</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <canvas id="aurora"></canvas>
+    <div class="veil"></div>
+    <div class="wrap">
+      <div class="hero-kicker reveal">
+        <span class="rule"></span>
+        <span class="eyebrow">Wear what you imagine</span>
+      </div>
+      <h1 class="imagine">
+        I want to wear <span class="morph" id="m1">something effortless</span><br />
+        for <span class="morph" id="m2">a slow Sunday</span>.
+      </h1>
+      <p class="hero-sub reveal">한 문장이면 충분합니다. I.F가 여러 온라인몰을 가로질러, 상상한 무드를 입을 수 있는 한 벌의 룩으로 직조합니다.</p>
+      <form class="prompt-field reveal" id="promptForm" onsubmit="return false;">
+        <input id="promptInput" type="text" placeholder="오늘, 무엇을 입은 당신을 상상하나요?" aria-label="프롬프트" />
+        <button class="magnetic" data-hot type="submit"><span>Imagine →</span></button>
+      </form>
+    </div>
+    <div class="scroll-cue"><span>Scroll</span><span class="bar"></span></div>
+  </section>
+
+  <!-- INTENTION -->
+  <section id="intention">
+    <div class="wrap intention-grid">
+      <div>
+        <div class="eyebrow reveal">01 — The intention</div>
+        <p class="big-statement" style="margin-top:18px;">AI는 검색하지 않습니다. <b>의도를 읽습니다.</b></p>
+      </div>
+      <div class="intention-list">
+        <div class="ic reveal"><div class="n">i</div><div><h3>상황·무드·제약을 한 문장으로</h3><p>"비 오는 화요일, 단정하지만 답답하지 않게." 빈 입력창 앞에서 막힐 필요 없이, 떠오르는 그대로.</p></div></div>
+        <div class="ic reveal"><div class="n">ii</div><div><h3>전체 착장이 보이는 룩으로</h3><p>상의·하의·아우터까지, 잘린 클로즈업이 아니라 입을 수 있는 한 벌의 실루엣으로.</p></div></div>
+        <div class="ic reveal"><div class="n">iii</div><div><h3>국내 온라인몰 상품으로 연결</h3><p>감상으로 끝나지 않습니다. 마음에 든 룩에서 바로 살 수 있는 곳으로.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WEAVING -->
+  <section id="weave">
+    <div class="glow"></div>
+    <div class="wrap weave-stage">
+      <div class="weave-art">
+        <svg viewBox="0 0 200 250" id="weaveSvg" aria-hidden="true">
+          <!-- abstract garment woven from threads — no person -->
+          <path class="thread" d="M70 44 L100 60 L130 44" />
+          <path class="thread" d="M70 44 L48 70 L56 200 L100 214 L144 200 L152 70 L130 44" />
+          <path class="thread accent" d="M100 60 L100 214" />
+          <path class="thread" d="M70 44 L80 110 M130 44 L120 110" />
+          <path class="thread" d="M48 70 L30 128 M152 70 L170 128" />
+          <path class="thread" d="M56 200 L52 236 L84 236 L88 150 M144 200 L148 236 L116 236 L112 150" />
+          <path class="thread accent" d="M64 96 Q100 116 136 96" />
+        </svg>
+      </div>
+      <div class="weave-copy">
+        <div class="eyebrow reveal">02 — The making</div>
+        <h2 class="reveal">실 한 올에서<br />한 벌의 룩으로.</h2>
+        <p class="reveal">큐레이션된 룩 DB를 먼저 탐색하고, 없으면 실시간으로 생성합니다. 도시의 라인이 아니라, 패션의 언어로 실루엣을 직조합니다.</p>
+        <div class="weave-meter reveal"><span>Weaving</span><span class="track"><i id="weaveBar"></i></span><span id="weavePct">0%</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WEAR (results) -->
+  <section id="wear">
+    <div class="wrap">
+      <div class="wear-head">
+        <div>
+          <div class="eyebrow reveal">03 — Wear it</div>
+          <h2 class="reveal">세 가지 방향, 모두 입을 수 있게.</h2>
+        </div>
+        <p class="reveal">각 룩 위로 커서를 올리면, 그 룩을 이루는 실제 상품이 떠오릅니다. 결제는 각 판매처에서.</p>
+      </div>
+      <div class="plates" id="plates"></div>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <section id="closing">
+    <div class="wrap">
+      <p class="big">Wear what<br />you <em>imagine</em>.</p>
+      <p class="sub reveal">I.F — Intelligent Fashion · an independent AI layer across the malls you already love</p>
+    </div>
+    <div class="wrap" style="margin-top:90px;">
+      <footer>
+        <div class="foot">
+          <p class="aff">I.F는 무신사·29CM·지그재그·에이블리·네이버쇼핑 등 외부 온라인몰의 상품을 소개하며, 일부 링크를 통한 구매 시 제휴 수수료를 받을 수 있습니다. 상품 결제·배송·교환은 각 판매처 정책을 따릅니다.</p>
+          <span class="cc">© 2026 IF</span>
+        </div>
+      </footer>
+    </div>
+  </section>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script>
+  (function () {
+    "use strict";
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var hasGSAP = typeof window.gsap !== "undefined";
+    if (hasGSAP && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+
+    /* ── data: looks + products (no people; abstract) ── */
+    var GARMENTS = {
+      a: '<path class="garment" d="M64 40 L100 56 L136 40 L150 70 L120 88 L120 200 L80 200 L80 88 L50 70 Z"/><path class="garment" d="M100 56 L100 200"/>',
+      b: '<path class="garment" d="M72 38 Q100 50 128 38 L120 80 L132 210 L100 222 L68 210 L80 80 Z"/><path class="garment" d="M80 80 Q100 96 120 80"/>',
+      c: '<path class="garment" d="M70 42 Q100 30 130 42 L140 78 L120 90 L120 130 L132 210 L100 200 L68 210 L80 130 L80 90 L60 78 Z"/>'
+    };
+    var LOOKS = [
+      { tone: "tone-a", g: "a", tag: "Office · 01", name: "뉴트럴 테일러드 셋업", products: [
+        { n: "싱글 테일러드 블레이저", b: "29CM 셀렉트", p: 89000 },
+        { n: "와이드 트라우저", b: "무신사 스탠다드", p: 49000 },
+        { n: "코튼 셔츠", b: "에이블리", p: 39000 } ] },
+      { tone: "tone-b", g: "b", tag: "Date · 02", name: "러블리 미디 원피스", products: [
+        { n: "새틴 미디 원피스", b: "지그재그", p: 59000 },
+        { n: "크롭 가디건", b: "29CM", p: 45000 },
+        { n: "스트랩 슈즈", b: "네이버쇼핑", p: 69000 } ] },
+      { tone: "tone-c", g: "c", tag: "Sport · 03", name: "애슬레저 캐주얼", products: [
+        { n: "오버핏 후디", b: "무신사", p: 42000 },
+        { n: "테크 조거 팬츠", b: "에이블리", p: 38000 },
+        { n: "러너 스니커즈", b: "29CM", p: 79000 } ] }
+    ];
+    var won = function (n) { return "₩" + n.toLocaleString("ko-KR"); };
+
+    var platesEl = document.getElementById("plates");
+    LOOKS.forEach(function (L, i) {
+      var li = L.products.map(function (p) {
+        return '<li><span><span class="pn">' + p.n + '</span><br><span class="pb">' + p.b + '</span></span><span class="pp">' + won(p.p) + '</span></li>';
+      }).join("");
+      var el = document.createElement("div");
+      el.className = "plate " + L.tone + " reveal tilt";
+      el.setAttribute("data-hot", "");
+      el.innerHTML =
+        '<div class="field"><svg viewBox="0 0 200 240" aria-hidden="true">' + GARMENTS[L.g] + "</svg></div>" +
+        '<span class="num">0' + (i + 1) + "</span>" +
+        '<div class="cap"><div class="t">' + L.tag + '</div><div class="d">' + L.name + "</div></div>" +
+        '<div class="shop"><div class="sh-h">This look · ' + L.products.length + " pieces</div><ul>" + li +
+        '</ul><span class="buy" title="외부 몰에서 구매 · 자체 결제 없음">Buy the look ↗</span></div>';
+      platesEl.appendChild(el);
+    });
+
+    /* ── cursor ── */
+    var cur = document.getElementById("cursor"), dot = document.getElementById("cursor-dot");
+    var cx = window.innerWidth / 2, cy = window.innerHeight / 2, dx = cx, dy = cy;
+    window.addEventListener("mousemove", function (e) { cx = e.clientX; cy = e.clientY; dot.style.transform = "translate(" + cx + "px," + cy + "px)"; });
+    (function loop() { dx += (cx - dx) * 0.12; dy += (cy - dy) * 0.12; cur.style.transform = "translate(" + dx + "px," + dy + "px)"; requestAnimationFrame(loop); })();
+    document.querySelectorAll("[data-hot]").forEach(function (el) {
+      el.addEventListener("mouseenter", function () { document.body.classList.add("cursor-hot"); });
+      el.addEventListener("mouseleave", function () { document.body.classList.remove("cursor-hot"); });
+    });
+
+    /* ── magnetic button ── */
+    document.querySelectorAll(".magnetic").forEach(function (btn) {
+      var span = btn.querySelector("span");
+      btn.addEventListener("mousemove", function (e) {
+        var r = btn.getBoundingClientRect();
+        var mx = e.clientX - r.left - r.width / 2, my = e.clientY - r.top - r.height / 2;
+        btn.style.transform = "translate(" + mx * 0.3 + "px," + my * 0.4 + "px)";
+        if (span) span.style.transform = "translate(" + mx * 0.15 + "px," + my * 0.2 + "px)";
+      });
+      btn.addEventListener("mouseleave", function () { btn.style.transform = ""; if (span) span.style.transform = ""; });
+    });
+
+    /* ── tilt plates ── */
+    document.querySelectorAll(".tilt").forEach(function (card) {
+      card.addEventListener("mousemove", function (e) {
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+        var field = card.querySelector(".field");
+        if (field) field.style.transform = "rotateY(" + px * 7 + "deg) rotateX(" + (-py * 7) + "deg) scale(1.04)";
+      });
+      card.addEventListener("mouseleave", function () { var f = card.querySelector(".field"); if (f) f.style.transform = ""; });
+    });
+
+    /* ── word morph ── */
+    var SET1 = ["something effortless", "a quiet statement", "soft tailoring", "rainy-day layers", "a date-night slip"];
+    var SET2 = ["a slow Sunday", "the first cold morning", "an after-work dinner", "a gallery afternoon"];
+    function morph(el, list) {
+      var i = 0;
+      setInterval(function () {
+        i = (i + 1) % list.length;
+        if (hasGSAP && !reduce) {
+          gsap.to(el, { duration: 0.4, yPercent: -40, opacity: 0, ease: "power2.in", onComplete: function () {
+            el.textContent = list[i]; gsap.fromTo(el, { yPercent: 40, opacity: 0 }, { duration: 0.6, yPercent: 0, opacity: 1, ease: "power3.out" });
+          } });
+        } else { el.textContent = list[i]; }
+      }, 2600);
+    }
+    morph(document.getElementById("m1"), SET1);
+    morph(document.getElementById("m2"), SET2);
+
+    /* ── aurora canvas (generative gradient blobs — light, no WebGL) ── */
+    (function () {
+      var cv = document.getElementById("aurora"); if (!cv) return;
+      var ctx = cv.getContext("2d"); var W, H, t = 0;
+      function size() { W = cv.width = cv.offsetWidth; H = cv.height = cv.offsetHeight; }
+      size(); window.addEventListener("resize", size);
+      var blobs = [
+        { x: 0.28, y: 0.32, r: 0.5, c: "rgba(230,192,138,0.18)", sx: 0.00012, sy: 0.00009 },
+        { x: 0.72, y: 0.58, r: 0.46, c: "rgba(143,147,255,0.12)", sx: -0.0001, sy: 0.00013 },
+        { x: 0.5, y: 0.8, r: 0.55, c: "rgba(120,90,60,0.16)", sx: 0.00008, sy: -0.0001 }
+      ];
+      function frame() {
+        t += 16; ctx.clearRect(0, 0, W, H);
+        blobs.forEach(function (b) {
+          var x = (b.x + Math.sin(t * b.sx) * 0.08) * W;
+          var y = (b.y + Math.cos(t * b.sy) * 0.08) * H;
+          var rad = b.r * Math.min(W, H);
+          var g = ctx.createRadialGradient(x, y, 0, x, y, rad);
+          g.addColorStop(0, b.c); g.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
+        });
+        if (!reduce) requestAnimationFrame(frame);
+      }
+      frame();
+    })();
+
+    /* ── reveal-words: split .imagine? keep simple: animate .reveal + section heads ── */
+    function splitReveal(node) {
+      var words = node.textContent.trim().split(/\s+/);
+      node.innerHTML = words.map(function (w) { return '<span class="w"><i>' + w + "</i></span>"; }).join(" ");
+      return node.querySelectorAll(".w i");
+    }
+
+    if (hasGSAP && window.ScrollTrigger && !reduce) {
+      /* generic reveal */
+      gsap.utils.toArray(".reveal").forEach(function (el) {
+        gsap.from(el, { scrollTrigger: { trigger: el, start: "top 88%" }, y: 26, opacity: 0, duration: 0.9, ease: "power3.out" });
+      });
+      /* hero intro */
+      gsap.from(".imagine", { y: 28, opacity: 0, filter: "blur(10px)", duration: 1.2, ease: "power3.out", delay: 0.2 });
+
+      /* reveal-words on section heads */
+      document.querySelectorAll("#weave h2, .wear-head h2, .big-statement").forEach(function (h) {
+        var inners = splitReveal(h);
+        gsap.to(inners, { scrollTrigger: { trigger: h, start: "top 85%" }, yPercent: 0, stagger: 0.07, duration: 0.8, ease: "power3.out" });
+      });
+
+      /* weave line-draw tied to scroll */
+      var threads = document.querySelectorAll("#weaveSvg .thread");
+      threads.forEach(function (p) { var len = p.getTotalLength(); p.style.strokeDasharray = len; p.style.strokeDashoffset = len; });
+      gsap.to("#weaveSvg .thread", {
+        scrollTrigger: { trigger: "#weave", start: "top 70%", end: "bottom 60%", scrub: 1,
+          onUpdate: function (self) { var pct = Math.round(self.progress * 100); var bar = document.getElementById("weaveBar"); var lbl = document.getElementById("weavePct"); if (bar) bar.style.width = pct + "%"; if (lbl) lbl.textContent = pct + "%"; } },
+        strokeDashoffset: 0, stagger: 0.12, ease: "none"
+      });
+
+      /* progress bar */
+      gsap.to("#progress", { width: "100%", ease: "none", scrollTrigger: { trigger: document.body, start: "top top", end: "bottom bottom", scrub: 0.3 } });
+
+      /* closing parallax */
+      gsap.from("#closing .big", { scrollTrigger: { trigger: "#closing", start: "top 80%" }, y: 60, opacity: 0, duration: 1.2, ease: "power3.out" });
+    } else {
+      /* reduced motion / no gsap: show everything */
+      document.querySelectorAll(".reveal").forEach(function (el) { el.style.opacity = 1; });
+      document.querySelectorAll("#weaveSvg .thread").forEach(function (p) { p.style.strokeDashoffset = 0; });
+      var bar = document.getElementById("weaveBar"); if (bar) bar.style.width = "100%";
+    }
+
+    /* ── Lenis smooth scroll ── */
+    if (typeof Lenis !== "undefined" && !reduce) {
+      var lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+      function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+      requestAnimationFrame(raf);
+      if (hasGSAP && window.ScrollTrigger) lenis.on("scroll", ScrollTrigger.update);
+      document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+        a.addEventListener("click", function (e) { e.preventDefault(); var t = document.querySelector(a.getAttribute("href")); if (t) lenis.scrollTo(t); });
+      });
+    }
+
+    /* prompt → playful focus pulse to weave */
+    var form = document.getElementById("promptForm");
+    if (form) form.addEventListener("submit", function () {
+      var w = document.getElementById("weave");
+      if (typeof Lenis !== "undefined" && window.__lenis) {}
+      if (w) w.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+    });
+  })();
+  </script>
+</body>
+</html>
