@@ -1,3 +1,71 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* cta-accent 글래스 합성용 (rgba(var(--accent-rgb), …)) */
+    --accent-rgb: 61, 79, 107;
+  }
+
+  html {
+    /* 스크롤바 폭 항상 예약 — fixed topbar·absolute 요소 가로 중심 정렬 흔들림 방지 */
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: #f5f5f3; /* paper */
+    color: #1a1a1a; /* ink */
+  }
+}
+
+/* ── 다크 신 배경 (Tailwind arbitrary로 표현 어려운 3-layer 그라디언트 + grain) ── */
+.bg-hero-dark,
+.bg-slate-scene {
+  position: relative;
+}
+
+/* 랜딩 hero: 좌상 푸른 글로우 + 우하 다크 비네트 + 수직 다크 */
+.bg-hero-dark {
+  background:
+    radial-gradient(ellipse 70% 60% at 18% 30%, rgba(74, 108, 150, 0.18), transparent 60%),
+    radial-gradient(ellipse 60% 60% at 82% 80%, rgba(0, 0, 0, 0.55), transparent 70%),
+    linear-gradient(180deg, #14161c 0%, #0f1014 60%, #0a0b0e 100%);
+}
+
+/* auth / loading 공유 슬레이트 신 */
+.bg-slate-scene {
+  background:
+    radial-gradient(ellipse 60% 70% at 50% 35%, rgba(61, 79, 107, 0.2), transparent 62%),
+    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(0, 0, 0, 0.68), transparent 72%),
+    linear-gradient(180deg, #0a0c12 0%, #14181f 30%, #1e2733 60%, #131820 90%, #0a0c10 100%);
+}
+
+/* grain 텍스처 (feTurbulence noise, overlay 합성) */
+.bg-hero-dark::after,
+.bg-slate-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.bg-hero-dark::after {
+  opacity: 0.06;
+}
+.bg-slate-scene::after {
+  opacity: 0.08;
+}
+
+/* 접근성: 모션 최소화 선호 시 애니메이션/트랜지션 사실상 무력화 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
