@@ -1,9 +1,14 @@
 "use client";
 
-import { useReducer } from "react";
+import { useReducer, useState } from "react";
+import Link from "next/link";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { ExploreScene } from "@/components/studio/ExploreScene";
 import { LoadingScene } from "@/components/studio/LoadingScene";
 import { ResultsScene } from "@/components/studio/ResultsScene";
+import { AuthOverlay } from "@/components/studio/AuthOverlay";
+import { HistoryOverlay } from "@/components/studio/HistoryOverlay";
+import { ProductDrawer } from "@/components/studio/ProductDrawer";
 import type { StudioScene } from "@/types/ui";
 
 type State = { scene: StudioScene; prompt: string };
@@ -29,28 +34,44 @@ function reducer(state: State, action: Action): State {
 }
 
 /**
- * 워크스페이스 셸 — scene 상태머신(explore→loading→results→error)을 useReducer로.
- * 모든 전환은 클라이언트 상태만(외부 API 0). 실제 생성·토큰·상품 fetch는 다음 phase.
- * auth/history/drawer 오버레이는 step 5에서 연결.
+ * 워크스페이스 셸 — scene 상태머신(explore→loading→results→error) + auth/history/drawer 오버레이.
+ * 모든 전환·토글은 클라이언트 상태만(외부 API 0). 실제 생성·토큰·세션·상품 fetch는 다음 phase.
  */
 export default function StudioPage() {
   const [state, dispatch] = useReducer(reducer, { scene: "explore", prompt: "" });
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  // mock — 실제 세션/저장은 다음 phase. 비로그인 기준으로 gate·로그인 유도 노출.
+  const isLoggedIn = false;
 
   return (
-    <div className="bg-paper">
+    <div className="relative min-h-screen bg-paper">
+      <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between px-7 py-4">
+        <Link href="/" className="text-ink">
+          <BrandMark className="!items-start" />
+        </Link>
+        <div className="flex items-center gap-5 text-t7 font-extrabold uppercase tracking-[0.18em] text-ink">
+          <button type="button" onClick={() => setHistoryOpen(true)}>
+            Saved
+          </button>
+          <button type="button" onClick={() => setAuthOpen(true)}>
+            Login
+          </button>
+        </div>
+      </header>
+
       {state.scene === "explore" && (
         <ExploreScene
           onGenerate={(prompt) => dispatch({ type: "generate", prompt })}
         />
       )}
-
       {state.scene === "loading" && (
         <LoadingScene
           promptLabel={state.prompt}
           onDone={() => dispatch({ type: "ready" })}
         />
       )}
-
       {state.scene === "results" && (
         <ResultsScene
           onRegenerate={() =>
@@ -60,12 +81,9 @@ export default function StudioPage() {
             dispatch({ type: "generate", prompt: state.prompt })
           }
           onRefine={() => dispatch({ type: "generate", prompt: state.prompt })}
-          onOpenDrawer={() => {
-            /* step 5에서 ProductDrawer 토글로 연결 */
-          }}
+          onOpenDrawer={() => setDrawerOpen(true)}
         />
       )}
-
       {state.scene === "error" && (
         <section className="bg-slate-scene flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center text-white-soft">
           <p className="text-t3 font-extrabold">룩을 그리지 못했어요</p>
@@ -81,6 +99,22 @@ export default function StudioPage() {
           </button>
         </section>
       )}
+
+      <ProductDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <AuthOverlay
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onSelectProvider={() => setAuthOpen(false)}
+      />
+      <HistoryOverlay
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        isLoggedIn={isLoggedIn}
+        onSignIn={() => {
+          setHistoryOpen(false);
+          setAuthOpen(true);
+        }}
+      />
     </div>
   );
 }

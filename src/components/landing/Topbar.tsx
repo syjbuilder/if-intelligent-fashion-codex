@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { BrandMark } from "@/components/brand/BrandMark";
 
 /**
@@ -22,12 +23,12 @@ export function Topbar() {
           </span>
         </div>
         <BrandMark className="justify-self-center text-white" />
-        <a
+        <Link
           href="/studio"
           className="justify-self-end text-t7 font-extrabold uppercase tracking-[0.18em] transition-opacity hover:opacity-70"
         >
           Login
-        </a>
+        </Link>
       </div>
     </header>
   );
