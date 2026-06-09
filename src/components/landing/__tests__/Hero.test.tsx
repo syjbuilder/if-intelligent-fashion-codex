@@ -13,4 +13,11 @@ describe("Hero", () => {
       "/studio",
     );
   });
+
+  it("글래스 룩 패널 3장과 scroll 큐(선)를 렌더한다", () => {
+    const { container } = render(<Hero />);
+    expect(container.querySelector(".hero-lookbook")).toBeTruthy();
+    expect(container.querySelectorAll(".hero-panel")).toHaveLength(3);
+    expect(container.querySelector(".scroll-cue .scroll-line")).toBeTruthy();
+  });
 });

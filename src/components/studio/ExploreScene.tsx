@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PromptDock } from "./PromptDock";
 import { Chip } from "@/components/ui/Chip";
 import { LookCard } from "@/components/looks/LookCard";
+import { RevealWords } from "@/components/motion/RevealWords";
 import { SEASON_PROMPTS, EXPLORE_LOOKS } from "@/lib/looks-fixtures";
 
 /**
@@ -25,10 +26,13 @@ export function ExploreScene({
         <p className="text-t7 font-extrabold uppercase tracking-[0.18em] text-muted">
           Style Studio
         </p>
-        <h1 className="mt-3 max-w-[24ch] text-t3 font-extrabold text-ink">
-          Begin with a place, mood, and constraint.
+        <h1
+          aria-label="Begin with a place, mood, and constraint."
+          className="mt-4 max-w-[20ch] text-t2 font-extrabold leading-[1.06] tracking-[-0.022em] text-ink"
+        >
+          <RevealWords text="Begin with a place, mood, and constraint." />
         </h1>
-        <p className="mt-3 max-w-[46ch] text-left text-t5 text-ink-soft">
+        <p className="mt-5 max-w-[46ch] text-left text-t5 leading-[1.7] text-ink-soft">
           상황·무드·제약을 한 문장으로. 막막하면 아래 시즌 추천에서 시작하세요.
         </p>
 

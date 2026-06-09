@@ -2,6 +2,7 @@
 
 import { Cta } from "@/components/ui/Cta";
 import { LookCard } from "@/components/looks/LookCard";
+import { RevealWords } from "@/components/motion/RevealWords";
 import { useReveal } from "@/components/motion/useReveal";
 import { CURATED_LOOKS } from "@/lib/looks-fixtures";
 
@@ -19,8 +20,11 @@ export function CuratedPreview() {
         <p className="text-t7 font-extrabold uppercase tracking-[0.18em] text-muted">
           Today&apos;s curated
         </p>
-        <h2 className="mt-4 text-t2 font-extrabold text-ink">
-          Six directions to begin.
+        <h2
+          aria-label="Six directions to begin."
+          className="mt-4 text-t2 font-extrabold text-ink"
+        >
+          <RevealWords text="Six directions to begin." />
         </h2>
         <p className="mt-6 max-w-[46ch] text-left text-t4 text-ink-soft">
           오늘의 큐레이션 룩 여섯 가지. 마음에 드는 방향에서 스튜디오를 시작하세요.
