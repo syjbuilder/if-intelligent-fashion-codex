@@ -3,14 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { BrandMark } from "@/components/brand/BrandMark";
-import { MenuTray } from "./MenuTray";
+import { MenuTray, type MenuItem } from "./MenuTray";
 
 /**
- * 랜딩 고정 헤더. mix-blend-difference로 다크/페이퍼 영역 위에서 자동 반전.
- * `.landing` 바깥(page의 main 형제)에 배치해야 stacking이 동작한다 — 래퍼에 transform/z 금지.
- * Menu 버튼 → MenuTray 토글. Login은 /studio 진입.
+ * 공용 고정 헤더(랜딩·스튜디오). mix-blend-difference로 다크/페이퍼 위에서 자동 반전.
+ * `.landing`/스튜디오 래퍼 바깥(형제)에 두고 래퍼에 transform/z 금지(stacking).
+ * Menu 버튼 → MenuTray(controlled items). Login 버튼 → onLogin(현재 페이지에서 Auth 오버레이).
  */
-export function Topbar() {
+export function Topbar({
+  menuItems,
+  onLogin,
+}: {
+  menuItems: MenuItem[];
+  onLogin: () => void;
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <>
@@ -32,16 +38,23 @@ export function Topbar() {
               Menu
             </span>
           </button>
-          <BrandMark className="justify-self-center text-white" />
-          <Link
-            href="/studio"
+          <Link href="/" aria-label="홈으로" className="justify-self-center">
+            <BrandMark className="text-white" />
+          </Link>
+          <button
+            type="button"
+            onClick={onLogin}
             className="justify-self-end text-t7 font-extrabold uppercase tracking-[0.18em] transition-opacity hover:opacity-70"
           >
             Login
-          </Link>
+          </button>
         </div>
       </header>
-      <MenuTray open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MenuTray
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        items={menuItems}
+      />
     </>
   );
 }

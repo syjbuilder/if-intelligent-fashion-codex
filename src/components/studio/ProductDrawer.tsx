@@ -24,8 +24,8 @@ export function ProductDrawer({
       aria-modal="true"
       aria-label="상품 패널"
     >
-      <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <aside className="absolute right-0 top-0 flex h-full w-[min(420px,92vw)] flex-col bg-white text-ink shadow-2xl md:w-[380px] max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:h-[min(82vh,640px)] max-md:w-full max-md:rounded-t-[22px]">
+      <div className="overlay-in absolute inset-0 bg-black/20" onClick={onClose} />
+      <aside className="drawer-in absolute right-0 top-0 flex h-full w-[min(420px,92vw)] flex-col bg-white text-ink shadow-2xl md:w-[380px] max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:h-[min(82vh,640px)] max-md:w-full max-md:rounded-t-[22px]">
         {/* 모바일 grab handle */}
         <div className="mx-auto mt-3 h-1 w-11 rounded-full bg-line md:hidden" />
 

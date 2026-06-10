@@ -25,7 +25,7 @@ export function HistoryOverlay({
 }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[140] overflow-y-auto bg-paper text-ink">
+    <div className="overlay-in fixed inset-0 z-[140] overflow-y-auto bg-paper text-ink">
       <header className="sticky top-0 z-10 flex items-center gap-4 bg-paper/90 px-7 py-5 backdrop-blur">
         <button
           type="button"
