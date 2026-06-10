@@ -47,15 +47,27 @@ export default function StudioPage() {
 
   return (
     <div className="relative min-h-screen bg-paper">
-      <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between px-7 py-4">
-        <Link href="/" className="text-ink">
+      <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between px-[34px] py-5">
+        <Link
+          href="/"
+          className="text-ink transition-opacity hover:opacity-70"
+          aria-label="홈으로"
+        >
           <BrandMark className="!items-start" />
         </Link>
-        <div className="flex items-center gap-5 text-t7 font-extrabold uppercase tracking-[0.18em] text-ink">
-          <button type="button" onClick={() => setHistoryOpen(true)}>
+        <div className="flex items-center gap-7 text-t7 font-extrabold uppercase tracking-[0.18em] text-ink">
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(true)}
+            className="transition-opacity hover:opacity-60"
+          >
             Saved
           </button>
-          <button type="button" onClick={() => setAuthOpen(true)}>
+          <button
+            type="button"
+            onClick={() => setAuthOpen(true)}
+            className="transition-opacity hover:opacity-60"
+          >
             Login
           </button>
         </div>

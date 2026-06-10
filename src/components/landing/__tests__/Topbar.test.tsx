@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { Topbar } from "../Topbar";
 
@@ -10,5 +10,12 @@ describe("Topbar", () => {
       "href",
       "/studio",
     );
+  });
+
+  it("Menu 버튼 클릭 시 트레이(메뉴 항목)가 열린다", () => {
+    render(<Topbar />);
+    expect(screen.queryByRole("link", { name: /Explore/ })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "메뉴" }));
+    expect(screen.getByRole("link", { name: /Explore/ })).toBeInTheDocument();
   });
 });
