@@ -2,20 +2,34 @@
 
 import { useState } from "react";
 import { Topbar } from "@/components/landing/Topbar";
+import type { MenuItem } from "@/components/landing/MenuTray";
 import { Hero } from "@/components/landing/Hero";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { CuratedPreview } from "@/components/landing/CuratedPreview";
 import { SiteFooter } from "@/components/landing/SiteFooter";
+import { AuthOverlay } from "@/components/studio/AuthOverlay";
+import { HistoryOverlay } from "@/components/studio/HistoryOverlay";
+import { RecentPromptsDrawer } from "@/components/studio/RecentPromptsDrawer";
 
 type DocKind = "terms" | "privacy";
 
 export default function Home() {
-  // 약관/개인정보 모달은 셸(트리거 + placeholder 카드)까지 — 본문 풀텍스트는 후속 콘텐츠 작업.
   const [doc, setDoc] = useState<DocKind | null>(null);
+  // 메뉴·로그인 흐름을 현재 페이지에서 오버레이로 처리(v0.7처럼 in-place).
+  const [authOpen, setAuthOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [recentOpen, setRecentOpen] = useState(false);
+
+  const menuItems: MenuItem[] = [
+    { label: "Explore", n: "01", href: "/studio" },
+    { label: "Recent prompts", n: "02", onClick: () => setRecentOpen(true) },
+    { label: "Saved Looks", n: "03", onClick: () => setHistoryOpen(true) },
+    { label: "New Prompt", n: "04", href: "/studio" },
+  ];
 
   return (
     <>
-      <Topbar />
+      <Topbar menuItems={menuItems} onLogin={() => setAuthOpen(true)} />
       <main>
         <Hero />
         <HowItWorks />
@@ -57,6 +71,26 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* 메뉴/로그인 오버레이 — 비로그인 셸 기준 */}
+      <AuthOverlay
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onSelectProvider={() => setAuthOpen(false)}
+      />
+      <HistoryOverlay
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        isLoggedIn={false}
+        onSignIn={() => {
+          setHistoryOpen(false);
+          setAuthOpen(true);
+        }}
+      />
+      <RecentPromptsDrawer
+        open={recentOpen}
+        onClose={() => setRecentOpen(false)}
+      />
     </>
   );
 }

@@ -32,7 +32,7 @@ export function AuthOverlay({
 }) {
   if (!open) return null;
   return (
-    <div className="bg-slate-scene fixed inset-0 z-[150] flex items-center justify-center px-6 text-white-soft">
+    <div className="overlay-in bg-slate-scene fixed inset-0 z-[150] flex items-center justify-center px-6 text-white-soft">
       <button
         type="button"
         aria-label="닫기"

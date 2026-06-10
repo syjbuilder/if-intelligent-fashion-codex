@@ -18,4 +18,13 @@ describe("StudioPage (/studio)", () => {
       screen.getByRole("button", { name: /Google/ }),
     ).toBeInTheDocument();
   });
+
+  it("Menu → Saved Looks가 저장 화면(gate)을 연다", () => {
+    render(<StudioPage />);
+    fireEvent.click(screen.getByRole("button", { name: "메뉴" }));
+    fireEvent.click(screen.getByRole("button", { name: /Saved Looks/ }));
+    expect(
+      screen.getByRole("button", { name: /로그인하고/ }),
+    ).toBeInTheDocument();
+  });
 });

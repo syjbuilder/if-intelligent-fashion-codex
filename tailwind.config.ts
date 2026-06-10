@@ -11,6 +11,7 @@ const config: Config = {
         "ink-soft": "#4a4a48", // 보조 텍스트
         muted: "#8a8a86", // 캡션·eyebrow·placeholder
         paper: "#f5f5f3", // 라이트 페이지 배경
+        "paper-alt": "#f3f3f1", // 섹션 톤 리듬용(미세하게 어두운 페이퍼)
         cream: "#eaeae6", // 라이트 면 카드 / chip hover
         "white-soft": "#fbfbfa", // 다크 위 텍스트 (Tailwind 기본 white와 구분)
         accent: "#3d4f6b", // Muted Slate (v0.7.2) — 페이지당 ≤2회
