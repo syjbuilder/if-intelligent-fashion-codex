@@ -82,7 +82,7 @@ export default function StudioPage() {
           />
         )}
         {state.scene === "error" && (
-          <section className="bg-slate-scene flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center text-white-soft">
+          <section className="bg-slate-scene relative flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center text-white-soft">
             <p className="text-t3 font-extrabold">룩을 그리지 못했어요</p>
             <p className="text-t5 text-white-soft/70">
               사용한 토큰은 자동 환불됐어요. 잠시 후 다시 시도해 주세요.

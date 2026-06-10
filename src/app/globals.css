@@ -22,11 +22,11 @@
   }
 }
 
-/* ── 다크 신 배경 (Tailwind arbitrary로 표현 어려운 3-layer 그라디언트 + grain) ── */
-.bg-hero-dark,
-.bg-slate-scene {
-  position: relative;
-}
+/* ── 다크 신 배경 (Tailwind arbitrary로 표현 어려운 3-layer 그라디언트 + grain) ──
+   주의: 여기서 position:relative를 강제하지 않는다 — globals가 @tailwind utilities 뒤라
+   .bg-slate-scene의 relative가 Tailwind .fixed 를 덮어써 AuthOverlay(fixed inset-0)가
+   흐름에 끼어 화면 하단에 붙는 버그를 유발했다. 각 사용처가 자체 positioning을 가진다
+   (Hero/LoadingScene/error = relative, AuthOverlay = fixed). grain ::after는 그 containing block 사용. */
 
 /* 랜딩 hero: 좌상 푸른 글로우 + 우하 다크 비네트 + 수직 다크 */
 .bg-hero-dark {
