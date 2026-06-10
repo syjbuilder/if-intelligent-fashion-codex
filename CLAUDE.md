@@ -7,6 +7,13 @@
 브랜드 메시지: "Wear what you imagine." — I.F는 자사몰이 아니라, 여러 온라인몰을 가로지르는
 독립형 AI 탐색 레이어다.
 
+## ⚠️ 작업 위치 (PO 머신 환경 — 매 세션 먼저 확인)
+
+- **정본 작업 폴더 = `C:\dev\if`** (OneDrive 밖 · 한글경로 없음 → 빌드/커밋 안정). **모든 작업은 여기서 한다.** 지금 이 파일을 읽고 있다면 올바른 위치다.
+- `C:\Users\sjs18\OneDrive\Desktop\IF\코덱스` = **stale 백업. 작업 금지.** OneDrive 동기화가 `.next` 빌드를 깨뜨려(EINVAL readlink) 2026-06-10에 repo를 옮겼다. 그 폴더에서 작업하면 낡은 베이스 위에 쌓이고 정본에 반영되지 않는다.
+- GitHub 원격(`syjbuilder/if-intelligent-fashion-codex`)이 단일 진실원(SSOT). 두 로컬 폴더는 그 복제본일 뿐 — 폴더 하나가 사라져도 유실 없음.
+- 새 세션은 반드시 `C:\dev\if`에서 열 것. 실수로 OneDrive 폴더에서 열렸다면 즉시 PO에게 알리고 `C:\dev\if`로 전환한다.
+
 ## 기술 스택
 
 - Next.js (App Router) + TypeScript — React Server Components 기본, API Route/Server Actions 통합
