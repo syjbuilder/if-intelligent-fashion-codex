@@ -36,4 +36,12 @@ describe("HistoryOverlay", () => {
     );
     expect(container.firstChild).toBeNull();
   });
+
+  it("헤더는 공용 SectionHeader compact 패턴(h1 t3 + eyebrow t7)을 쓴다", () => {
+    render(<HistoryOverlay open onClose={() => {}} isLoggedIn={false} />);
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Saved Looks" }).className,
+    ).toContain("text-t3");
+    expect(screen.getByText("Atelier").className).toContain("text-t7");
+  });
 });

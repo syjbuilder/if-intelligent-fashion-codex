@@ -113,7 +113,7 @@
 
 - **`SectionHeader` 컴포넌트**(`src/components/ui/SectionHeader.tsx`)가 유일한 섹션 헤더 패턴:
   eyebrow(`t7` 800 uppercase tracking 0.18em) + 제목(`t2`, compact 변형은 `t3`, 800) + 서브카피(`t4`, 좌측 정렬, max 46ch).
-  적용: HowItWorks·CuratedPreview (PR 2에서 ExploreScene·HistoryOverlay 확장 예정). ad-hoc `text-[58px]`/`text-[30px]` 같은 px 크기 금지 — t1~t8 토큰만.
+  적용: HowItWorks·CuratedPreview·ExploreScene(h1)·HistoryOverlay(h1 compact). ad-hoc `text-[58px]`/`text-[30px]` 같은 px 크기 금지 — t1~t8 토큰만.
 - **가로 거터 표준**: 모든 페이지/씬 컨테이너는 `px-6 md:px-gutter`(= 34px, tailwind `spacing.gutter`). `px-[34px]`/`px-[52px]`/`px-7` 혼용 금지.
 
 ### 정렬·강조 규칙
@@ -137,7 +137,7 @@
 - **knot SVG 장식 (`<svg class="knot">`)**: brand-strip, auth-card, loading-wrap 3곳에서 제거 — italic 제거와 함께 Editorial 장식 일관성 차원.
 - **프롬프트 도크 (`.dock`)**: pill(`999px`), `width: min(690px, 86vw)`, 48px 원형 `.dock-btn`
   + `.dock-input`(h48, 15px). 슬라이드 톤에 따라 `.dock.cream`/`.dock.dim`. **v0.7.3 색감**: 기본 background `rgba(13, 16, 22, 0.58)` cool slate dark, `.dock.dim` `rgba(40, 50, 65, 0.46)` 슬레이트. 이전 워밍 `rgba(17,15,13,0.54)` / `rgba(76,60,46,0.42)` 폐기.
-- **Explore 검색바 (`.explore-search`)**: dock과 동형, explore scene 상단 sticky(`top: 76px`). v0.7.3에서 워밍 `rgba(255,250,242,0.92)` → 중성 `rgba(255,255,255,0.92)`.
+- **Explore 검색바 (v0.8 — "질문이 곧 무대")**: 풀블리드 sticky 스트립 폐기. `PromptDock variant="search" size="lg"`(input h-14·`t4`, 버튼 56px)를 **헤딩 직하 `max-w-[760px]` 블록**에 두고, sticky(`top-[72px]`)는 도크 pill 자체만 — 셸은 공용 `.glass-search` + `border-line`(스크롤 위에서 자체 글래스로 떠 보임 방지). 시즌 칩은 도크 바로 아래 non-sticky. 입력창 폭을 헤딩 measure에 묶어 "따로 노는" 부유감을 제거한다.
 - **칩 (`.chip`)**: `padding: 8px 14px`, `999px`, 12px. 기본은 다크 배경용(반투명 흰).
   라이트 배경 변형은 selector specificity 강화 — `.chip.refine-chip`·`.season-prompts .chip`
   (각각 0,0,2,0)으로 base를 이김 + `backdrop-filter: none` 명시 + 솔리드 `#ffffff` 배경.
@@ -156,8 +156,8 @@
 - **약관/개인정보 모달 (`.modal-doc`)**: 풀스크린 dim + 페이퍼 톤 카드, 내부 스크롤.
   이용약관 6섹션 / 개인정보처리방침 8섹션.
 - **auth-screen**: **다크 슬레이트 그라디언트 (v0.7.3 갱신)** + 중앙 카드 + 소셜 3버튼 (Google 화이트 / Kakao `#FEE500` / Naver `#03C75A`). 이전 워밍 브라운 그라디언트(`rgba(180,140,88) + #0b0908→#1b140f`) 폐기.
-- **history-page**: 로그인 시 `saved-grid`(저장 룩 카드), 비로그인 시 `history-gate`
-  (가입 유도 — 헤드라인 + sample 룩 흐림 + CTA).
+- **history-page (Saved Looks)**: 로그인 시 `saved-grid`(저장 룩 카드, gap 3.5 — curated와 동일), 비로그인 시 `history-gate`
+  (가입 유도 — 헤드라인 + sample 룩 흐림 + CTA). 헤더는 SectionHeader compact(eyebrow `t7` "Atelier" + h1 `t3` "Saved Looks") — v0.8에서 eyebrow t8 → t7로 통일.
 - **scroll-hint**: hero 하단 chevron + 라벨, `scrollChevron` 무한 애니메이션.
 - **menu-tray**: 4항목 — Explore / Recent prompts / Saved Looks / New Prompt + Demo 로그인 토글
   (디자인 확인용, 부트스트랩 단계에서 제거).

@@ -3,6 +3,7 @@
 import { LookCard } from "@/components/looks/LookCard";
 import { GarmentSvg } from "@/components/looks/GarmentSvg";
 import { Cta } from "@/components/ui/Cta";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import type { LookCardData, LookTone } from "@/types/ui";
 
 /**
@@ -26,7 +27,7 @@ export function HistoryOverlay({
   if (!open) return null;
   return (
     <div className="overlay-in fixed inset-0 z-[140] overflow-y-auto bg-paper text-ink">
-      <header className="sticky top-0 z-10 flex items-center gap-4 bg-paper/90 px-7 py-5 backdrop-blur">
+      <header className="sticky top-0 z-10 flex items-center gap-4 bg-paper/90 px-6 py-5 backdrop-blur md:px-gutter">
         <button
           type="button"
           aria-label="닫기"
@@ -35,15 +36,10 @@ export function HistoryOverlay({
         >
           ←
         </button>
-        <div>
-          <p className="text-t8 font-extrabold uppercase tracking-[0.18em] text-muted">
-            Atelier
-          </p>
-          <h1 className="text-t3 font-extrabold">Saved Looks</h1>
-        </div>
+        <SectionHeader as="h1" size="compact" eyebrow="Atelier" title="Saved Looks" />
       </header>
 
-      <div className="mx-auto max-w-[1180px] px-7 pb-24 pt-6">
+      <div className="mx-auto max-w-[1180px] px-6 pb-24 pt-6 md:px-gutter">
         {!isLoggedIn ? (
           <div className="flex flex-col items-center gap-6 py-20 text-center">
             <h2 className="max-w-[22ch] text-t2 font-extrabold">
@@ -74,7 +70,7 @@ export function HistoryOverlay({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3">
             {savedLooks.map((l) => (
               <LookCard key={l.id} look={l} />
             ))}
