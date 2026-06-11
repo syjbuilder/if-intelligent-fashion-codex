@@ -21,7 +21,7 @@ export function Topbar({
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50 mix-blend-difference">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-[34px] py-5 text-white">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-5 text-white md:px-gutter">
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}

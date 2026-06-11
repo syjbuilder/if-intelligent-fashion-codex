@@ -14,7 +14,7 @@ const config: Config = {
         "paper-alt": "#f3f3f1", // 섹션 톤 리듬용(미세하게 어두운 페이퍼)
         cream: "#eaeae6", // 라이트 면 카드 / chip hover
         "white-soft": "#fbfbfa", // 다크 위 텍스트 (Tailwind 기본 white와 구분)
-        accent: "#3d4f6b", // Muted Slate (v0.7.2) — 페이지당 ≤2회
+        accent: "#49476e", // Ink Violet — 페이지당 ≤2회. globals --accent-rgb/--accent-glow-rgb와 함께 갱신
         line: "rgba(26,26,26,0.10)", // 구분선
         "slate-body": "#5a5f68", // gate-sub/results-copy/panel-copy 본문 회색
       },
@@ -55,6 +55,10 @@ const config: Config = {
       },
       borderRadius: {
         card: "4px", // 룩 카드 (pill 액션은 기본 rounded-full = 999px)
+      },
+      spacing: {
+        // 데스크톱 표준 가로 거터 — 모든 페이지/씬은 `px-6 md:px-gutter`로 통일
+        gutter: "34px",
       },
       transitionTimingFunction: {
         smooth: "cubic-bezier(0.22,1,0.36,1)",

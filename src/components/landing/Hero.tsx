@@ -1,29 +1,21 @@
 "use client";
 
 import { Cta } from "@/components/ui/Cta";
-import { GarmentSvg } from "@/components/looks/GarmentSvg";
+import { HeroFigure } from "@/components/landing/HeroFigure";
 import { RevealWords } from "@/components/motion/RevealWords";
 import { useReveal } from "@/components/motion/useReveal";
 
-/** 랜딩 hero — 한 메시지 + Get Started. 다크 3-layer 배경 + 글래스 룩 패널 + grain. 진입 시 fade-up. */
+/**
+ * 랜딩 hero — 한 메시지 + Get Started. 레이어 순서: 다크 3-layer 배경(bg-hero-dark)
+ * → 좌측 마네킹 룩 로테이션(HeroFigure) → 반투명 스크림(.hero-scrim, 좌→우 어두워짐)
+ * → 텍스트/CTA(z-10). 진입 시 fade-up.
+ */
 export function Hero() {
   const { ref, visible } = useReveal<HTMLDivElement>();
   return (
-    <section className="bg-hero-dark relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-[52px] pb-20 pt-[116px] text-center text-white-soft">
-      {/* 떠있는 글래스 룩 패널 3 + 스와치 2 (heroPanelIn stagger, globals) */}
-      <div className="hero-lookbook" aria-hidden>
-        <div className="hero-panel hero-panel-a">
-          <GarmentSvg tone="office" />
-        </div>
-        <div className="hero-panel hero-panel-b">
-          <GarmentSvg tone="date" />
-        </div>
-        <div className="hero-panel hero-panel-c">
-          <GarmentSvg tone="sport" />
-        </div>
-        <div className="hero-swatch hero-swatch-a" />
-        <div className="hero-swatch hero-swatch-b" />
-      </div>
+    <section className="bg-hero-dark relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pb-20 pt-[116px] text-center text-white-soft md:px-gutter">
+      <HeroFigure />
+      <div className="hero-scrim" aria-hidden />
 
       <div
         ref={ref}

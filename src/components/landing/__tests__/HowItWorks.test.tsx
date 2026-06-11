@@ -22,4 +22,20 @@ describe("HowItWorks", () => {
     const { container } = render(<HowItWorks />);
     expect(container.querySelector("ol")).toBeTruthy();
   });
+
+  it("한 화면 리듬: 섹션이 min-h-[100svh] 플렉스 센터링을 쓴다", () => {
+    const { container } = render(<HowItWorks />);
+    const section = container.querySelector("section");
+    expect(section?.className).toContain("min-h-[100svh]");
+    expect(section?.className).toContain("justify-center");
+  });
+
+  it("타이포 토큰 준수: 스텝 제목은 t3, ad-hoc px 크기를 쓰지 않는다", () => {
+    render(<HowItWorks />);
+    const stepTitle = screen.getByRole("heading", {
+      name: "Describe your day",
+    });
+    expect(stepTitle.className).toContain("text-t3");
+    expect(stepTitle.className).not.toContain("text-[30px]");
+  });
 });

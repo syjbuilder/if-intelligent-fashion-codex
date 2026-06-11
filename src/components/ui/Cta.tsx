@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 type Variant = "accent" | "dark" | "gate";
 
 const VARIANTS: Record<Variant, string> = {
-  accent: "cta-accent", // Muted Slate 글래스 (globals @layer components)
+  accent: "cta-accent", // Ink Violet 글래스 (globals @layer components)
   dark: "bg-ink text-white-soft hover:bg-[#2a2520]",
   gate: "bg-ink text-white-soft",
 };
