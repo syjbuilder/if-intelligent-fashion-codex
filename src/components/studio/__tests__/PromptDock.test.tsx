@@ -37,4 +37,30 @@ describe("PromptDock", () => {
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
+
+  it("size=lg는 입력/버튼이 h-14, 기본(md)은 h-12", () => {
+    const { rerender } = render(
+      <PromptDock value="" onChange={() => {}} onSubmit={() => {}} size="lg" />,
+    );
+    expect(screen.getByRole("textbox").className).toContain("h-14");
+    expect(
+      screen.getByRole("button", { name: "룩 생성" }).className,
+    ).toContain("h-14");
+    rerender(<PromptDock value="" onChange={() => {}} onSubmit={() => {}} />);
+    expect(screen.getByRole("textbox").className).toContain("h-12");
+  });
+
+  it("variant=search는 glass-search 셸을 쓴다 (페이지와 같은 글래스 어휘)", () => {
+    const { container } = render(
+      <PromptDock
+        value=""
+        onChange={() => {}}
+        onSubmit={() => {}}
+        variant="search"
+      />,
+    );
+    expect(container.querySelector("form")?.className).toContain(
+      "glass-search",
+    );
+  });
 });
