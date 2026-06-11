@@ -11,7 +11,7 @@ export function SiteFooter({
   onOpenPrivacy?: () => void;
 }) {
   return (
-    <footer className="bg-ink px-[34px] pb-14 pt-[90px] text-white-soft/80">
+    <footer className="bg-ink px-6 pb-14 pt-[90px] text-white-soft/80 md:px-gutter">
       <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-12 md:grid-cols-[minmax(220px,1fr)_auto]">
         <div>
           <BrandMark className="!items-start text-white-soft" />

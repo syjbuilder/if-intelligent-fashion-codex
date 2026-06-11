@@ -1071,6 +1071,10 @@ V0 출시 전 발견한 백엔드 V0-critical 구멍 6개에 대한 결정. 세�
 
 DB·계약 측면 주요 변경: `users`에 `CHECK(token_balance >= 0)`·`role` 컬럼, `token_transactions`에 `idempotency_key` + `unique(user_id, idempotency_key)`, 신규 `006_rls_policies.sql`·`007_token_rpc.sql`(consume/refund RPC), `looks.generated_image_url`은 OpenAI URL이 아니라 Supabase Storage 경로/서명 URL로 영속화(OpenAI URL 24h 만료 대응), B-path 매칭 임계값 초기값 0.70. 새 테이블은 추가하지 않는다(10테이블 freeze 유지). 전체 추적표는 `docs/BACKEND_HARDENING_V0.md`(영문 단독 설계 추적 문서).
 
+### 19.2 디자인 보강 결정 (ADR-018, 2026-06-11)
+
+- **ADR-018 (정적 마네킹 룩 실사 이미지)**: 랜딩 히어로에 얼굴 없는 3D 마네킹 전신 룩 실사(사전 생성 정적 자산, 840px WebP)를 도입한다. 적용은 브랜드 표면(히어로 배경 로테이션)에 한정하며 룩 카드(tone 그라디언트 + 가먼트 SVG)는 유지. 얼굴 없는 마네킹은 ADR-006 금지(사람 사진·초상권) 경계 안. 같은 패스에서 포인트 컬러를 Ink Violet(#49476e)으로 갱신하고 섹션 한 화면 리듬·타이포 토큰 통일을 적용 — 운영 스펙은 `docs/UI_GUIDE.md`(v0.8) 참조.
+
 ## 20. V0 Acceptance Criteria
 
 V0가 성공적으로 구현되었다고 판단하는 기준:
