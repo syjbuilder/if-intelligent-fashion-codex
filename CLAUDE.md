@@ -20,7 +20,7 @@
 - Supabase — PostgreSQL + Auth + Storage
 - Vercel 배포 (Web), Supabase (DB/Auth/Storage)
 - AI: OpenAI GPT Image 2 · Medium · 1024×1024 운영 고정 (이미지 생성, $0.053≈74원/이미지, GPT Image 1.5는 비용 후보 — `docs/ADR.md` ADR-003·ADR-012) / 프롬프트 해석은 LLM + JSON schema + 한국어 패션 taxonomy
-- 스타일링: Tailwind CSS + Inter(영문·숫자, next/font) + Pretendard(한글, layout `<link>`) 단일 산세리프 — 헤드라인=본문 동일 매핑, weight 400/600/800만. (Playfair Display+Manrope는 v0.7 시안에서 폐기 — `디자인/if-homepage-v0.7.html`·`docs/UI_GUIDE.md` 7원칙 §5. 최신 시안이 디자인 기준선.) Phase 1 `1-ui-shell`에서 적용.
+- 스타일링: Tailwind CSS + Inter(영문·숫자, next/font) + Pretendard(한글, layout `<link>`) 단일 산세리프 — 헤드라인=본문 동일 매핑, weight 400/600/800만. (Playfair Display+Manrope는 v0.7 시안에서 폐기 — `docs/UI_GUIDE.md` 7원칙 §5. v0.8부터 디자인 기준선은 구현 코드+UI_GUIDE — 아래 문서 참조 우선순위 참조.) Phase 1 `1-ui-shell`에서 적용.
 - FastAPI는 V0 Core에서 분리하지 않는다. AI 파이프라인 복잡도가 커지면 그때 도입.
 
 ## 아키텍처 규칙
@@ -47,7 +47,7 @@
 - CRITICAL: 문서 거버넌스 단일 출처는 [`docs/DOC_MAP.md`](./docs/DOC_MAP.md) — 정본/거울/archive/운영 자산/제외 분류와 sync 짝꿍 매핑이 모두 거기 있다. 문서 추가·이동·삭제 시 DOC_MAP을 같이 갱신한다.
 - 매 작업 시 최소: `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/ADR.md`, `docs/UI_GUIDE.md`.
 - 데이터·API·AI 설계: `docs/DATA_MODEL.md`, `docs/API_CONTRACTS.md`, `docs/AI_PIPELINE.md`.
-- 최신 디자인 시안: `디자인/if-homepage-v0.7.html` (Landing Long-form, Typography 7원칙 — 디자인 기준선). 이전 시안(v0.0~v0.6)은 `디자인/archive/`.
+- 디자인 기준선: **구현 코드(`src/`) + `docs/UI_GUIDE.md`** (2026-06 v0.8 디자인 보강 패스부터 — ADR-018, UI_GUIDE 머리말 참조). 시안 `디자인/if-homepage-v0.7.html`은 v0.7.3에서 동결된 참고 자료이며 더 이상 기준선이 아니다. 이전 시안(v0.0~v0.6)은 `디자인/archive/`.
 - 한글 원본은 `기획/`, `기술/`에 그대로 보관. `docs/` ↔ 한글 원본 sync는 `/sync-docs` + pre-commit `sync-warn.sh` 경고로 관리한다 (DOC_MAP §2 거울 표 + `.githooks/sync-pairs.tsv` 참조).
 - 일상 작업 프로세스·시나리오·막히는 케이스 대처는 [`docs/WORKFLOW.md`](./docs/WORKFLOW.md).
 - 개발 착수 준비 현황: `개발_전_진행_체크리스트.md`.
