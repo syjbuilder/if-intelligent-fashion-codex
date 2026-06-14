@@ -25,6 +25,11 @@ export interface LookCardData {
   caption: string;
   /** 카드 클릭 시 프롬프트 입력칸에 채워질 문자열 */
   prompt: string;
+  /**
+   * 실사 룩 이미지 경로(옵셔널). 있으면 variant LookCard가 next/image로 렌더,
+   * 없으면 GarmentSvg 폴백. 베이스라인 LookCard는 이 필드를 무시(무회귀).
+   */
+  imageSrc?: string;
 }
 
 /** 상품 카테고리 (룩 1벌의 구성 슬롯) */
@@ -40,4 +45,10 @@ export interface ProductMock {
   price: number;
   /** 출처 몰 (표시용: 무신사·29CM 등) */
   platform: string;
+  /** 상품 이미지 경로(옵셔널). 없으면 ProductPanel이 카테고리 폴백을 렌더. */
+  imageSrc?: string;
+  /** 외부 구매 링크(옵셔널). target=_blank rel=noopener (ADR-004: 외부 연결, 자체 결제 X). */
+  url?: string;
+  /** 어떤 룩에 속하는 상품인지 (PRODUCTS_BY_LOOK 그룹핑용) */
+  lookId?: string;
 }
