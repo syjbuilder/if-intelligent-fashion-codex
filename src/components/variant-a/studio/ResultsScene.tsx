@@ -37,9 +37,11 @@ export function ResultsScene({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {RESULT_LOOKS.map((l, i) => (
-          <div
+          <button
             key={l.id}
-            className={`tone-${l.tone} group relative aspect-[3/4] overflow-hidden rounded-card`}
+            type="button"
+            onClick={() => onDetail(l.id)}
+            className={`tone-${l.tone} group relative block aspect-[3/4] w-full overflow-hidden rounded-card text-left`}
           >
             <motion.div layoutId={`look-${l.id}`} className="absolute inset-0">
               {l.imageSrc ? (
@@ -48,14 +50,14 @@ export function ResultsScene({
                   alt={l.caption}
                   fill
                   sizes="(max-width:640px) 100vw, 33vw"
-                  className="object-cover"
+                  className="object-cover transition-transform duration-700 ease-expo group-hover:scale-[1.04]"
                 />
               ) : (
                 <GarmentSvg tone={l.tone} className="h-full w-full p-10" />
               )}
             </motion.div>
 
-            <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
+            <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
             <span className="absolute right-3 top-3 z-10 text-[13px] font-extrabold text-white-soft/70">
               0{i + 1}
             </span>
@@ -65,14 +67,11 @@ export function ResultsScene({
               </p>
               <p className="mt-0.5 text-t5 font-semibold">{l.caption}</p>
             </div>
-            <button
-              type="button"
-              onClick={() => onDetail(l.id)}
-              className="absolute bottom-3 right-3 z-10 rounded-full bg-white-soft/95 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-ink opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100"
-            >
+            {/* 항상 보이는 affordance (hover 시 강조) */}
+            <span className="absolute bottom-3 right-3 z-10 rounded-full bg-white-soft px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-ink shadow-[0_6px_20px_rgba(0,0,0,0.25)] transition-transform duration-300 group-hover:-translate-y-0.5">
               자세히보기 →
-            </button>
-          </div>
+            </span>
+          </button>
         ))}
       </div>
 
