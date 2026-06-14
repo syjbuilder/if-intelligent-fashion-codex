@@ -1,96 +1,114 @@
-"use client";
+import Link from "next/link";
 
-import { useState } from "react";
-import { Topbar } from "@/components/landing/Topbar";
-import type { MenuItem } from "@/components/landing/MenuTray";
-import { Hero } from "@/components/landing/Hero";
-import { HowItWorks } from "@/components/landing/HowItWorks";
-import { CuratedPreview } from "@/components/landing/CuratedPreview";
-import { SiteFooter } from "@/components/landing/SiteFooter";
-import { AuthOverlay } from "@/components/studio/AuthOverlay";
-import { HistoryOverlay } from "@/components/studio/HistoryOverlay";
-import { RecentPromptsDrawer } from "@/components/studio/RecentPromptsDrawer";
+// 루트 = 디자인 비교 허브(프론트 도어). localhost:3000을 열면 여기로 진입해
+// 현행/Variant A/Variant B를 하나씩 열어 비교한다. 현행 랜딩은 /baseline로 보존.
+// 탐색용 임시 허브 — 최종 선택 시 이긴 쪽을 /로 승격하고 이 허브는 제거.
 
-type DocKind = "terms" | "privacy";
+type Status = "ready" | "building";
 
-export default function Home() {
-  const [doc, setDoc] = useState<DocKind | null>(null);
-  // 메뉴·로그인 흐름을 현재 페이지에서 오버레이로 처리(v0.7처럼 in-place).
-  const [authOpen, setAuthOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [recentOpen, setRecentOpen] = useState(false);
+const OPTIONS: {
+  key: string;
+  title: string;
+  desc: string;
+  points: string[];
+  landing: string;
+  studio: string;
+  status: Status;
+}[] = [
+  {
+    key: "baseline",
+    title: "현행 (지금 디자인)",
+    desc: "비교 기준선 — 바뀌기 전 v0.8 디자인 그대로.",
+    points: ["바뀐 점 없음 (기준)"],
+    landing: "/baseline",
+    studio: "/studio",
+    status: "ready",
+  },
+  {
+    key: "a",
+    title: "Variant A — 지금 디자인을 끌어올린 안",
+    desc: "지금 정체성(Ink Violet·마네킹)을 유지하면서 피드백 4건 + 레퍼런스 완성도를 반영.",
+    points: [
+      "프롬프트 창: 화면 중앙 하단에 떠 있는 글래스 바(아이폰 느낌)",
+      "룩 클릭 → '자세히보기' → 왼쪽으로 확대, '상품 보기' 누르면 오른쪽에서 상품 패널",
+      "결과·상세 화면에도 프롬프트 입력창이 계속 보임",
+      "모든 룩 칸이 실제 마네킹 사진으로 채워짐",
+    ],
+    landing: "/a",
+    studio: "/a/studio",
+    status: "ready",
+  },
+  {
+    key: "b",
+    title: "Variant B — 레퍼런스로 새로 잡은 안",
+    desc: "지금 디자인을 버리고 trionn·magnific 레퍼런스로 다시 설계 (다크 톤·코랄 포인트·다이나믹 모션).",
+    points: ["제작 중 — 지금 열면 아직 현행과 동일하게 보입니다"],
+    landing: "/b",
+    studio: "/b/studio",
+    status: "building",
+  },
+];
 
-  const menuItems: MenuItem[] = [
-    { label: "Explore", n: "01", href: "/studio" },
-    { label: "Recent prompts", n: "02", onClick: () => setRecentOpen(true) },
-    { label: "Saved Looks", n: "03", onClick: () => setHistoryOpen(true) },
-    { label: "New Prompt", n: "04", href: "/studio" },
-  ];
-
+export default function CompareHub() {
   return (
-    <>
-      <Topbar menuItems={menuItems} onLogin={() => setAuthOpen(true)} />
-      <main>
-        <Hero />
-        <HowItWorks />
-        <CuratedPreview />
-      </main>
-      <SiteFooter
-        onOpenTerms={() => setDoc("terms")}
-        onOpenPrivacy={() => setDoc("privacy")}
-      />
+    <main className="mx-auto flex min-h-screen max-w-[940px] flex-col justify-center gap-8 px-6 py-16">
+      <header>
+        <p className="text-t7 font-extrabold uppercase tracking-[0.18em] text-muted">
+          Design Review
+        </p>
+        <h1 className="mt-2 text-t2 font-extrabold">디자인 비교 — 하나씩 열어보세요</h1>
+        <p className="mt-3 max-w-[58ch] text-t5 text-ink-soft">
+          현행과 두 시안을 각각 새로 열어 비교할 수 있어요. 각 버전마다 랜딩과
+          스튜디오(작업 화면)를 따로 볼 수 있습니다.
+        </p>
+      </header>
 
-      {doc && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={doc === "terms" ? "이용약관" : "개인정보처리방침"}
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(8,6,5,0.86)] p-6"
-          onClick={() => setDoc(null)}
-        >
-          <div
-            className="max-h-[84vh] w-[min(720px,92vw)] overflow-y-auto rounded-2xl bg-paper p-8 text-ink"
-            onClick={(e) => e.stopPropagation()}
+      <ul className="grid gap-4">
+        {OPTIONS.map((o) => (
+          <li
+            key={o.key}
+            className="rounded-2xl border border-line bg-cream/40 p-6 shadow-[0_0_60px_rgba(34,34,34,0.06)]"
           >
-            <p className="text-t7 font-extrabold uppercase tracking-[0.18em] text-muted">
-              {doc === "terms" ? "Terms of Service" : "Privacy Policy"}
-            </p>
-            <h2 className="mt-2 text-t3 font-extrabold">
-              {doc === "terms" ? "이용약관" : "개인정보처리방침"}
-            </h2>
-            <p className="mt-4 text-left text-t5 text-ink-soft">
-              전문은 정식 오픈 전 공개됩니다. (셸 단계 — 본문 콘텐츠는 후속 작업)
-            </p>
-            <button
-              type="button"
-              onClick={() => setDoc(null)}
-              className="mt-6 text-t6 font-extrabold uppercase tracking-[0.12em] transition-opacity hover:opacity-60"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+            <div className="flex items-center gap-3">
+              <h2 className="text-t3 font-extrabold">{o.title}</h2>
+              {o.status === "building" && (
+                <span className="rounded-full bg-ink/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-ink-soft">
+                  제작 중
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-t6 text-ink-soft">{o.desc}</p>
+            <ul className="mt-3 flex flex-col gap-1.5">
+              {o.points.map((p) => (
+                <li
+                  key={p}
+                  className="flex gap-2 text-t6 text-ink-soft before:text-accent before:content-['—']"
+                >
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5 flex gap-3">
+              <Link
+                href={o.landing}
+                className="inline-flex min-h-[48px] items-center rounded-full bg-ink px-6 text-t6 font-extrabold uppercase tracking-[0.12em] text-white-soft transition-transform hover:-translate-y-0.5"
+              >
+                랜딩 보기
+              </Link>
+              <Link
+                href={o.studio}
+                className="inline-flex min-h-[48px] items-center rounded-full border border-ink/20 px-6 text-t6 font-extrabold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-cream"
+              >
+                스튜디오 보기
+              </Link>
+            </div>
+          </li>
+        ))}
+      </ul>
 
-      {/* 메뉴/로그인 오버레이 — 비로그인 셸 기준 */}
-      <AuthOverlay
-        open={authOpen}
-        onClose={() => setAuthOpen(false)}
-        onSelectProvider={() => setAuthOpen(false)}
-      />
-      <HistoryOverlay
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        isLoggedIn={false}
-        onSignIn={() => {
-          setHistoryOpen(false);
-          setAuthOpen(true);
-        }}
-      />
-      <RecentPromptsDrawer
-        open={recentOpen}
-        onClose={() => setRecentOpen(false)}
-      />
-    </>
+      <p className="text-t7 text-muted">
+        팁: 각 화면 좌상단 메뉴/뒤로가기로 이 허브(localhost:3000)에 다시 올 수 있어요.
+      </p>
+    </main>
   );
 }
