@@ -32,4 +32,18 @@ if (typeof window !== "undefined") {
       }),
     });
   }
+
+  // framer-motion의 layout(layoutId)·useScroll은 ResizeObserver를 요구하는데 jsdom엔 없다.
+  // Element.prototype.animate(WAAPI)는 일부러 스텁하지 않는다 — 그래야 framer가
+  // supportsWaapi()=false로 판단해 jsdom-safe한 fallback 경로를 탄다(반쪽 stub 금지).
+  if (!("ResizeObserver" in window)) {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+  }
 }

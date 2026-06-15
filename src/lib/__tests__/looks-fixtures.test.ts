@@ -4,6 +4,10 @@ import {
   EXPLORE_LOOKS,
   SEASON_PROMPTS,
   PRODUCTS_MOCK,
+  RESULT_LOOKS,
+  SAVED_LOOKS,
+  PRODUCTS_BY_LOOK,
+  LOOK_IMAGES,
 } from "../looks-fixtures";
 
 describe("looks-fixtures (정적 셸 데이터)", () => {
@@ -41,6 +45,30 @@ describe("looks-fixtures (정적 셸 데이터)", () => {
     for (const p of PRODUCTS_MOCK) {
       expect(p.price).toBeGreaterThan(0);
       expect(p.platform).toBeTruthy();
+    }
+  });
+
+  it("모든 룩 표면(curated/explore/result/saved)에 실사 imageSrc가 배선된다", () => {
+    expect(LOOK_IMAGES).toHaveLength(7);
+    for (const look of [...CURATED_LOOKS, ...EXPLORE_LOOKS, ...RESULT_LOOKS, ...SAVED_LOOKS]) {
+      expect(look.imageSrc).toMatch(/^\/looks\/.+\.webp$/);
+    }
+  });
+
+  it("결과 3장, 저장 4장", () => {
+    expect(RESULT_LOOKS).toHaveLength(3);
+    expect(SAVED_LOOKS).toHaveLength(4);
+  });
+
+  it("PRODUCTS_BY_LOOK은 각 결과 룩에 상품 1개 이상 + 이미지·외부링크를 갖는다", () => {
+    for (const look of RESULT_LOOKS) {
+      const products = PRODUCTS_BY_LOOK[look.id];
+      expect(products?.length).toBeGreaterThanOrEqual(1);
+      for (const p of products) {
+        expect(p.imageSrc).toBeTruthy();
+        expect(p.url).toMatch(/^https:\/\//);
+        expect(p.lookId).toBe(look.id);
+      }
     }
   });
 });
