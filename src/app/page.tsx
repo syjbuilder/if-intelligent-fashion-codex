@@ -49,14 +49,14 @@ const OPTIONS: {
     title: "Variant B — 레퍼런스로 새로 잡은 안",
     desc: "지금 디자인을 버리고 trionn·magnific 레퍼런스로 다시 설계 (다크 톤·코랄 포인트·다이나믹 모션).",
     points: [
-      "랜딩: 다크+코랄 새 디자인 미리보기 가능 (스크롤·모션 포함)",
-      "스튜디오: 제작 중 — 지금은 현행과 동일하게 보임",
+      "랜딩: 다크+코랄 키네틱 히어로 + 가로 룩 레일",
+      "스튜디오: 같은 흐름(프롬프트→룩→상세→상품)을 다크+코랄로 — A와 동일 기능, 다른 무드",
     ],
     landing: "/b",
     landingLabel: "Variant B 랜딩 →",
     studio: "/b/studio",
-    studioLabel: "Variant B 스튜디오",
-    status: "building",
+    studioLabel: "Variant B 스튜디오 →",
+    status: "ready",
   },
 ];
 
