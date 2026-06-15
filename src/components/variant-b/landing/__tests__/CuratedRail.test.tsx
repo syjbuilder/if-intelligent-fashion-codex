@@ -11,6 +11,6 @@ describe("variant-b CuratedRail (가로 룩 레일)", () => {
   it("스튜디오로 가는 링크가 있다", () => {
     render(<CuratedRail />);
     const links = screen.getAllByRole("link");
-    expect(links.some((l) => l.getAttribute("href") === "/b/studio")).toBe(true);
+    expect(links.some((l) => l.getAttribute("href") === "/studio")).toBe(true);
   });
 });

@@ -22,10 +22,10 @@ export default function BaselineHome() {
   const [recentOpen, setRecentOpen] = useState(false);
 
   const menuItems: MenuItem[] = [
-    { label: "Explore", n: "01", href: "/studio" },
+    { label: "Explore", n: "01", href: "/baseline/studio" },
     { label: "Recent prompts", n: "02", onClick: () => setRecentOpen(true) },
     { label: "Saved Looks", n: "03", onClick: () => setHistoryOpen(true) },
-    { label: "New Prompt", n: "04", href: "/studio" },
+    { label: "New Prompt", n: "04", href: "/baseline/studio" },
   ];
 
   return (

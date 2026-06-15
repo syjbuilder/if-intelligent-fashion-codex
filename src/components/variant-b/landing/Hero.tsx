@@ -74,7 +74,7 @@ export function Hero() {
           className="mt-9"
         >
           <Link
-            href="/b/studio"
+            href="/studio"
             className="b-glow inline-flex min-h-[56px] items-center rounded-full bg-b-accent px-8 text-t6 font-extrabold uppercase tracking-[0.12em] text-b-ink transition-transform duration-300 hover:-translate-y-0.5"
           >
             스튜디오 시작

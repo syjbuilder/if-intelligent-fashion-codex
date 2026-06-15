@@ -7,7 +7,7 @@ describe("variant-b Hero (다크+코랄 키네틱)", () => {
     render(<Hero />);
     expect(
       screen.getByRole("link", { name: /스튜디오 시작/ }),
-    ).toHaveAttribute("href", "/b/studio");
+    ).toHaveAttribute("href", "/studio");
   });
 
   it("히어로 이미지를 렌더한다", () => {

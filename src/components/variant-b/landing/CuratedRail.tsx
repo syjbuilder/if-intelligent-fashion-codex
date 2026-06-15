@@ -27,7 +27,7 @@ export function CuratedRail() {
             </h2>
           </div>
           <Link
-            href="/b/studio"
+            href="/studio"
             className="hidden shrink-0 text-t7 font-extrabold uppercase tracking-[0.14em] text-b-light/70 transition-colors hover:text-b-accent md:block"
           >
             스튜디오 →
