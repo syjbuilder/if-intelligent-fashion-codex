@@ -88,6 +88,7 @@ export default function StudioPage() {
             <LoadingScene
               promptLabel={state.prompt}
               onDone={() => dispatch({ type: "ready" })}
+              tone="dark"
             />
           )}
           {state.scene === "results" && (
@@ -140,6 +141,7 @@ export default function StudioPage() {
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
           isLoggedIn={false}
+          tone="dark"
           onSignIn={() => {
             setHistoryOpen(false);
             setAuthOpen(true);

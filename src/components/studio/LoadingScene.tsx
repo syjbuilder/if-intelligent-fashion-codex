@@ -10,10 +10,13 @@ export function LoadingScene({
   promptLabel,
   onDone,
   autoAdvanceMs = 2200,
+  tone = "light",
 }: {
   promptLabel?: string;
   onDone?: () => void;
   autoAdvanceMs?: number;
+  /** light = 기본(slate scene) / dark = Variant B(다크+코랄) */
+  tone?: "light" | "dark";
 }) {
   useEffect(() => {
     if (!onDone) return;
@@ -21,16 +24,24 @@ export function LoadingScene({
     return () => clearTimeout(t);
   }, [onDone, autoAdvanceMs]);
 
+  const dark = tone === "dark";
+
   return (
-    <section className="bg-slate-scene relative flex min-h-screen flex-col items-center justify-center px-6 text-center text-white-soft">
+    <section
+      className={`relative flex min-h-screen flex-col items-center justify-center px-6 text-center ${
+        dark ? "bg-b-ink text-b-light" : "bg-slate-scene text-white-soft"
+      }`}
+    >
       <div className="relative z-10 flex flex-col items-center">
-        <p className="text-t3 font-extrabold">Reading the silhouette</p>
-        <p className="mt-3 text-t5 text-white-soft/70">
+        <p className={`text-t3 font-extrabold ${dark ? "text-b-accent" : ""}`}>
+          Reading the silhouette
+        </p>
+        <p className={`mt-3 text-t5 ${dark ? "text-b-light/70" : "text-white-soft/70"}`}>
           {promptLabel ? `‘${promptLabel}’` : "당신의"} 룩을 그리고 있어요…
         </p>
         <svg
           aria-hidden
-          className="mt-12 h-32 w-72 text-white-soft/45"
+          className={`mt-12 h-32 w-72 ${dark ? "text-b-accent/40" : "text-white-soft/45"}`}
           viewBox="0 0 280 130"
           fill="none"
           stroke="currentColor"

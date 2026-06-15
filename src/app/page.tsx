@@ -48,6 +48,7 @@ export default function Home() {
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
           isLoggedIn={false}
+          tone="dark"
           onSignIn={() => {
             setHistoryOpen(false);
             setAuthOpen(true);
