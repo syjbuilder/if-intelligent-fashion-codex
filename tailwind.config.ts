@@ -17,6 +17,14 @@ const config: Config = {
         accent: "#49476e", // Ink Violet — 페이지당 ≤2회. globals --accent-rgb/--accent-glow-rgb와 함께 갱신
         line: "rgba(26,26,26,0.10)", // 구분선
         "slate-body": "#5a5f68", // gate-sub/results-copy/panel-copy 본문 회색
+        // ── Variant B 팔레트(레퍼런스 재설계: 다크 base ↔ 크림, 단일 코랄 액센트) ──
+        "b-ink": "#040508", // B 다크 base (trionn식)
+        "b-surface": "#11131a", // B 카드/면
+        "b-cream": "#e6e4e2", // B 크림 페이퍼 섹션
+        "b-accent": "#f66950", // B 코랄 포인트 (PO 승인) — 페이지당 ≤2회
+        "b-light": "#d8d8d8", // B 다크 위 텍스트
+        "b-dark": "#434343", // B 크림 위 텍스트 / 라인
+        "b-line": "rgba(216,216,216,0.14)", // B 다크 위 구분선
       },
       fontFamily: {
         // display = body 동일 매핑(단일 산세리프 통일). Inter(latin) + Pretendard(한글).

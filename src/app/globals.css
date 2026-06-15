@@ -22,6 +22,31 @@
     background-color: #f5f5f3; /* paper */
     color: #1a1a1a; /* ink */
   }
+
+  /* Variant B 다크 테마 — 루트 body가 paper로 하드코딩돼 있어, .theme-b가 body 하위에
+     마운트돼도 overscroll/before-paint에 페이퍼가 새는 문제를 :has로 차단.
+     ("변경 최소·추가만" 제약의 명시 예외 — 플랜 B 브리프). */
+  body:has(.theme-b) {
+    background-color: #040508;
+    color: #d8d8d8;
+  }
+}
+
+/* ── Variant B 유틸 ── */
+.theme-b {
+  background-color: #040508;
+  color: #d8d8d8;
+}
+/* B 코랄 글로우 (magnific soft-glow를 B 액센트로) */
+.b-glow {
+  box-shadow: 0 0 80px rgba(246, 105, 80, 0.16);
+}
+/* B 다크 히어로 배경 — 코랄 글로우 + 다크 비네트 + 수직 */
+.bg-b-hero {
+  background:
+    radial-gradient(60% 50% at 22% 28%, rgba(246, 105, 80, 0.16), transparent 60%),
+    radial-gradient(80% 80% at 82% 90%, rgba(4, 5, 8, 0.7), transparent),
+    linear-gradient(180deg, #060710 0%, #040508 100%);
 }
 
 /* ── 다크 신 배경 (Tailwind arbitrary로 표현 어려운 3-layer 그라디언트 + grain) ──
