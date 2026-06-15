@@ -8,6 +8,9 @@ import { HERO_LOOKS } from "@/lib/hero-looks";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+// FIX 3: 단일 정적 데일리 룩(06-feminine-smart-casual). 회전 없음 — blur/scrim 블렌드 합성과 충돌 방지.
+const HERO_LOOK = HERO_LOOKS[5];
+
 /**
  * Variant B 히어로 — 다크 base + 코랄 액센트 + 콘덴스드 임팩트 헤드라인 + 우측 마네킹 parallax.
  * trionn식 키네틱(useScroll parallax) + magnific 여백/글로우. 베이스라인(중앙 텍스트+좌 회전)과 구조적으로 다름.
@@ -23,21 +26,33 @@ export function Hero() {
   return (
     <section
       ref={ref}
-      className="bg-b-hero relative flex min-h-[100svh] items-center overflow-hidden px-6 md:px-gutter"
+      className="bg-b-hero relative flex min-h-[100svh] items-center overflow-hidden px-6 py-[clamp(104px,14vh,176px)] md:px-gutter"
     >
       <motion.div
         style={{ y }}
         aria-hidden
         className="pointer-events-none absolute right-0 top-0 h-full w-[clamp(280px,46vw,640px)]"
       >
+        {/* 블러 bleed — 동일 webp 확대·블러·저투명도로 실루엣을 b-ink에 번지게 (네트워크 추가 0) */}
         <Image
-          src={HERO_LOOKS[3].src}
+          src={HERO_LOOK.src}
+          alt=""
+          fill
+          aria-hidden
+          sizes="46vw"
+          className="scale-110 object-cover object-top opacity-40 blur-2xl"
+        />
+        {/* 선명한 전경 — 라디얼 다면 마스크(.b-hero-fg)로 좌·상·하를 동시 페이드해 가장자리를 배경에 녹임 */}
+        <Image
+          src={HERO_LOOK.src}
           alt=""
           fill
           priority
           sizes="46vw"
-          className="object-cover object-top opacity-80 [mask-image:linear-gradient(to_left,black_50%,transparent)]"
+          className="b-hero-fg object-cover object-top opacity-80"
         />
+        {/* 코랄 틴트 + 하단/좌측 b-ink 디졸브 scrim */}
+        <div className="b-hero-scrim absolute inset-0" />
       </motion.div>
 
       <div className="relative z-10 max-w-[62ch]">

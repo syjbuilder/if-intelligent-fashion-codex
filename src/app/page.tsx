@@ -43,6 +43,7 @@ export default function Home() {
           open={authOpen}
           onClose={() => setAuthOpen(false)}
           onSelectProvider={() => setAuthOpen(false)}
+          tone="dark"
         />
         <HistoryOverlay
           open={historyOpen}
