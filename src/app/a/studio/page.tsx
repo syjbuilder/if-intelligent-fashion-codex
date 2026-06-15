@@ -77,10 +77,8 @@ export default function VariantAStudioPage() {
     { label: "New Prompt", n: "04", onClick: () => dispatch({ type: "reset" }) },
   ];
 
-  const dockVisible =
-    state.scene === "explore" ||
-    state.scene === "results" ||
-    state.scene === "detail";
+  // 상세(detail)에서는 도크 숨김 — 상품 가시성 우선(PO 피드백 2026-06-15).
+  const dockVisible = state.scene === "explore" || state.scene === "results";
 
   return (
     <div className="relative min-h-screen bg-paper">
