@@ -49,4 +49,18 @@ describe("AuthOverlay", () => {
     expect(html).toContain("#FEE500");
     expect(html).toContain("#03C75A");
   });
+
+  it('tone="dark"면 스포트라이트 배경(.bg-b-auth)과 글래스 카드(.b-auth-glass)를 렌더한다', () => {
+    const { container } = render(
+      <AuthOverlay open tone="dark" onClose={() => {}} />,
+    );
+    expect(container.querySelector(".bg-b-auth")).not.toBeNull();
+    expect(container.querySelector(".b-auth-glass")).not.toBeNull();
+  });
+
+  it("기본(light)에서는 스포트라이트·글래스를 적용하지 않는다", () => {
+    const { container } = render(<AuthOverlay open onClose={() => {}} />);
+    expect(container.querySelector(".bg-b-auth")).toBeNull();
+    expect(container.querySelector(".b-auth-glass")).toBeNull();
+  });
 });

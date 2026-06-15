@@ -240,3 +240,22 @@ I.F의 Editorial AI Studio 방향은 Brunello 레퍼런스 기반으로 frosted 
 - 시안 진화: v0.3.2(풀스크린 atelier) → v0.4.0(풀블리드 carousel) → v0.4.1(패션 우선 재배치)
   → v0.5(4-tier routing·Explore·mini-action) → v0.6(랜딩 long-form·footer·약관 모달).
   상세는 `디자인/I.F 디자인 계획 v0.0.md` 14·17장.
+
+## Variant B 랜딩 (다크+코랄, `/` · `/studio`)
+
+PR #30에서 Variant B를 메인으로 승격, 이후 리디자인으로 키네틱 에디토리얼 방향 확립(trionn·magnific 레퍼런스, `디자인/explorations/reference-analysis.md`). A·baseline(라이트, `/a`·`/baseline`)과 토큰·구조가 분리된 포크다.
+
+- **토큰**: `b-ink #040508`(base) · `b-surface #11131a`(카드) · `b-cream #e6e4e2` · `b-accent #f66950`(코랄, 단일 액센트) · `b-light #d8d8d8`(텍스트) · `b-line rgba(216,216,216,.14)`(divider).
+- **히어로**: 이미지 없는 텍스트 전용(ADR-018 개정). 헤드라인=RevealWords 단어 스태거 + CoralUnderline. 1화면 핏(축소 clamp + 패딩 축소).
+- **BrandIntro**: trionn식 블루프린트 리빌(로고+"+"코너+글자 → 위로 와이프). **세션 1회**(`sessionStorage` `if:brandIntro:v1`), `prefers-reduced-motion` 스킵, body 스크롤 잠금, Esc/클릭/Skip. 하이드레이션 안전(boot=null 렌더, 표시 결정은 마운트 후).
+- **ServiceIntro**: 핀 고정(`h-[300vh]`+`sticky`) + `useScroll` 진행에 코랄 라인 성장 + 3블록 순차 교차 리빌. reduced-motion=정적 스택.
+- **Curated("Six ways")**: magnific식 균일 3×2 이미지 그리드(가로 스크롤 폐기) + trionn "+" 코너 + 호버 코랄 라인 + whileInView 스태거.
+- **로그인(AuthOverlay dark)**: 스포트라이트 배경(`.bg-b-auth`) + 글래스 카드(`.b-auth-glass`). Kakao `#FEE500`·Naver `#03C75A` 브랜드색 락. light 톤(A·baseline) 불변.
+- **텍스트 모션**: RevealWords(헤드라인) + fadeUp/whileInView(본문·아이브로우) + CoralUnderline(핵심 헤딩 1회). 전부 `reducedMotion="user"`(MotionProvider) 존중.
+
+### 액센트 예산(원칙1)의 B 적용
+"accent ≤ 2/page"는 **코랄 텍스트 단어 강조** 기준이다(스모크 테스트가 `.text-accent` 단어 카운트, 구조적 액센트 제외 관례 동일 적용). B에서:
+- **코랄 단어 ≤ 2**: 히어로 아이브로우 1개만 코랄(`text-b-accent`). 히어로 "imagine" 코랄 단어는 폐기하고 CoralUnderline 모티프로 대체. CuratedRail 아이브로우는 비코랄(`text-b-light/55`).
+- **구조/모티프 코랄(단어 아님 — 예산 밖, 절제 사용)**: CTA fill, ServiceIntro 코랄 라인, CoralUnderline(히어로 1회), "+" 코너 글리프, 로그인 글로우.
+- **BrandIntro**: 랜딩이 인터랙티브해지기 전 언마운트되는 일시 오버레이 → 페이지 액센트 예산 밖.
+- B 페이지엔 `.text-b-accent` 개수 자동 가드를 두지 않는다("+" 장식 글리프가 카운트를 왜곡). 필요 시 헤딩 한정 스코프로만.

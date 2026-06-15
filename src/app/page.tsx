@@ -4,8 +4,11 @@ import { useState } from "react";
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { Topbar } from "@/components/landing/Topbar";
 import type { MenuItem } from "@/components/landing/MenuTray";
+import { BrandIntro } from "@/components/variant-b/landing/BrandIntro";
 import { Hero } from "@/components/variant-b/landing/Hero";
+import { ServiceIntro } from "@/components/variant-b/landing/ServiceIntro";
 import { CuratedRail } from "@/components/variant-b/landing/CuratedRail";
+import { SiteFooterB } from "@/components/variant-b/landing/SiteFooterB";
 import { AuthOverlay } from "@/components/studio/AuthOverlay";
 import { HistoryOverlay } from "@/components/studio/HistoryOverlay";
 import { RecentPromptsDrawer } from "@/components/studio/RecentPromptsDrawer";
@@ -28,16 +31,14 @@ export default function Home() {
   return (
     <MotionProvider>
       <div className="theme-b">
+        <BrandIntro />
         <Topbar menuItems={menuItems} onLogin={() => setAuthOpen(true)} />
         <main>
           <Hero />
+          <ServiceIntro />
           <CuratedRail />
         </main>
-        <footer className="bg-b-ink px-6 py-12 text-b-light/50 md:px-gutter">
-          <p className="text-t7 leading-relaxed">
-            © I.F — Wear what you imagine. 각 상품은 외부 온라인몰에서 구매하며 I.F는 자체 결제를 제공하지 않습니다(어필리에이트 고지).
-          </p>
-        </footer>
+        <SiteFooterB />
 
         <AuthOverlay
           open={authOpen}
