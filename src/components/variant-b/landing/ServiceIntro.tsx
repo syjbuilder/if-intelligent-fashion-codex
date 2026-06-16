@@ -12,15 +12,16 @@ const BLOCKS = [
 
 // 누적 리빌: 각 블록이 임계에서 페이드인 후 1로 유지(useTransform 클램프, 페이드아웃 없음)
 // → 스크롤 끝에 상상하면(위)/만들어지고(중)/입을 수 있다(아래) 3개 모두 표시.
+// 누적 완료를 progress 0.6에 맞추고 0.6~1.0 동안 또렷이 유지(언핀 직전 찰나 문제 해결).
 const ACC: { o: [number, number]; y: [number, number] }[] = [
-  { o: [0.0, 0.2], y: [0.0, 0.12] },
-  { o: [0.33, 0.5], y: [0.33, 0.45] },
-  { o: [0.66, 0.85], y: [0.66, 0.78] },
+  { o: [0.0, 0.15], y: [0.0, 0.1] },
+  { o: [0.2, 0.38], y: [0.2, 0.3] },
+  { o: [0.42, 0.6], y: [0.42, 0.52] },
 ];
 
 const HEADING =
   "text-[clamp(32px,5vw,64px)] font-extrabold uppercase leading-[0.95] tracking-[-0.02em] text-b-light";
-const BODY = "mt-4 max-w-[42ch] text-t4 text-b-light/70";
+const BODY = "mt-4 max-w-[42ch] text-t4 text-b-light/80";
 
 function PinnedBlock({
   index,
@@ -64,7 +65,7 @@ export function ServiceIntro() {
   if (reduced) {
     return (
       <section data-mode="static" className="bg-b-ink px-6 py-24 md:px-gutter">
-        <div className="mx-auto grid max-w-[1280px] grid-cols-[2px_1fr] gap-8 md:grid-cols-[2px_1fr_minmax(280px,360px)] md:gap-14">
+        <div className="mx-auto grid max-w-[1280px] grid-cols-[2px_1fr] gap-8 md:grid-cols-[2px_1fr_1fr] md:gap-14">
           <div data-coral-line aria-hidden className="w-[2px] bg-b-accent" />
           <div data-blocks className="flex flex-col gap-12">
             {BLOCKS.map((b) => (
@@ -74,7 +75,7 @@ export function ServiceIntro() {
               </div>
             ))}
           </div>
-          <div className="hidden md:block">
+          <div className="hidden md:flex md:justify-center">
             <PromptSketchCard progress={scrollYProgress} />
           </div>
         </div>
@@ -83,9 +84,9 @@ export function ServiceIntro() {
   }
 
   return (
-    <section ref={ref} data-mode="pinned" className="relative h-[300vh] bg-b-ink">
+    <section ref={ref} data-mode="pinned" className="relative h-[260vh] bg-b-ink">
       <div className="sticky top-0 flex h-[100svh] items-center px-6 md:px-gutter">
-        <div className="mx-auto grid w-full max-w-[1280px] grid-cols-[2px_1fr] gap-8 md:grid-cols-[2px_1fr_minmax(280px,360px)] md:gap-14">
+        <div className="mx-auto grid w-full max-w-[1280px] grid-cols-[2px_1fr] gap-8 md:grid-cols-[2px_1fr_1fr] md:gap-14">
           <motion.div
             data-coral-line
             aria-hidden
@@ -97,7 +98,7 @@ export function ServiceIntro() {
               <PinnedBlock key={i} index={i} progress={scrollYProgress} />
             ))}
           </div>
-          <div className="hidden md:block">
+          <div className="hidden md:flex md:justify-center">
             <PromptSketchCard progress={scrollYProgress} />
           </div>
         </div>

@@ -27,9 +27,10 @@ export function PromptSketchCard({ progress }: { progress: MotionValue<number> }
   const [reduced, setReduced] = useState(false);
   const [n, setN] = useState(0);
 
-  const typed = useTransform(progress, [0, 0.33], [0, FULL.length]);
-  const draw = useTransform(progress, [0.33, 0.63], [0, 1]);
-  const chip = useTransform(progress, [0.66, 1], [0, 1]);
+  // 텍스트 블록(0~0.15 / 0.2~0.38 / 0.42~0.6) 직후에 카드 단계가 오도록 타이밍.
+  const typed = useTransform(progress, [0.03, 0.22], [0, FULL.length]);
+  const draw = useTransform(progress, [0.25, 0.48], [0, 1]);
+  const chip = useTransform(progress, [0.5, 0.66], [0, 1]);
 
   useMotionValueEvent(typed, "change", (v) => {
     const r = Math.max(0, Math.min(FULL.length, Math.round(v)));
@@ -49,7 +50,7 @@ export function PromptSketchCard({ progress }: { progress: MotionValue<number> }
   return (
     <div
       data-prompt-sketch-card
-      className="relative flex flex-col gap-6 rounded-[20px] border border-b-line bg-b-surface/60 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-[18px]"
+      className="relative flex w-full max-w-[360px] flex-col gap-6 rounded-[20px] border border-b-line bg-b-surface/60 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-[18px]"
     >
       {/* 프롬프트 입력 (PromptDock 어휘 모방, 스크롤 구동 표시 전용) */}
       <div

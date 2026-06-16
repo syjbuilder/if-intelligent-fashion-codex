@@ -31,16 +31,16 @@ describe("variant-b CuratedRail (3×2 그리드)", () => {
     expect(screen.getAllByText("+").length).toBeGreaterThanOrEqual(12);
   });
 
-  it('h2를 "Ways to begin" aria-label로 렌더한다', () => {
+  it('h2를 "Pick a look to begin" aria-label로 렌더한다', () => {
     render(<CuratedRail />);
     expect(
-      screen.getByRole("heading", { name: "Ways to begin" }),
+      screen.getByRole("heading", { name: "Pick a look to begin" }),
     ).toBeInTheDocument();
   });
 
-  it('아이브로우가 코랄 "How it works"다', () => {
+  it('아이브로우가 코랄 "Start here"다', () => {
     render(<CuratedRail />);
-    const eyebrow = screen.getByText("How it works");
+    const eyebrow = screen.getByText("Start here");
     expect(eyebrow.className).toContain("text-b-accent");
   });
 

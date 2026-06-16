@@ -20,13 +20,13 @@ export function CuratedRail() {
         <div className="flex items-end justify-between gap-6">
           <div>
             <p className="text-t7 font-extrabold uppercase tracking-[0.24em] text-b-accent">
-              How it works
+              Start here
             </p>
             <h2
-              aria-label="Ways to begin"
+              aria-label="Pick a look to begin"
               className="mt-3 text-[clamp(32px,5vw,64px)] font-extrabold uppercase leading-[0.95] tracking-[-0.02em] text-b-light"
             >
-              <RevealWords text="Ways to begin" />
+              <RevealWords text="Pick a look to begin" />
             </h2>
           </div>
           <Link

@@ -2,12 +2,11 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { HeroLogoIntro } from "../HeroLogoIntro";
 
-describe("HeroLogoIntro (히어로 우측 로고 인트로)", () => {
-  it("IF 마크 + INTELLIGENT FASHION + 코랄 '+' 코너 4개를 렌더한다", () => {
+describe("HeroLogoIntro (베벨 다이아몬드 인트로)", () => {
+  it("다이아몬드 외곽선(svg path)과 큰 IF를 렌더한다", () => {
     const { container } = render(<HeroLogoIntro />);
     expect(screen.getByText("IF")).toBeInTheDocument();
-    expect(screen.getByText("INTELLIGENT FASHION")).toBeInTheDocument();
-    expect(screen.getAllByText("+").length).toBe(4);
+    expect(container.querySelector("svg path")).not.toBeNull();
     expect(container.querySelector("[data-hero-logo]")).not.toBeNull();
   });
 

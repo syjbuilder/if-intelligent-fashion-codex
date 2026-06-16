@@ -247,14 +247,14 @@ PR #30에서 Variant B를 메인으로 승격, 이후 리디자인으로 키네�
 
 - **토큰**: `b-ink #040508`(base) · `b-surface #11131a`(카드) · `b-cream #e6e4e2` · `b-accent #f66950`(코랄, 단일 액센트) · `b-light #d8d8d8`(텍스트) · `b-line rgba(216,216,216,.14)`(divider).
 - **히어로**: 이미지 없는 텍스트 전용(ADR-018 개정). 헤드라인=RevealWords 단어 스태거 + CoralUnderline. 1화면 핏(축소 clamp + 패딩 축소).
-- **히어로 인트로(HeroLogoIntro)**: trionn식 블루프린트 조립(IF 로고 + 코랄 "+" 코너 스태거)을 **히어로 우측 빈 공간**에서 먼저 재생(~0.9s) 후 좌측 헤드라인 공개. 전체화면 오버레이(구 BrandIntro)는 폐기 — 세션 게이트 없이 매 진입 인라인 재생, `prefers-reduced-motion`이면 즉시 정적. 좌측 컬럼은 항상 마운트(opacity gate)로 SSR/aria 보존.
-- **ServiceIntro**: 핀 고정(`h-[300vh]`+`sticky`) + `useScroll` 진행에 코랄 라인 성장 + 3블록 **누적 리빌**(페이드아웃 없이 끝에 상상하면/만들어지고/입을 수 있다 모두 표시). 우측에 스크롤 동기 **PromptSketchCard**(프롬프트 타이핑 → 가먼트 실루엣 stroke 드로우 → 상품 칩). reduced-motion=정적 스택 + 카드 최종 상태.
-- **Curated("Ways to begin")**: magnific식 균일 3×2 이미지 그리드(가로 스크롤 폐기) + trionn "+" 코너 + 호버 코랄 라인 + whileInView 스태거. 아이브로우 코랄 "How it works", 스튜디오 링크는 항상 보이는 코랄 글래스 칩.
+- **히어로 인트로(HeroLogoIntro)**: 베벨 다이아몬드(45° 회전 사각형 외곽선을 상단 꼭지점에서 **시계방향 두꺼운 선으로 드로우** + 3D facet 광/명암 + 가운데 큰 IF)를 **히어로 우측 절반 중앙**에서 먼저 재생(~1s) 후 좌측 헤드라인 공개. 전체화면 오버레이(구 BrandIntro)는 폐기 — 세션 게이트 없이 매 진입 인라인 재생, `prefers-reduced-motion`이면 즉시 정적. 좌측 컬럼은 항상 마운트(opacity gate)로 SSR/aria 보존.
+- **ServiceIntro**: 핀 고정(`h-[260vh]`+`sticky`) + 코랄 라인 성장 + 3블록 **누적 리빌**(progress 0.6에 완료·이후 또렷이 유지, 끝에 상상하면/만들어지고/입을 수 있다 모두). 우측 절반 중앙에 스크롤 동기 **PromptSketchCard**(텍스트 직후 프롬프트 타이핑 → 가먼트 stroke 드로우 → 상품 칩). reduced-motion=정적 스택 + 카드 최종 상태.
+- **Curated("Pick a look to begin")**: magnific식 균일 3×2 이미지 그리드(가로 스크롤 폐기) + trionn "+" 코너 + 호버 코랄 라인 + whileInView 스태거. 아이브로우 코랄 "Start here", 스튜디오 링크는 항상 보이는 코랄 글래스 칩.
 - **로그인(AuthOverlay dark)**: 스포트라이트 배경(`.bg-b-auth`) + 글래스 카드(`.b-auth-glass`). Kakao `#FEE500`·Naver `#03C75A` 브랜드색 락. light 톤(A·baseline) 불변.
 - **텍스트 모션**: RevealWords(헤드라인) + fadeUp/whileInView(본문·아이브로우) + CoralUnderline(핵심 헤딩 1회). 전부 `reducedMotion="user"`(MotionProvider) 존중.
 
 ### 액센트 예산(원칙1)의 B 적용
 "accent ≤ 2/page"는 **코랄 텍스트 단어 강조** 기준이다(스모크 테스트가 `.text-accent` 단어 카운트, 구조적 액센트 제외 관례 동일 적용). B에서:
-- **코랄 단어 = 2**: 히어로 아이브로우(`Intelligent Fashion`) + CuratedRail 아이브로우(`How it works`). 히어로 "imagine" 코랄 단어는 폐기(CoralUnderline 모티프로 대체)해 예산 유지.
+- **코랄 단어 = 2**: 히어로 아이브로우(`Intelligent Fashion`) + CuratedRail 아이브로우(`Start here`). 히어로 "imagine" 코랄 단어는 폐기(CoralUnderline 모티프로 대체)해 예산 유지.
 - **구조/모티프 코랄(단어 아님 — 예산 밖, 절제 사용)**: CTA fill, ServiceIntro 코랄 라인, CoralUnderline(히어로 1회), "+" 코너 글리프, 로그인 글로우, 히어로 인트로 IF 로고/코너, **스튜디오 nav 칩**.
 - B 페이지엔 `.text-b-accent` 개수 자동 가드를 두지 않는다("+" 장식 글리프가 카운트를 왜곡). 필요 시 헤딩 한정 스코프로만.

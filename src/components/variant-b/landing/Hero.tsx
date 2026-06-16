@@ -48,7 +48,7 @@ export function Hero() {
 
   return (
     <section className="bg-b-hero relative flex min-h-[100svh] items-center overflow-hidden px-6 py-[clamp(72px,9vh,112px)] md:px-gutter">
-      <div className="relative z-10 mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-10 md:grid-cols-[1fr_auto] md:gap-16">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1280px] grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-16">
         <motion.div
           initial="hidden"
           animate={revealed ? "show" : "hidden"}
@@ -87,7 +87,7 @@ export function Hero() {
           </motion.div>
         </motion.div>
 
-        <div className="hidden md:block">
+        <div className="hidden md:flex md:justify-center">
           <HeroLogoIntro reduced={reduced} />
         </div>
       </div>
