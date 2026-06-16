@@ -47,6 +47,12 @@ export function AuthOverlay({
         dark ? "bg-b-ink text-b-light" : "bg-slate-scene text-white-soft"
       }`}
     >
+      {dark && (
+        <div
+          aria-hidden
+          className="bg-b-auth pointer-events-none absolute inset-0"
+        />
+      )}
       <button
         type="button"
         aria-label="닫기"
@@ -57,7 +63,11 @@ export function AuthOverlay({
       >
         ✕
       </button>
-      <div className="relative z-10 w-[min(420px,90vw)] text-center">
+      <div
+        className={`relative z-10 w-[min(460px,92vw)] text-center ${
+          dark ? "b-auth-glass rounded-[20px] p-8" : ""
+        }`}
+      >
         <p
           className={`text-t7 font-extrabold uppercase tracking-[0.18em] ${
             dark ? "text-b-accent" : "text-white-soft/55"
@@ -65,7 +75,7 @@ export function AuthOverlay({
         >
           Sign in to IF
         </p>
-        <h2 className="mt-3 text-t2 font-extrabold">Style your Imagination.</h2>
+        <h2 className="mt-3 text-t3 font-extrabold [text-wrap:balance]">Style your Imagination.</h2>
         <p className={`mt-3 text-t5 ${dark ? "text-b-light/70" : "text-white-soft/70"}`}>
           로그인하고 마음에 드는 룩을 저장·공유하세요.
         </p>

@@ -49,4 +49,34 @@ describe("AuthOverlay", () => {
     expect(html).toContain("#FEE500");
     expect(html).toContain("#03C75A");
   });
+
+  it('tone="dark"면 스포트라이트 배경(.bg-b-auth)과 글래스 카드(.b-auth-glass)를 렌더한다', () => {
+    const { container } = render(
+      <AuthOverlay open tone="dark" onClose={() => {}} />,
+    );
+    expect(container.querySelector(".bg-b-auth")).not.toBeNull();
+    expect(container.querySelector(".b-auth-glass")).not.toBeNull();
+  });
+
+  it("기본(light)에서는 스포트라이트·글래스를 적용하지 않는다", () => {
+    const { container } = render(<AuthOverlay open onClose={() => {}} />);
+    expect(container.querySelector(".bg-b-auth")).toBeNull();
+    expect(container.querySelector(".b-auth-glass")).toBeNull();
+  });
+
+  it("로그인 헤딩이 오버플로 방지로 text-t3 + balance를 쓴다", () => {
+    render(<AuthOverlay open tone="dark" onClose={() => {}} />);
+    const h2 = screen.getByRole("heading", { name: "Style your Imagination." });
+    expect(h2.className).toContain("text-t3");
+    expect(h2.className).not.toContain("text-t2");
+    expect(h2.className).toContain("[text-wrap:balance]");
+  });
+
+  it("글래스 카드 폭이 460/92vw로 넓어진다", () => {
+    const { container } = render(
+      <AuthOverlay open tone="dark" onClose={() => {}} />,
+    );
+    const card = container.querySelector(".b-auth-glass") as HTMLElement;
+    expect(card.className).toContain("w-[min(460px,92vw)]");
+  });
 });

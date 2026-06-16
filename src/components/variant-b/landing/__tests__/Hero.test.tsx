@@ -1,18 +1,25 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-import type { ComponentProps } from "react";
+import { describe, expect, it, afterEach } from "vitest";
 import { Hero } from "../Hero";
 
-// jsdom에는 next/image 최적화 런타임이 없다 → 일반 <img>로 대체해 raw src를 검증 (HeroFigure.test 패턴).
-vi.mock("next/image", () => ({
-  default: (props: ComponentProps<"img"> & { fill?: boolean; priority?: boolean }) => {
-    const { fill: _fill, priority: _priority, ...rest } = props;
-    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-    return <img {...rest} />;
-  },
-}));
+function stubMatchMedia(matches: boolean) {
+  window.matchMedia = ((q: string) => ({
+    matches,
+    media: q,
+    onchange: null,
+    addListener() {},
+    removeListener() {},
+    addEventListener() {},
+    removeEventListener() {},
+    dispatchEvent() {
+      return false;
+    },
+  })) as unknown as typeof window.matchMedia;
+}
 
-describe("variant-b Hero (다크+코랄 키네틱)", () => {
+describe("variant-b Hero (텍스트 + 우측 로고 인트로)", () => {
+  afterEach(() => stubMatchMedia(false));
+
   it("스튜디오 CTA가 /studio로 연결된다", () => {
     render(<Hero />);
     expect(
@@ -20,31 +27,45 @@ describe("variant-b Hero (다크+코랄 키네틱)", () => {
     ).toHaveAttribute("href", "/studio");
   });
 
-  it("히어로 이미지를 렌더한다", () => {
-    const { container } = render(<Hero />);
-    expect(container.querySelector("img")).toBeInTheDocument();
+  it("히어로 헤드라인을 aria-label로 렌더한다", () => {
+    render(<Hero />);
+    expect(
+      screen.getByRole("heading", { name: "Wear what you imagine" }),
+    ).toBeInTheDocument();
   });
 
-  it("figure를 bleed+fg 2겹 이미지 + 코랄 scrim으로 배경에 블렌드한다 (컷아웃 방지)", () => {
+  it("히어로에 마네킹 이미지가 없다", () => {
     const { container } = render(<Hero />);
-    expect(container.querySelectorAll("img").length).toBeGreaterThanOrEqual(2);
-    expect(container.querySelector(".b-hero-fg")).not.toBeNull();
-    expect(container.querySelector(".b-hero-scrim")).not.toBeNull();
+    expect(container.querySelector("img")).toBeNull();
+    expect(container.querySelector(".b-hero-scrim")).toBeNull();
   });
 
-  it("히어로 콘텐츠가 고정 Topbar(~80px)를 비우도록 상하 패딩을 둔다", () => {
+  it("1화면 핏 패딩·중앙 정렬·min-h를 유지한다", () => {
     const { container } = render(<Hero />);
     const section = container.querySelector("section");
-    expect(section?.className).toContain("py-[clamp(104px,14vh,176px)]");
+    expect(section?.className).toContain("py-[clamp(72px,9vh,112px)]");
     expect(section?.className).toContain("items-center");
+    expect(section?.className).toContain("min-h-[100svh]");
   });
 
-  it("데일리 룩(06-feminine-smart-casual)을 렌더하고 이브닝 룩은 쓰지 않는다", () => {
-    const { container } = render(<Hero />);
-    const srcs = [...container.querySelectorAll("img")].map(
-      (img) => img.getAttribute("src") ?? "",
-    );
-    expect(srcs.some((s) => s.includes("06-feminine-smart-casual"))).toBe(true);
-    expect(srcs.some((s) => s.includes("04-elegant-evening"))).toBe(false);
+  it("우측에 IF 로고 인트로가 있다", () => {
+    render(<Hero />);
+    expect(screen.getByText("IF")).toBeInTheDocument();
+  });
+
+  it("reduced-motion이면 헤드라인과 로고를 즉시 노출한다", () => {
+    stubMatchMedia(true);
+    render(<Hero />);
+    expect(
+      screen.getByRole("heading", { name: "Wear what you imagine" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("IF")).toBeInTheDocument();
+  });
+
+  it("본문이 한국어 고아 단어 방지 클래스를 쓴다", () => {
+    render(<Hero />);
+    const body = screen.getByText(/한 문장이면 충분해요/);
+    expect(body.className).toContain("[word-break:keep-all]");
+    expect(body.className).toContain("[text-wrap:balance]");
   });
 });
