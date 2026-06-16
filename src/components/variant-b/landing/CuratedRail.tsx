@@ -19,19 +19,19 @@ export function CuratedRail() {
       <div className="mx-auto max-w-[1280px]">
         <div className="flex items-end justify-between gap-6">
           <div>
-            <p className="text-t7 font-extrabold uppercase tracking-[0.24em] text-b-light/55">
-              Today&apos;s curated
+            <p className="text-t7 font-extrabold uppercase tracking-[0.24em] text-b-accent">
+              How it works
             </p>
             <h2
-              aria-label="Six ways to begin"
+              aria-label="Ways to begin"
               className="mt-3 text-[clamp(32px,5vw,64px)] font-extrabold uppercase leading-[0.95] tracking-[-0.02em] text-b-light"
             >
-              <RevealWords text="Six ways to begin" />
+              <RevealWords text="Ways to begin" />
             </h2>
           </div>
           <Link
             href="/studio"
-            className="hidden shrink-0 text-t7 font-extrabold uppercase tracking-[0.14em] text-b-light/70 transition-colors hover:text-b-accent md:block"
+            className="shrink-0 rounded-full border border-b-line bg-b-surface/60 px-4 py-2 text-t7 font-extrabold uppercase tracking-[0.14em] text-b-accent backdrop-blur transition-colors hover:bg-b-surface"
           >
             스튜디오 →
           </Link>

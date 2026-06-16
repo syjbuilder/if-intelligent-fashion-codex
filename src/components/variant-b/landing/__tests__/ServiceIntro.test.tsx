@@ -17,7 +17,7 @@ function stubMatchMedia(matches: boolean) {
   })) as unknown as typeof window.matchMedia;
 }
 
-describe("ServiceIntro (핀 고정 코랄 라인)", () => {
+describe("ServiceIntro (핀 고정 코랄 라인 + 누적)", () => {
   afterEach(() => stubMatchMedia(false));
 
   it("3개 키워드와 본문을 렌더한다", () => {
@@ -45,5 +45,19 @@ describe("ServiceIntro (핀 고정 코랄 라인)", () => {
     expect(section?.getAttribute("data-mode")).toBe("static");
     expect(container.querySelector(".sticky")).toBeNull();
     expect(screen.getByText("상상하면")).toBeInTheDocument();
+  });
+
+  it("블록을 정상 흐름으로 누적한다(블록 컬럼에 절대배치 없음)", () => {
+    stubMatchMedia(false);
+    const { container } = render(<ServiceIntro />);
+    const blocks = container.querySelector("[data-blocks]");
+    expect(blocks).not.toBeNull();
+    expect(blocks?.querySelectorAll(".absolute").length).toBe(0);
+  });
+
+  it("우측 프롬프트 스케치 카드를 렌더한다", () => {
+    stubMatchMedia(false);
+    const { container } = render(<ServiceIntro />);
+    expect(container.querySelector("[data-prompt-sketch-card]")).not.toBeNull();
   });
 });

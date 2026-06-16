@@ -289,4 +289,4 @@ MVP 속도 최우선. 외부 의존성 최소화. 한국 시장 로컬화 우선
 
 **관련**: ADR-006(얼굴 합성·셀럽 금지 경계), `docs/UI_GUIDE.md`(정적 룩 이미지 파이프라인 §, v0.8 히어로 스펙).
 
-**개정 (2026-06, Variant B 랜딩 리디자인 — 부분 대체)**: Variant B 메인(`/`)에서 **히어로 마네킹 이미지를 제거**한다. 첫 화면의 "감각적·여운" 역할(위 이유 (1))은 정적 실사 대신 **키네틱 타이포(RevealWords + CoralUnderline) + 세션 1회 BrandIntro 인트로 + ServiceIntro 핀 고정 코랄 라인 진행 리빌**이 대체한다(trionn 레퍼런스). 단, 마네킹 webp 자산(`public/looks/*`·`hero-looks.ts`)은 **폐기하지 않고 유지** — CuratedRail(B), Explore/결과(A·B), `/baseline`·`/a` 히어로(HeroFigure 로테이션)에서 계속 사용한다. 즉 "히어로 한정 도입"이 B 히어로에 한해 "히어로 비도입(타이포 대체)"으로 전환된 것이며, 카드/Explore 표면의 실사 사용은 유효하다.
+**개정 (2026-06, Variant B 랜딩 리디자인 — 부분 대체)**: Variant B 메인(`/`)에서 **히어로 마네킹 이미지를 제거**한다. 첫 화면의 "감각적·여운" 역할(위 이유 (1))은 정적 실사 대신 **키네틱 타이포(RevealWords + CoralUnderline) + 히어로 우측 인라인 로고 인트로(HeroLogoIntro — 구 전체화면 BrandIntro 대체) + ServiceIntro 핀 고정 코랄 라인 누적 리빌 + 우측 PromptSketchCard**가 대체한다(trionn 레퍼런스). 단, 마네킹 webp 자산(`public/looks/*`·`hero-looks.ts`)은 **폐기하지 않고 유지** — CuratedRail(B), Explore/결과(A·B), `/baseline`·`/a` 히어로(HeroFigure 로테이션)에서 계속 사용한다. 즉 "히어로 한정 도입"이 B 히어로에 한해 "히어로 비도입(타이포 대체)"으로 전환된 것이며, 카드/Explore 표면의 실사 사용은 유효하다.

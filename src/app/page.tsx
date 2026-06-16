@@ -4,7 +4,6 @@ import { useState } from "react";
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { Topbar } from "@/components/landing/Topbar";
 import type { MenuItem } from "@/components/landing/MenuTray";
-import { BrandIntro } from "@/components/variant-b/landing/BrandIntro";
 import { Hero } from "@/components/variant-b/landing/Hero";
 import { ServiceIntro } from "@/components/variant-b/landing/ServiceIntro";
 import { CuratedRail } from "@/components/variant-b/landing/CuratedRail";
@@ -31,7 +30,6 @@ export default function Home() {
   return (
     <MotionProvider>
       <div className="theme-b">
-        <BrandIntro />
         <Topbar menuItems={menuItems} onLogin={() => setAuthOpen(true)} />
         <main>
           <Hero />

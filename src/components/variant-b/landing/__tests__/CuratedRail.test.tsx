@@ -30,4 +30,25 @@ describe("variant-b CuratedRail (3×2 그리드)", () => {
     cards.forEach((c) => expect(c.className).toContain("aspect-[3/4]"));
     expect(screen.getAllByText("+").length).toBeGreaterThanOrEqual(12);
   });
+
+  it('h2를 "Ways to begin" aria-label로 렌더한다', () => {
+    render(<CuratedRail />);
+    expect(
+      screen.getByRole("heading", { name: "Ways to begin" }),
+    ).toBeInTheDocument();
+  });
+
+  it('아이브로우가 코랄 "How it works"다', () => {
+    render(<CuratedRail />);
+    const eyebrow = screen.getByText("How it works");
+    expect(eyebrow.className).toContain("text-b-accent");
+  });
+
+  it("스튜디오 링크가 항상 보이는 코랄 글래스 칩이다", () => {
+    render(<CuratedRail />);
+    const link = screen.getByRole("link", { name: /스튜디오/ });
+    expect(link.className).not.toContain("hidden");
+    expect(link.className).toContain("text-b-accent");
+    expect(link.className).toContain("rounded-full");
+  });
 });
