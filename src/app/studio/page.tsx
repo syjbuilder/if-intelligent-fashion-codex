@@ -136,6 +136,7 @@ export default function StudioPage() {
           open={authOpen}
           onClose={() => setAuthOpen(false)}
           onSelectProvider={() => setAuthOpen(false)}
+          tone="dark"
         />
         <HistoryOverlay
           open={historyOpen}

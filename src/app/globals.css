@@ -48,6 +48,27 @@
     radial-gradient(80% 80% at 82% 90%, rgba(4, 5, 8, 0.7), transparent),
     linear-gradient(180deg, #060710 0%, #040508 100%);
 }
+/* ── Variant B 히어로 마네킹 블렌드 (cutout 방지) ──
+   bleed(블러 확대 저투명, Hero.tsx) + fg(라디얼 다면 마스크) + scrim(코랄 틴트→b-ink 디졸브).
+   동일 webp 재사용(네트워크 추가 0), CSS-only. */
+.b-hero-fg {
+  -webkit-mask-image: radial-gradient(125% 92% at 74% 38%, #000 36%, transparent 86%);
+  mask-image: radial-gradient(125% 92% at 74% 38%, #000 36%, transparent 86%);
+}
+.b-hero-scrim {
+  background:
+    linear-gradient(to top, #040508 1%, rgba(4, 5, 8, 0) 40%),
+    linear-gradient(to left, rgba(4, 5, 8, 0) 52%, rgba(4, 5, 8, 0.6) 100%),
+    radial-gradient(60% 50% at 78% 36%, rgba(246, 105, 80, 0.12), transparent 64%);
+}
+@media (max-width: 900px) {
+  /* 모바일: 폭이 좁아 텍스트와 겹치므로 좌측 페이드 강화(가독성 우선) */
+  .b-hero-scrim {
+    background:
+      linear-gradient(to top, #040508 2%, rgba(4, 5, 8, 0) 46%),
+      linear-gradient(to left, rgba(4, 5, 8, 0) 30%, rgba(4, 5, 8, 0.78) 96%);
+  }
+}
 
 /* ── 다크 신 배경 (Tailwind arbitrary로 표현 어려운 3-layer 그라디언트 + grain) ──
    주의: 여기서 position:relative를 강제하지 않는다 — globals가 @tailwind utilities 뒤라
