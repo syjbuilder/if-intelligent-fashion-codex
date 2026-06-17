@@ -117,4 +117,4 @@ git에 안 들어가는 자산. `.gitignore`로 차단.
 2. `/sync-docs` → 짝꿍 자동 반영, diff 검토 후 승인
 3. `/commit` → pre-commit 훅이 sync drift·시크릿·TDD 검사 → 통과 시 `/pr`
 
-깜빡하고 한쪽만 staging → pre-commit `sync-warn.sh`가 "짝꿍도 함께 sync할까요? (y/N)" 경고.
+깜빡하고 한쪽만 staging → pre-commit `sync-warn.sh`가 경고 출력(**기본 = 경고만, 차단 아님**). hub(1:N) 한글 원본(예: TRD)은 어느 slice가 바뀐지 알 수 없어 역방향 경고를 생략한다(false-positive 방지). 강제 차단은 `SYNC_WARN_STRICT=1`, 우회는 `SYNC_WARN_SKIP=1`.

@@ -1,8 +1,9 @@
 #!/bin/sh
 # 문서 sync drift 경고 훅
-# - 짝꿍 한쪽만 staged면 경고 출력 + (TTY면) y/N 프롬프트
+# - 짝꿍 한쪽만 staged면 경고 출력 (기본 = 경고만, 차단 아님)
 # - 매핑은 .githooks/sync-pairs.tsv 참조 (DOC_MAP.md §2와 동일)
-# - block 아님 — 사용자가 N 선택하거나 짝꿍 모두 staging하면 통과
+# - hub(1:N) 한글 원본(예: TRD)은 역방향 경고를 생략한다 (false-positive 방지)
+# - 강제 차단은 SYNC_WARN_STRICT=1일 때만. 우회는 SYNC_WARN_SKIP=1
 set -eu
 
 repo_root="$(git rev-parse --show-toplevel)"
@@ -27,6 +28,7 @@ fi
 
 drift_count=0
 drift_msgs=""
+tab="$(printf '\t')"
 
 while IFS="$(printf '\t')" read -r left right || [ -n "$left" ]; do
   # comment·blank skip
@@ -39,9 +41,14 @@ while IFS="$(printf '\t')" read -r left right || [ -n "$left" ]; do
   printf '%s\n' "$staged" | grep -Fx -- "$right" >/dev/null 2>&1 && right_staged=1
 
   if [ "$left_staged" -eq 1 ] && [ "$right_staged" -eq 0 ]; then
+    # 정방향: 영문 정본만 staged → 항상 경고 (진짜 drift)
     drift_count=$((drift_count + 1))
     drift_msgs="${drift_msgs}  - ${left}  →  ${right} 도 같이 sync 필요\n"
   elif [ "$right_staged" -eq 1 ] && [ "$left_staged" -eq 0 ]; then
+    # 역방향: 한글 원본만 staged. 이 원본이 여러 영문 정본의 공통 출처(hub)면
+    # 어느 slice가 바뀌었는지 알 수 없으므로 mirror 전부를 요구하지 않고 생략.
+    right_count=$(grep -cF -- "${tab}${right}" "$pairs_file" 2>/dev/null || true)
+    [ "${right_count:-0}" -gt 1 ] && continue
     drift_count=$((drift_count + 1))
     drift_msgs="${drift_msgs}  - ${right}  →  ${left} 도 같이 sync 필요\n"
   fi
@@ -55,29 +62,12 @@ printf '\n\033[33m[sync-warn] 문서 짝꿍 미동기 %d건 감지\033[0m\n' "$d
 printf '%b' "$drift_msgs"
 printf '(권장: 취소 → /sync-docs 실행 → 다시 commit)\n\n'
 
-# /dev/tty 사용 가능 여부를 먼저 FD 열기로 확인 (실패하면 조용히 폴백).
-has_tty=0
-if { exec 3<>/dev/tty; } 2>/dev/null; then
-  has_tty=1
-  exec 3<&- 3>&-
+# 커밋은 대부분 Claude Code(비대화형)가 대행 → y/N 프롬프트는 두지 않는다.
+# (이전엔 /dev/tty가 '열리지만' read가 EOF → 무고하게 exit 1로 하드블록되는 버그가 있었다.)
+# 기본 = 경고만 출력하고 통과. 강제 차단은 명시 옵트인(SYNC_WARN_STRICT=1)일 때만.
+if [ "${SYNC_WARN_STRICT:-0}" = "1" ]; then
+  printf 'commit 중단 (SYNC_WARN_STRICT=1). /sync-docs 후 재시도하거나 SYNC_WARN_SKIP=1로 우회.\n'
+  exit 1
 fi
-
-if [ "$has_tty" -eq 1 ]; then
-  printf '그래도 이대로 계속할까요? [y/N] ' > /dev/tty
-  ans=""
-  read -r ans < /dev/tty || ans=""
-  case "$ans" in
-    y|Y|yes|YES|Yes)
-      printf '계속 진행합니다.\n'
-      exit 0
-      ;;
-    *)
-      printf 'commit 중단. /sync-docs 후 다시 시도하세요.\n'
-      exit 1
-      ;;
-  esac
-fi
-
-# non-interactive (CI·sandbox·Windows Bash 등): 경고만 출력, block 안 함
-printf '(non-interactive — 경고만 출력, commit 진행)\n'
+printf '(경고만 — commit은 진행됩니다. 강제 차단하려면 SYNC_WARN_STRICT=1)\n'
 exit 0
