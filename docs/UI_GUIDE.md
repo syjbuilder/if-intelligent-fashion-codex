@@ -121,7 +121,7 @@
 - **3줄 이상 본문은 좌측 정렬 강제** (7원칙 §2). `section-sub`, `step-desc`, `footer-affiliate`,
   `auth-fineprint`, `modal-doc` body, `slide-desc`, `bag-copy` 등 multi-line body 일괄.
 - 1~2줄 헤드라인·CTA 라벨·eyebrow·메타데이터는 섹션 안에서 통일된다면 center/left 모두 허용.
-- **강조 패턴은 3개만**: ①Bold(400 → 800 한 단어) ②Color(`var(--accent)` 한 단어, 페이지당 ≤2회) ③Size(hierarchy 토큰 차이). 그 외 (italic, scaleX, rotate, underline, 형광, 박스) 일체 금지.
+- **강조 패턴은 3개 중심**: ①Bold(400 → 800 한 단어) ②Color(`var(--accent)` 한 단어, 페이지당 ≤3회 권장) ③Size(hierarchy 토큰 차이). italic·underline·형광·박스·폰트 비율 인위 왜곡(`transform: scaleX`)은 금지. **단, 장식·비주얼 레이어의 미세~중간 3D 틸트/parallax(`rotate`/`translateZ` + perspective)는 허용**(폰트 가독 비율은 유지).
 - italic 0건: `<em>`/`<i>`/`font-style: italic` CSS 시안 안에 0 hit.
 - 폰트 자체 비율 존중: `transform: scaleX(0.94/0.95)` 모두 제거 (v0.6 → v0.7).
 
@@ -213,8 +213,8 @@ V0는 풀 멀티턴 채팅 X. 싱글샷 워크스페이스 위에 3개 mini-acti
 | 금지 사항 | 이유 |
 |-----------|------|
 | italic으로 단어 강조하기 | weight·color·size로만 강조한다 (v0.7 7원칙 §1·§3) |
-| `transform: scaleX/rotate`로 폰트·요소 인위 변형 | 폰트 자체 비율 존중. loiseau 영향. |
-| 포인트 컬러를 페이지당 3회 이상 사용 | 절제될수록 강조가 살아난다. accent ≤ 2회 강제. |
+| `transform: scaleX`로 폰트 비율 인위 왜곡 | 폰트 자체 비율 존중. loiseau 영향. (장식·비주얼 레이어의 3D 틸트/parallax `rotate`/`translateZ`는 허용 — 폰트 가독 비율은 유지.) |
+| 포인트 컬러를 페이지당 과다 사용 | 절제될수록 강조가 살아난다. 단어 강조 ≤3회 권장(구조·모티프 코랄은 예산 밖, 절제 사용). |
 | 따뜻한 베이지·rose·sage·wine 톤이 배경에 깔리는 것 | v0.7에서 중성 오프화이트·중성 회색·다크 카멜로 통일. |
 | 워밍 브라운·에스프레소 톤이 다시 등장하는 것 (rgba 180,140,88·17,15,13·76,60,46·#776f66·#7b746b 등) | v0.7.2~v0.8에서 페이지 전체 UI 크롬을 **accent 단일 톤(현 Ink Violet #49476e)**으로 통일. accent·CTA·dock·다크 신·강조 워드가 모두 차분한 한 톤. (룩 카드의 tone-date/sport 가먼트 콘텐츠는 무드 표현이므로 예외.) |
 | weight 500·700 사용 | weight 3단(400/600/800)만 허용. |
@@ -227,7 +227,7 @@ V0는 풀 멀티턴 채팅 X. 싱글샷 워크스페이스 위에 3개 mini-acti
 | 결과 카드에 텍스트가 패션 이미지보다 강하게 보이는 것 | 타이틀·카운터 비중 축소 유지 |
 | 상반신 클로즈업·하의 잘림·런웨이/코스튬풍 룩 이미지 | 상품 매칭 불가 = 실패 결과 |
 | 사람 사진·인종/지역 마커가 드러나는 이미지 | ADR-006 — 얼굴 없는 마네킹 실사(v0.8 히어로)는 허용, 사람 얼굴·피부 마커는 금지 |
-| WebAssembly 3D·사이트 사운드·커스텀 커서 등 과시형 모션 | "AI는 조용하게" 원칙 위반 |
+| 사이트 사운드·자동재생 비디오·커스텀 커서 등 과한 장치 | "AI는 조용하게" 권고(하드 금지 아님). **3D 깊이·키네틱 타이포·parallax는 절제해 사용 가능** — 과시가 아니라 브랜드 무드를 돕는 선에서. |
 
 I.F의 Editorial AI Studio 방향은 Brunello 레퍼런스 기반으로 frosted glass / soft blur를
 의도적으로 사용한다 — "backdrop-filter 금지" 같은 범용 안티슬롭 규칙은 적용하지 않는다.
@@ -247,14 +247,14 @@ PR #30에서 Variant B를 메인으로 승격, 이후 리디자인으로 키네�
 
 - **토큰**: `b-ink #040508`(base) · `b-surface #11131a`(카드) · `b-cream #e6e4e2` · `b-accent #f66950`(코랄, 단일 액센트) · `b-light #d8d8d8`(텍스트) · `b-line rgba(216,216,216,.14)`(divider).
 - **히어로**: 이미지 없는 텍스트 전용(ADR-018 개정). 헤드라인=RevealWords 단어 스태거 + CoralUnderline. 1화면 핏(축소 clamp + 패딩 축소).
-- **히어로 인트로(HeroLogoIntro)**: 베벨 다이아몬드(45° 회전 사각형 외곽선을 상단 꼭지점에서 **시계방향 두꺼운 선으로 드로우** + 3D facet 광/명암 + 가운데 큰 IF)를 **히어로 우측 절반 중앙**에서 먼저 재생(~1s) 후 좌측 헤드라인 공개. 전체화면 오버레이(구 BrandIntro)는 폐기 — 세션 게이트 없이 매 진입 인라인 재생, `prefers-reduced-motion`이면 즉시 정적. 좌측 컬럼은 항상 마운트(opacity gate)로 SSR/aria 보존.
-- **ServiceIntro**: 핀 고정(`h-[260vh]`+`sticky`) + 코랄 라인 성장 + 3블록 **누적 리빌**(progress 0.6에 완료·이후 또렷이 유지, 끝에 상상하면/만들어지고/입을 수 있다 모두). 우측 절반 중앙에 스크롤 동기 **PromptSketchCard**(텍스트 직후 프롬프트 타이핑 → 가먼트 stroke 드로우 → 상품 칩). reduced-motion=정적 스택 + 카드 최종 상태.
+- **히어로 인트로(IntroParticleMorph, 2026-06-17 — 구 베벨 다이아몬드 HeroLogoIntro 폐기)**: 우측 절반 중앙에 **코스모스 점-구체 ↔ 룩 모핑**(`<canvas>`). 흰/주황 점 ~240개가 피보나치 구 표면에서 **3D 회전**(깊이 cue 5종 = z-정렬·반경·밝기·원근·포그)하다가 주기적으로 **점만으로** 데일리 룩 외곽을 형성(가디건·데님 / 블레이저·슬랙스 / 셔츠·미디스커트 3룩 순환) 후 다시 흩어져 구로 복귀. 3D 라이브러리 없음(canvas 2D + 수동 구체 투영 + requestAnimationFrame). 룩 외곽 데이터는 `intros/lookOutlines.ts`(GARMENT_PATHS와 무관한 별도 자산, 신발 없음). `prefers-reduced-motion`·캔버스 미지원이면 정적 1프레임. 좌측 컬럼은 항상 마운트(opacity gate)로 SSR/aria 보존.
+- **ServiceIntro**: 핀 고정(`h-[220vh]`+`sticky`) + 코랄 라인 성장 + 3블록 **누적(step latch — 임계 넘으면 켜지고 안 꺼짐)**: 라인·메세지·우측 카드 3단계가 같은 임계에서 켜지고 언핀까지 선명히 유지(상상하면/만들어지고/입을 수 있다). 우측 절반 중앙 스크롤 동기 **PromptSketchCard**(프롬프트 타이핑 → 룩 고스트 위 실루엣 드로우 → 상품 행 "구매처 보기"). 입력 카피 "원하는 스타일의 옷을 표현해보세요". reduced-motion=정적 스택 + 카드 최종 상태.
 - **Curated("Pick a look to begin")**: magnific식 균일 3×2 이미지 그리드(가로 스크롤 폐기) + trionn "+" 코너 + 호버 코랄 라인 + whileInView 스태거. 아이브로우 코랄 "Start here", 스튜디오 링크는 항상 보이는 코랄 글래스 칩.
 - **로그인(AuthOverlay dark)**: 스포트라이트 배경(`.bg-b-auth`) + 글래스 카드(`.b-auth-glass`). Kakao `#FEE500`·Naver `#03C75A` 브랜드색 락. light 톤(A·baseline) 불변.
 - **텍스트 모션**: RevealWords(헤드라인) + fadeUp/whileInView(본문·아이브로우) + CoralUnderline(핵심 헤딩 1회). 전부 `reducedMotion="user"`(MotionProvider) 존중.
 
 ### 액센트 예산(원칙1)의 B 적용
 "accent ≤ 2/page"는 **코랄 텍스트 단어 강조** 기준이다(스모크 테스트가 `.text-accent` 단어 카운트, 구조적 액센트 제외 관례 동일 적용). B에서:
-- **코랄 단어 = 2**: 히어로 아이브로우(`Intelligent Fashion`) + CuratedRail 아이브로우(`Start here`). 히어로 "imagine" 코랄 단어는 폐기(CoralUnderline 모티프로 대체)해 예산 유지.
-- **구조/모티프 코랄(단어 아님 — 예산 밖, 절제 사용)**: CTA fill, ServiceIntro 코랄 라인, CoralUnderline(히어로 1회), "+" 코너 글리프, 로그인 글로우, 히어로 인트로 IF 로고/코너, **스튜디오 nav 칩**.
+- **코랄 단어 ≤3 (B 완화)**: 히어로 아이브로우(`Intelligent Fashion`) + CuratedRail 아이브로우(`Start here`)가 기본. B는 코랄이 단일 정체성 액센트라 **구조·모티프 코랄(라인·CTA·입자·스윕 등)은 예산 밖으로 자유롭게** 쓰되 단어 강조만 절제한다(자동 가드 없음).
+- **구조/모티프 코랄(단어 아님 — 예산 밖, 절제 사용)**: CTA fill, ServiceIntro 코랄 라인, CoralUnderline(히어로 1회), "+" 코너 글리프, 로그인 글로우, 히어로 인트로 주황 입자(코스모스 ~15%), **스튜디오 nav 칩**.
 - B 페이지엔 `.text-b-accent` 개수 자동 가드를 두지 않는다("+" 장식 글리프가 카운트를 왜곡). 필요 시 헤딩 한정 스코프로만.

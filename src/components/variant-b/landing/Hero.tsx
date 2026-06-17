@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { RevealWords } from "@/components/motion/RevealWords";
 import { CoralUnderline } from "@/components/motion/CoralUnderline";
-import { HeroLogoIntro } from "./HeroLogoIntro";
+import { IntroParticleMorph } from "./intros/IntroParticleMorph";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const LEFT_CONTAINER = {
@@ -28,7 +28,7 @@ const LEFT_ITEM = {
 
 /**
  * Variant B 히어로 — 텍스트 전용(마네킹 제거, ADR-018 개정).
- * 우측 빈 공간에 IF 로고 인트로(HeroLogoIntro)가 먼저 조립된 뒤(~0.9s) 좌측 텍스트가 공개된다.
+ * 우측에 코스모스 점-구체 ↔ 룩 모핑 인트로(IntroParticleMorph)가 루프 재생되고, 좌측 텍스트가 ~0.9s 후 공개된다.
  * 좌측 컬럼은 항상 마운트(opacity gate) — SSR/aria/SEO 보존. reduced-motion이면 즉시 노출.
  */
 export function Hero() {
@@ -88,7 +88,7 @@ export function Hero() {
         </motion.div>
 
         <div className="hidden md:flex md:justify-center">
-          <HeroLogoIntro reduced={reduced} />
+          <IntroParticleMorph reduced={reduced} />
         </div>
       </div>
     </section>
