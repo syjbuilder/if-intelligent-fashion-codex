@@ -12,6 +12,7 @@
 - 모든 `/api/looks/generate`, `/api/looks/:id/save`, `/api/looks/:id/more-like-this`는 **로그인 필수**.
 - `/api/explore`, `/api/looks/:id`, `/api/looks/:id/products`는 **비로그인도 허용** (단, curated/public 룩만 노출).
 - Supabase Auth JWT를 쿠키로 전달. 서버에서 `auth.uid()` 추출 후 RLS 적용.
+- 로그인 자체(소셜 OAuth) 라우트는 **§0** 참조. 세션은 `@supabase/ssr` 쿠키 + `middleware.ts`가 요청마다 갱신.
 
 ### 응답 포맷
 모든 응답은 JSON. 성공:
@@ -83,6 +84,28 @@
 - `max_looks` 사용자 노출 파라미터 없음 — 서버는 항상 3개 룩 반환.
 - 응답 `pipeline_source` 필드는 telemetry 용도(curated_only / mixed / generated_only). **사용자 노출 X**.
 - 자세한 결제 모델·소진 UX는 ADR-012.
+
+---
+
+## 0. 인증 라우트 — OAuth 로그인 (구현됨, PR #34)
+
+소셜 로그인은 **서버 개시 OAuth(PKCE)**로 동작한다. 클라이언트(AuthOverlay 버튼)는 Supabase를 직접 호출하지 않고 같은-오리진 라우트로 **네비게이트만** 한다(CLAUDE.md: 외부 API는 서버 영역만 — 시크릿 노출 방지). 세션은 `@supabase/ssr` 쿠키로 저장되고 `middleware.ts`가 요청마다 갱신한다.
+
+| 라우트 | 메서드 | Auth | 동작 |
+|---|---|---|---|
+| `/api/auth/signin/[provider]` | GET | 불필요 | `signInWithOAuth` → provider 인증 url로 redirect. PKCE code-verifier 쿠키를 굽는다. |
+| `/api/auth/callback` | GET | 불필요 | provider→Supabase→앱 복귀 `code`를 `exchangeCodeForSession`으로 세션 교환 → 쿠키 저장 후 `next`로 redirect |
+| `/api/auth/signout` | POST | (세션) | `signOut()` 후 홈으로 303 redirect |
+
+**provider 값:** `google`(구현·실연동 검증 완료) / `kakao`(Supabase 네이티브 — 추후 배선만) / `naver`(**Supabase 내장 미지원 → 커스텀 OIDC 별도 구현 필요**, 버튼은 유지). 허용 목록(`AUTH_PROVIDERS`) 밖 provider는 Supabase 호출 없이 `/?auth_error=provider`로 redirect.
+
+**signin 쿼리:** `next` = 로그인 후 복귀할 내부 경로(기본 `/`). 외부 URL·프로토콜상대(`//`)·역슬래시는 오픈 리다이렉트 가드로 `/`로 차단.
+
+**응답 계약:** 라우트 핸들러라 JSON 대신 **HTTP redirect**. 성공 = signin→provider url, callback→`next`, signout→`/`. 실패 = `/?auth_error=provider|signin|callback` 쿼리 플래그로 홈 복귀(클라이언트가 토스트 등으로 처리).
+
+**가입 grant:** 신규 가입 시 Supabase Auth trigger(`handle_new_user`)가 `users.token_balance=10`을 멱등(`ON CONFLICT DO NOTHING`)으로 지급(ADR-016). 현재 `token_transactions` grant 행은 미기록 — generation 토큰 차감 배선 시 마이그레이션 008로 보강 예정(`docs/DATA_MODEL.md` §15.8).
+
+**대시보드 설정(코드 밖, 1회):** Google Cloud OAuth 클라이언트(Web) + Supabase Authentication → Providers(Google) + URL Configuration(Site URL·Redirect URLs). Google의 Authorized redirect URI는 **앱이 아니라 Supabase 콜백**(`https://<project-ref>.supabase.co/auth/v1/callback`).
 
 ---
 
@@ -455,3 +478,4 @@ POST /api/looks/generate
 
 - 2026-05-17: 초기 작성. PRD V0 Core + ADR-009 반영. 핵심 7개 엔드포인트 명세 (Explore·interpret·generate·look detail·products·save·more-like-this).
 - 2026-06-01: 백엔드 안전 보강 반영 (ADR-013~016) — `X-Idempotency-Key` 모든 generation 요청 필수화, §3·§7 부분실패 시 3장 all-or-nothing·10토큰 자동 환불 응답 스펙, rate limit 수치(유저 10/분·IP 30/분·가입 IP 5/일), 입력 validation 제약표(프롬프트 1~300자·enum 화이트리스트), 에러코드 보강(429 분리·503 `CAPACITY_LIMITED` 추가·402 잔액부족 의미 명확화). ADR-012 차감 양/개수(10토큰·항상 3개)는 불변 — 차감 "방식"만 안전화.
+- 2026-06-17: **§0 인증 라우트(OAuth 로그인) 추가** — `/api/auth/signin/[provider]` · `/api/auth/callback`(GET, code 교환) · `/api/auth/signout`(POST). 서버 개시 OAuth(PKCE) · `@supabase/ssr` 쿠키 세션 · `middleware.ts` 세션 갱신(PR #34). Google 실연동 검증 완료, Kakao 네이티브 대기, Naver 커스텀 OIDC 필요. TRD 16장 동시 갱신(`POST /api/auth/callback` 표기 → `GET`으로 정정 + signin/signout 추가).
