@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { MenuTray, type MenuItem } from "./MenuTray";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 /**
  * 공용 고정 헤더(랜딩·스튜디오). mix-blend-difference로 다크/페이퍼 위에서 자동 반전.
@@ -18,6 +19,7 @@ export function Topbar({
   onLogin: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isLoggedIn } = useAuth();
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50 mix-blend-difference">
@@ -41,13 +43,28 @@ export function Topbar({
           <Link href="/" aria-label="홈으로" className="justify-self-center">
             <BrandMark className="text-white" />
           </Link>
-          <button
-            type="button"
-            onClick={onLogin}
-            className="justify-self-end text-t7 font-extrabold uppercase tracking-[0.18em] transition-opacity hover:opacity-70"
-          >
-            Login
-          </button>
+          {isLoggedIn ? (
+            <form
+              action="/api/auth/signout"
+              method="post"
+              className="justify-self-end"
+            >
+              <button
+                type="submit"
+                className="text-t7 font-extrabold uppercase tracking-[0.18em] transition-opacity hover:opacity-70"
+              >
+                Logout
+              </button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              onClick={onLogin}
+              className="justify-self-end text-t7 font-extrabold uppercase tracking-[0.18em] transition-opacity hover:opacity-70"
+            >
+              Login
+            </button>
+          )}
         </div>
       </header>
       <MenuTray

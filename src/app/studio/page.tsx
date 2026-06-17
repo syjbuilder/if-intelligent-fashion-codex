@@ -8,6 +8,7 @@ import { LoadingScene } from "@/components/studio/LoadingScene";
 import { AuthOverlay } from "@/components/studio/AuthOverlay";
 import { HistoryOverlay } from "@/components/studio/HistoryOverlay";
 import { RecentPromptsDrawer } from "@/components/studio/RecentPromptsDrawer";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { ExploreScene } from "@/components/variant-b/studio/ExploreScene";
 import { ResultsScene } from "@/components/variant-b/studio/ResultsScene";
 import { LookDetailScene } from "@/components/variant-b/studio/LookDetailScene";
@@ -54,6 +55,7 @@ export default function StudioPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
+  const { isLoggedIn } = useAuth();
 
   const submitPrompt = (p: string) => {
     const prompt = p.trim();
@@ -141,7 +143,7 @@ export default function StudioPage() {
         <HistoryOverlay
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
-          isLoggedIn={false}
+          isLoggedIn={isLoggedIn}
           tone="dark"
           onSignIn={() => {
             setHistoryOpen(false);

@@ -10,6 +10,7 @@ import { SiteFooter } from "@/components/landing/SiteFooter";
 import { AuthOverlay } from "@/components/studio/AuthOverlay";
 import { HistoryOverlay } from "@/components/studio/HistoryOverlay";
 import { RecentPromptsDrawer } from "@/components/studio/RecentPromptsDrawer";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 // 현행(v0.8) 랜딩 — 비교 기준선. 루트 /가 비교 허브가 되면서 이 경로(/baseline)로 이동.
 // 내용은 종전 src/app/page.tsx 그대로(무변경).
@@ -20,6 +21,7 @@ export default function BaselineHome() {
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
+  const { isLoggedIn } = useAuth();
 
   const menuItems: MenuItem[] = [
     { label: "Explore", n: "01", href: "/baseline/studio" },
@@ -81,7 +83,7 @@ export default function BaselineHome() {
       <HistoryOverlay
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
-        isLoggedIn={false}
+        isLoggedIn={isLoggedIn}
         onSignIn={() => {
           setHistoryOpen(false);
           setAuthOpen(true);

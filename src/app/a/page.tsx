@@ -10,6 +10,7 @@ import { CuratedPreview } from "@/components/variant-a/landing/CuratedPreview";
 import { AuthOverlay } from "@/components/studio/AuthOverlay";
 import { HistoryOverlay } from "@/components/studio/HistoryOverlay";
 import { RecentPromptsDrawer } from "@/components/studio/RecentPromptsDrawer";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 // Variant A 랜딩 — 베이스라인 Hero/HowItWorks/Footer 유지(I.F 정체성) + CuratedPreview를
 // 실사 카드 레일(variant-a)로 끌어올림. 메뉴·CTA는 /a/studio로.
@@ -20,6 +21,7 @@ export default function VariantAHome() {
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
+  const { isLoggedIn } = useAuth();
 
   const menuItems: MenuItem[] = [
     { label: "Explore", n: "01", href: "/a/studio" },
@@ -81,7 +83,7 @@ export default function VariantAHome() {
       <HistoryOverlay
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
-        isLoggedIn={false}
+        isLoggedIn={isLoggedIn}
         onSignIn={() => {
           setHistoryOpen(false);
           setAuthOpen(true);

@@ -7,6 +7,7 @@ import { LoadingScene } from "@/components/studio/LoadingScene";
 import { AuthOverlay } from "@/components/studio/AuthOverlay";
 import { HistoryOverlay } from "@/components/studio/HistoryOverlay";
 import { RecentPromptsDrawer } from "@/components/studio/RecentPromptsDrawer";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { ExploreScene } from "@/components/variant-a/studio/ExploreScene";
 import { ResultsScene } from "@/components/variant-a/studio/ResultsScene";
 import { LookDetailScene } from "@/components/variant-a/studio/LookDetailScene";
@@ -55,6 +56,7 @@ export default function VariantAStudioPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
+  const { isLoggedIn } = useAuth();
 
   const submitPrompt = (p: string) => {
     const prompt = p.trim();
@@ -146,7 +148,7 @@ export default function VariantAStudioPage() {
       <HistoryOverlay
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
-        isLoggedIn={false}
+        isLoggedIn={isLoggedIn}
         onSignIn={() => {
           setHistoryOpen(false);
           setAuthOpen(true);

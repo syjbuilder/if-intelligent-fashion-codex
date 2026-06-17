@@ -1,6 +1,7 @@
 "use client";
 
 import type { SocialProvider } from "@/types/ui";
+import { buildSignInPath } from "@/lib/auth/signInPath";
 
 // 소셜 3버튼 — 표시 순서 Google → Kakao → Naver. 버튼은 콜백만(OAuth 호출 절대 0 — 시크릿 클라 번들 유입 차단).
 // Kakao(#FEE500)·Naver(#03C75A)는 브랜드 가이드 락 — 두 톤 모두 불변. Google만 톤별 변형(darkCls).
@@ -32,11 +33,14 @@ export function AuthOverlay({
   open,
   onClose,
   onSelectProvider,
+  next,
   tone = "light",
 }: {
   open: boolean;
   onClose: () => void;
   onSelectProvider?: (p: SocialProvider) => void;
+  /** 로그인 성공 후 돌아올 내부 경로. 미지정 시 현재 경로로 복귀. */
+  next?: string;
   tone?: "light" | "dark";
 }) {
   if (!open) return null;
@@ -87,7 +91,15 @@ export function AuthOverlay({
                 key={s.provider}
                 type="button"
                 data-provider={s.provider}
-                onClick={() => onSelectProvider?.(s.provider)}
+                onClick={() => {
+                  onSelectProvider?.(s.provider);
+                  const target =
+                    next ??
+                    (typeof window !== "undefined"
+                      ? window.location.pathname
+                      : "/");
+                  window.location.assign(buildSignInPath(s.provider, target));
+                }}
                 className={`flex min-h-[52px] items-center justify-center rounded-full text-t6 font-semibold transition-colors ${cls}`}
               >
                 {s.label}

@@ -16,6 +16,11 @@ describe("createBrowserSupabaseClient — anon 클라이언트", () => {
     expect(typeof client.from).toBe("function");
   });
 
+  it("auth.signInWithOAuth를 노출한다 — @supabase/ssr 브라우저 클라이언트", () => {
+    const client = createBrowserSupabaseClient();
+    expect(typeof client.auth.signInWithOAuth).toBe("function");
+  });
+
   it("필수 env 누락 시 throw", () => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "");
     expect(() => createBrowserSupabaseClient()).toThrow();

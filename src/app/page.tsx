@@ -11,6 +11,7 @@ import { SiteFooterB } from "@/components/variant-b/landing/SiteFooterB";
 import { AuthOverlay } from "@/components/studio/AuthOverlay";
 import { HistoryOverlay } from "@/components/studio/HistoryOverlay";
 import { RecentPromptsDrawer } from "@/components/studio/RecentPromptsDrawer";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 // 메인 사이트 = Variant B(레퍼런스 재설계, 다크+코랄). PO 선택으로 / 승격.
 // A는 /a·/a/studio, 현행은 /baseline·/baseline/studio, 비교 허브는 /compare에 보존.
@@ -19,6 +20,7 @@ export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
+  const { isLoggedIn } = useAuth();
 
   const menuItems: MenuItem[] = [
     { label: "Explore", n: "01", href: "/studio" },
@@ -47,7 +49,7 @@ export default function Home() {
         <HistoryOverlay
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
-          isLoggedIn={false}
+          isLoggedIn={isLoggedIn}
           tone="dark"
           onSignIn={() => {
             setHistoryOpen(false);
