@@ -31,6 +31,15 @@ describe("PromptSketchCard (스크롤 동기 프롬프트→스케치)", () => {
     expect(container.querySelector("[data-product-chip]")).not.toBeNull();
   });
 
+  it("스크롤 전(progress 0)에는 입력 placeholder와 상품 CTA를 보여준다", () => {
+    stubMatchMedia(false);
+    const progress = motionValue(0);
+    render(<PromptSketchCard progress={progress} />);
+    expect(screen.getByText("원하는 스타일의 옷을 표현해보세요")).toBeInTheDocument();
+    expect(screen.getByText(/구매처 보기/)).toBeInTheDocument();
+    expect(screen.getByText("데이트 슬립 원피스")).toBeInTheDocument();
+  });
+
   it("reduced면 최종 상태(전체 프롬프트 텍스트)를 정적으로 보여준다", () => {
     stubMatchMedia(true);
     const progress = motionValue(0);

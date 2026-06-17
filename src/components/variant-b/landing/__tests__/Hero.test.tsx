@@ -48,18 +48,18 @@ describe("variant-b Hero (텍스트 + 우측 로고 인트로)", () => {
     expect(section?.className).toContain("min-h-[100svh]");
   });
 
-  it("우측에 IF 로고 인트로가 있다", () => {
-    render(<Hero />);
-    expect(screen.getByText("IF")).toBeInTheDocument();
+  it("우측에 코스모스 인트로(canvas)가 있다", () => {
+    const { container } = render(<Hero />);
+    expect(container.querySelector("[data-intro-particle] canvas")).not.toBeNull();
   });
 
-  it("reduced-motion이면 헤드라인과 로고를 즉시 노출한다", () => {
+  it("reduced-motion이면 헤드라인을 즉시 노출한다", () => {
     stubMatchMedia(true);
-    render(<Hero />);
+    const { container } = render(<Hero />);
     expect(
       screen.getByRole("heading", { name: "Wear what you imagine" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("IF")).toBeInTheDocument();
+    expect(container.querySelector("[data-intro-particle] canvas")).not.toBeNull();
   });
 
   it("본문이 한국어 고아 단어 방지 클래스를 쓴다", () => {
