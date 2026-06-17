@@ -11,11 +11,33 @@ describe("AuthOverlay", () => {
     expect(providers).toEqual(["google", "kakao", "naver"]);
   });
 
-  it("버튼은 콜백만 호출한다 (OAuth/fetch 0 — 시크릿 노출 방지)", () => {
+  it("버튼은 콜백 호출 후 서버 로그인 라우트로 네비게이트한다 (fetch/OAuth 0 — 시크릿 노출 방지)", () => {
+    const original = window.location;
+    const assign = vi.fn();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      writable: true,
+      value: { assign, pathname: "/studio", origin: "http://localhost:3000" },
+    });
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+
     const onSelect = vi.fn();
     render(<AuthOverlay open onClose={() => {}} onSelectProvider={onSelect} />);
     fireEvent.click(screen.getByRole("button", { name: /Google/ }));
+
     expect(onSelect).toHaveBeenCalledWith("google");
+    expect(assign).toHaveBeenCalledTimes(1);
+    expect(assign.mock.calls[0][0]).toMatch(/^\/api\/auth\/signin\/google/);
+    // Supabase/OAuth를 클라에서 직접 부르지 않는다(시크릿 가드 유지).
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      writable: true,
+      value: original,
+    });
+    vi.unstubAllGlobals();
   });
 
   it("open=false면 렌더하지 않는다", () => {

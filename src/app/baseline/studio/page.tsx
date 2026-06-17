@@ -10,6 +10,7 @@ import { AuthOverlay } from "@/components/studio/AuthOverlay";
 import { HistoryOverlay } from "@/components/studio/HistoryOverlay";
 import { ProductDrawer } from "@/components/studio/ProductDrawer";
 import { RecentPromptsDrawer } from "@/components/studio/RecentPromptsDrawer";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import type { StudioScene } from "@/types/ui";
 
 // 현행(v0.8) 스튜디오 — 비교 기준선. 루트 /studio가 B로 승격되면서 이 경로(/baseline/studio)로 보존.
@@ -41,7 +42,7 @@ export default function BaselineStudioPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
-  const isLoggedIn = false;
+  const { isLoggedIn } = useAuth();
 
   const menuItems: MenuItem[] = [
     { label: "Explore", n: "01", onClick: () => dispatch({ type: "reset" }) },
