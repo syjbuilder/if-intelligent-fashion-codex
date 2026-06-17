@@ -1075,6 +1075,10 @@ DB·계약 측면 주요 변경: `users`에 `CHECK(token_balance >= 0)`·`role` 
 
 - **ADR-018 (정적 마네킹 룩 실사 이미지)**: 랜딩 히어로에 얼굴 없는 3D 마네킹 전신 룩 실사(사전 생성 정적 자산, 840px WebP)를 도입한다. 적용은 브랜드 표면(히어로 배경 로테이션)에 한정하며 룩 카드(tone 그라디언트 + 가먼트 SVG)는 유지. 얼굴 없는 마네킹은 ADR-006 금지(사람 사진·초상권) 경계 안. 같은 패스에서 포인트 컬러를 Ink Violet(#49476e)으로 갱신하고 섹션 한 화면 리듬·타이포 토큰 통일을 적용 — 운영 스펙은 `docs/UI_GUIDE.md`(v0.8) 참조.
 
+### 19.3 인증 로그인 결정 (ADR-019, 2026-06-17)
+
+- **ADR-019 (OAuth 로그인 구현)**: 소셜 로그인을 `@supabase/ssr` 쿠키 기반 SSR 세션(+ `middleware.ts` 요청별 갱신) 위에서 **서버 개시 OAuth**(PKCE)로 구현한다. 클라이언트(AuthOverlay)는 Supabase를 직접 호출하지 않고 서버 라우트(`/api/auth/signin/[provider]`·`/api/auth/callback`·`/api/auth/signout`)로 이동만 한다 — CLAUDE.md "외부 API는 서버만" 준수. provider는 Google(구현·실연동 검증 완료) → Kakao(Supabase 네이티브, 추후 배선) → **Naver(Supabase 내장 미지원 → 커스텀 OIDC 별도 구현 필요)** 순. 세부·트레이드오프는 `docs/ADR.md` ADR-019, 라우트 계약은 `docs/API_CONTRACTS.md` §0 참조.
+
 ## 20. V0 Acceptance Criteria
 
 V0가 성공적으로 구현되었다고 판단하는 기준:

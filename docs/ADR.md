@@ -290,3 +290,23 @@ MVP 속도 최우선. 외부 의존성 최소화. 한국 시장 로컬화 우선
 **관련**: ADR-006(얼굴 합성·셀럽 금지 경계), `docs/UI_GUIDE.md`(정적 룩 이미지 파이프라인 §, v0.8 히어로 스펙).
 
 **개정 (2026-06, Variant B 랜딩 리디자인 — 부분 대체)**: Variant B 메인(`/`)에서 **히어로 마네킹 이미지를 제거**한다. 첫 화면의 "감각적·여운" 역할(위 이유 (1))은 정적 실사 대신 **키네틱 타이포(RevealWords + CoralUnderline) + 히어로 우측 인라인 인트로(2026-06-17 기준 IntroParticleMorph — 코스모스 점-구체 ↔ 룩 모핑 canvas; 구 베벨 다이아몬드 HeroLogoIntro·전체화면 BrandIntro는 폐기) + ServiceIntro 핀 고정 코랄 라인 누적 + 우측 PromptSketchCard**가 대체한다(trionn 레퍼런스). 단, 마네킹 webp 자산(`public/looks/*`·`hero-looks.ts`)은 **폐기하지 않고 유지** — CuratedRail(B), Explore/결과(A·B), `/baseline`·`/a` 히어로(HeroFigure 로테이션)에서 계속 사용한다. 즉 "히어로 한정 도입"이 B 히어로에 한해 "히어로 비도입(타이포 대체)"으로 전환된 것이며, 카드/Explore 표면의 실사 사용은 유효하다.
+
+### ADR-019: OAuth 로그인 구현 — @supabase/ssr 쿠키 세션 + 서버 개시 OAuth, Naver는 커스텀 OIDC
+
+**결정**:
+- **(1) 세션 = 쿠키 기반 SSR**: `@supabase/ssr` 도입. `browser.ts`를 `createBrowserClient`로 전환(세션을 쿠키에 저장), 신규 `serverClient.ts`(유저 스코프, `next/headers` 쿠키), `middleware.ts`가 요청마다 `getUser()`로 세션을 갱신한다. 기존 service_role 클라이언트(`server.ts`)는 쓰기 전용으로 유지(ADR-016).
+- **(2) 서버 개시 OAuth**: 로그인 개시도 서버 라우트가 한다 — `GET /api/auth/signin/[provider]`(signInWithOAuth → provider로 redirect, PKCE) · `GET /api/auth/callback`(exchangeCodeForSession → 세션 쿠키) · `POST /api/auth/signout`. 클라이언트(AuthOverlay)는 Supabase를 직접 호출하지 않고 우리 라우트로 **이동만** 한다.
+- **(3) provider 순서·가용성**: Google(구현·실연동 검증 완료) → Kakao(Supabase 네이티브, 추후 등록·배선만) → **Naver(Supabase 내장 미지원 → 커스텀 OIDC 별도 구현 필요)**. 허용 목록 밖 provider는 안전한 에러 redirect(`auth_error=…`).
+
+**이유**:
+- API_CONTRACTS가 "Supabase Auth JWT를 쿠키로 전달 → 서버에서 `auth.uid()` 추출 → RLS"를 요구한다. plain `@supabase/supabase-js`의 localStorage 세션은 서버 라우트가 읽지 못하므로 **쿠키 기반 SSR(`@supabase/ssr`)이 전제**.
+- CLAUDE.md CRITICAL("외부 API는 `src/app/api/`/서버 영역에서만, 클라 직접 호출 금지")를 지키려, 업계 표준인 클라 `signInWithOAuth` 대신 **서버 개시**를 택했다. anon 키는 공개값이라 노출 위험은 없으나 규칙을 문자 그대로 준수.
+- **Naver는 Supabase 내장 provider가 아니다**(google·kakao만 네이티브). 따라서 PRD의 Google→Kakao→Naver 중 Naver만 별도 커스텀 OIDC 통합이 필요하다.
+
+**트레이드오프**: 서버 개시는 표준 클라 패턴보다 라우트 코드가 약간 늘지만 무-클라-Supabase 규칙을 완전히 지킨다. layout이 `getUser()`(쿠키)를 읽어 전 페이지가 동적 렌더(SSR)되나 V0 규모엔 허용. Naver 커스텀 OIDC는 추가 구현 부담(Kakao는 네이티브라 저비용).
+
+**재검토 트리거**: ① prod 배포 시 `redirectTo` origin이 프록시 영향을 받으면 `NEXT_PUBLIC_SITE_URL` 또는 `x-forwarded-*` 도입 + Supabase Site URL/Redirect URL을 prod 도메인으로 교체, Google 앱 Testing→공개(심사). ② Naver 실수요 확인 시 커스텀 OIDC 착수.
+
+**후속**: 가입 grant는 트리거가 `users.token_balance=10`만 기록하고 `token_transactions` grant 행은 미기록(DATA_MODEL §15.8 갭). 동작 무관이라 보류 — generation 토큰 차감(ADR-014) 배선 시 마이그레이션 008로 함께 추가한다.
+
+**관련**: ADR-001(웹 MVP·앱 전환 API-first), ADR-002(Supabase Auth 플랫폼), ADR-016(RLS·가입 grant 멱등), `docs/API_CONTRACTS.md` §0(인증 라우트), `docs/DATA_MODEL.md` §15.1·§15.8. 구현 = PR #34(머지), 문서 정합 = PR #35.
