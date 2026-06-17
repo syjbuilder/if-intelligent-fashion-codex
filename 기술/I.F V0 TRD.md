@@ -886,8 +886,10 @@ payments
 초기 API 후보:
 
 ```text
-GET  /api/me
-POST /api/auth/callback
+GET  /api/me                            (미구현 — 세션은 SSR layout의 getUser로 처리)
+GET  /api/auth/signin/[provider]        (구현 — 서버 개시 OAuth/PKCE, PR #34)
+GET  /api/auth/callback                 (구현 — code 교환·세션 쿠키; 기존 POST 표기 정정)
+POST /api/auth/signout                  (구현 — PR #34)
 
 GET  /api/explore                       (NEW — Explore 진입 피드)
 POST /api/prompts/interpret             (chip_refinements·parent_history_id 파라미터 추가)
@@ -916,6 +918,8 @@ PATCH /api/admin/products/:id
 ```
 
 상세 request/response 스키마는 `docs/API_CONTRACTS.md`가 정식 문서. 본 섹션은 엔드포인트 목록 reference.
+
+**인증(OAuth 로그인) 구현(PR #34)**: 소셜 로그인은 **서버 개시 OAuth(PKCE)** — 클라는 Supabase를 직접 호출하지 않고 라우트로 네비게이트만 한다(외부 API는 서버 영역만). `/api/auth/signin/[provider]`→provider, `/api/auth/callback`(GET)→`exchangeCodeForSession`, `/api/auth/signout`(POST). 세션은 `@supabase/ssr` 쿠키 + `middleware.ts` 갱신. Google 실연동 검증 완료, Kakao는 Supabase 네이티브(추후 배선), **Naver는 Supabase 내장 미지원 → 커스텀 OIDC 필요**. 상세는 `docs/API_CONTRACTS.md` §0.
 
 **백엔드 안전 계약 (ADR-013/014/015/016, 2026-06-01 보강)** — 차감 양/개수(10토큰·항상 3개·`max_looks` 미노출)는 불변, 차감 "방식"의 계약만 안전화:
 
