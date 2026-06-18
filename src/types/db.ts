@@ -81,7 +81,7 @@ export type Json = Record<string, unknown>;
 export interface UserRow {
   id: UUID;
   auth_provider: AuthProvider;
-  /** nullable: Kakao 비-비즈앱은 이메일 미수집(008 마이그레이션). OAuth provider에 따라 없을 수 있음. */
+  /** nullable: Kakao 계정에 이메일이 없거나 provider별로 미제공일 수 있음 (008, ADR-019). */
   email: string | null;
   nickname: string | null;
   plan_type: PlanCode;

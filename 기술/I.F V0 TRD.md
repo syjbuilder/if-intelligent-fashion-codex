@@ -766,7 +766,7 @@ payments
 
 - id
 - auth_provider
-- email  (nullable — Kakao 비-비즈앱은 미수집, 008/ADR-019)
+- email  (nullable — Kakao 등 이메일 미보유 가능, 008/ADR-019)
 - nickname
 - plan_type
 - token_balance  (`CHECK(token_balance >= 0)` 제약 backstop — 음수 잔액 방지, ADR-014)

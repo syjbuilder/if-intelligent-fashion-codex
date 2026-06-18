@@ -53,8 +53,6 @@ describe("GET /api/auth/signin/[provider]", () => {
       provider: "kakao",
       options: {
         redirectTo: "http://localhost:3000/api/auth/callback?next=%2Fstudio",
-        // account_email은 비즈앱 필요 → 닉네임만 요청(KOE205 회피)
-        scopes: "profile_nickname",
       },
     });
   });
