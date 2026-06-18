@@ -360,7 +360,7 @@ if-product/
 ### 8.3 환경 / 마이그레이션 절차
 
 - **env 변수(추가)**: `DAILY_GENERATION_CAP`(일일 생성 상한), `GENERATION_KILL_SWITCH`(전체 생성 차단 토글). 비용 안전장치 설정값은 `app_config` 테이블이 아니라 env에 둔다(10테이블 freeze 유지, ADR-015).
-- **마이그레이션 순서**: 001~005(스키마·시드) → 006_rls_policies.sql(RLS 전수, ADR-016) → 007_token_rpc.sql(`consume_tokens()`/`refund_tokens()`, ADR-014).
+- **마이그레이션 순서**: 001~005(스키마·시드) → 006_rls_policies.sql(RLS 전수, ADR-016) → 007_token_rpc.sql(`consume_tokens()`/`refund_tokens()`, ADR-014) → 008_users_email_nullable.sql(email nullable, ADR-019).
 
 ## 9. Authentication
 
@@ -766,7 +766,7 @@ payments
 
 - id
 - auth_provider
-- email
+- email  (nullable — Kakao 비-비즈앱은 미수집, 008/ADR-019)
 - nickname
 - plan_type
 - token_balance  (`CHECK(token_balance >= 0)` 제약 backstop — 음수 잔액 방지, ADR-014)
@@ -879,7 +879,7 @@ payments
 - **006_rls_policies.sql (RLS 전수, ADR-016)**: 전 테이블 RLS enable. 읽기는 본인/공개(visibility)만, 쓰기는 전부 service_role(서버 라우트)만 허용. 클라이언트 직접 쓰기 차단.
 - **007_token_rpc.sql (토큰 RPC, ADR-014)**: `consume_tokens()`(SECURITY DEFINER) = `SELECT ... FOR UPDATE`로 `users` 행 잠금 → 잔액 확인 → `token_transactions` insert → balance update를 한 트랜잭션으로 처리(동시 요청·더블클릭 이중 차감·음수 잔액 방지). `refund_tokens()` = 생성 실패/3장 미달 시 환불 거래 기록 + 잔액 복구(룩 3장 all-or-nothing). ADR-012의 10토큰 일률·"항상 3개"는 불변, 차감 "방식"만 안전화.
 - **비용 안전장치 설정값 = env 환경변수 (ADR-015)**: 일일 생성 상한(`DAILY_GENERATION_CAP`)·kill switch(`GENERATION_KILL_SWITCH`)는 `app_config` 테이블이 아니라 env에 둔다(새 테이블 없음). 당일 누적 생성 카운트는 `generation_history` 당일치 조회로 계산.
-- **마이그레이션 순서**: 001~005(기존 스키마·시드) → 006_rls_policies.sql → 007_token_rpc.sql.
+- **마이그레이션 순서**: 001~005(기존 스키마·시드) → 006_rls_policies.sql → 007_token_rpc.sql → 008_users_email_nullable.sql.
 
 ## 16. Initial API Spec
 
@@ -1046,7 +1046,7 @@ TRD 이후 개발 전 확정해야 할 질문:
 - **docs ADR-016 (신규, 2026-06-01)**: 보안 경계 — (1) `006_rls_policies.sql`에 전 테이블 RLS enable, 읽기는 본인/공개만, 쓰기는 전부 service_role(서버 라우트)만. (2) 어드민 role: Supabase `app_metadata.role=admin` JWT 클레임 → `/api/admin/*` 가드, `users.role` 컬럼. (3) 가입 grant 멱등: Supabase Auth trigger에서 `INSERT ... ON CONFLICT DO NOTHING`로 1회만 10토큰. (4) 기본 rate limit 초기값: 유저당 10회/분, IP당 30회/분, 가입 IP당 5개/일. 정석은 별도 인증 서비스/WAF지만 V0는 Supabase RLS + 라우트 레벨 rate limit로 충분. 세부는 `docs/DATA_MODEL.md`(006_rls·users.role)·`docs/API_CONTRACTS.md`(rate limit·에러코드) 참조.
 - **docs ADR-017 (신규, 2026-06-01)**: 이미지 생성 모델 build-vs-buy — V0는 OpenAI GPT Image 2(ADR-003) API 사용(**buy**) 유지, 자체/파인튜닝 모델은 V0 범위 밖 V1+ 후보. 이유: 처음부터 자체 학습은 비현실(수백만 $·GPU·ML 팀), 저볼륨에선 API(월 약 22만 원)가 자체 GPU 호스팅(월 40만~200만+원)보다 쌈, 해자는 모델이 아니라 데이터(AI_PIPELINE 데이터 레버), 전환 경로는 관리형 GPU(Replicate·fal.ai)+LoRA/ControlNet을 ADR-007 `src/services` 래퍼로 격리. 재검토 트리거: ① 자체 호스팅 손익분기 초과 ② 파인튜닝 품질 우위 입증 ③ 벤더 리스크(가격 인상·deprecation), ADR-003 트리거와 연동. 정석 논의는 "자체 모델=차별화"지만 V0는 속도·비용·해자 측면에서 buy가 정답. 세부는 `docs/ADR.md` 참조.
 - **docs ADR-018 (신규, 2026-06-11)**: 정적 마네킹 룩 실사 이미지 도입 — 랜딩 히어로에 얼굴 없는 3D 마네킹 전신 룩 실사(사전 생성 정적 자산)를 도입. `scripts/build-look-images.mjs`로 840px WebP(q80, 장당 20-40KB) 변환 → `public/looks/` git 커밋 → `next/image` 서빙. 적용 범위는 브랜드 표면(히어로 로테이션)에 한정, 룩 카드는 tone 그라디언트+가먼트 SVG 유지. 얼굴 없는 마네킹은 ADR-006 금지(사람 사진·인종/지역 마커·초상권) 경계 안의 선택. 재검토 트리거: 정적 룩 수십 장+ 확대 또는 AI 생성 이미지(Supabase Storage)와 합류 시 Storage/CDN 일원화. 세부는 `docs/ADR.md`·`docs/UI_GUIDE.md` 참조.
-- **docs ADR-019 (신규, 2026-06-17)**: OAuth 로그인 구현 — `@supabase/ssr` 쿠키 기반 SSR 세션 + `middleware.ts` 요청별 갱신, **서버 개시 OAuth**(클라는 우리 라우트로 이동만 — CLAUDE.md 무-클라-Supabase 준수): `/api/auth/signin/[provider]`·`/api/auth/callback`(GET, exchangeCodeForSession)·`/api/auth/signout`. provider 순서 Google(실연동 검증 완료)→Kakao(Supabase 네이티브)→**Naver(내장 미지원 → 커스텀 OIDC 필요)**. 가입 grant의 `token_transactions` 기록은 008 후속(generation 차감 시). 구현=PR #34, 문서=PR #35. 세부는 `docs/ADR.md`·`docs/API_CONTRACTS.md` §0 참조.
+- **docs ADR-019 (신규, 2026-06-17)**: OAuth 로그인 구현 — `@supabase/ssr` 쿠키 기반 SSR 세션 + `middleware.ts` 요청별 갱신, **서버 개시 OAuth**(클라는 우리 라우트로 이동만 — CLAUDE.md 무-클라-Supabase 준수): `/api/auth/signin/[provider]`·`/api/auth/callback`(GET, exchangeCodeForSession)·`/api/auth/signout`. provider 순서 Google(실연동 검증 완료)→Kakao(Supabase 네이티브)→**Naver(내장 미지원 → 커스텀 OIDC 필요)**. 가입 grant의 `token_transactions` 기록은 후속 마이그레이션(generation 차감 시; 008은 `users.email` nullable 완화에 사용 — Kakao 비-비즈앱 무이메일). 구현=PR #34, 문서=PR #35. 세부는 `docs/ADR.md`·`docs/API_CONTRACTS.md` §0 참조.
 
 ## 22. Development Readiness Criteria
 

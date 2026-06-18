@@ -103,7 +103,7 @@
 
 **응답 계약:** 라우트 핸들러라 JSON 대신 **HTTP redirect**. 성공 = signin→provider url, callback→`next`, signout→`/`. 실패 = `/?auth_error=provider|signin|callback` 쿼리 플래그로 홈 복귀(클라이언트가 토스트 등으로 처리).
 
-**가입 grant:** 신규 가입 시 Supabase Auth trigger(`handle_new_user`)가 `users.token_balance=10`을 멱등(`ON CONFLICT DO NOTHING`)으로 지급(ADR-016). 현재 `token_transactions` grant 행은 미기록 — generation 토큰 차감 배선 시 마이그레이션 008로 보강 예정(`docs/DATA_MODEL.md` §15.8).
+**가입 grant:** 신규 가입 시 Supabase Auth trigger(`handle_new_user`)가 `users.token_balance=10`을 멱등(`ON CONFLICT DO NOTHING`)으로 지급(ADR-016). 현재 `token_transactions` grant 행은 미기록 — generation 토큰 차감 배선 시 후속 마이그레이션으로 보강 예정(`docs/DATA_MODEL.md` §15.8). (008은 `users.email` nullable 완화에 사용됨)
 
 **대시보드 설정(코드 밖, 1회):** Google Cloud OAuth 클라이언트(Web) + Supabase Authentication → Providers(Google) + URL Configuration(Site URL·Redirect URLs). Google의 Authorized redirect URI는 **앱이 아니라 Supabase 콜백**(`https://<project-ref>.supabase.co/auth/v1/callback`).
 

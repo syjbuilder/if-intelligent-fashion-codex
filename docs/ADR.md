@@ -307,6 +307,6 @@ MVP 속도 최우선. 외부 의존성 최소화. 한국 시장 로컬화 우선
 
 **재검토 트리거**: ① prod 배포 시 `redirectTo` origin이 프록시 영향을 받으면 `NEXT_PUBLIC_SITE_URL` 또는 `x-forwarded-*` 도입 + Supabase Site URL/Redirect URL을 prod 도메인으로 교체, Google 앱 Testing→공개(심사). ② Naver 실수요 확인 시 커스텀 OIDC 착수.
 
-**후속**: 가입 grant는 트리거가 `users.token_balance=10`만 기록하고 `token_transactions` grant 행은 미기록(DATA_MODEL §15.8 갭). 동작 무관이라 보류 — generation 토큰 차감(ADR-014) 배선 시 마이그레이션 008로 함께 추가한다.
+**후속**: 가입 grant는 트리거가 `users.token_balance=10`만 기록하고 `token_transactions` grant 행은 미기록(DATA_MODEL §15.8 갭). 동작 무관이라 보류 — generation 토큰 차감(ADR-014) 배선 시 후속 마이그레이션으로 함께 추가한다. (마이그레이션 008은 Kakao 비-비즈앱 무이메일 대응 `users.email` nullable 완화에 사용 — 일반 Kakao 앱은 `account_email` 동의항목 불가로 닉네임만 요청.)
 
 **관련**: ADR-001(웹 MVP·앱 전환 API-first), ADR-002(Supabase Auth 플랫폼), ADR-016(RLS·가입 grant 멱등), `docs/API_CONTRACTS.md` §0(인증 라우트), `docs/DATA_MODEL.md` §15.1·§15.8. 구현 = PR #34(머지), 문서 정합 = PR #35.
