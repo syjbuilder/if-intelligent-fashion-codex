@@ -97,7 +97,7 @@
 | `/api/auth/callback` | GET | 불필요 | provider→Supabase→앱 복귀 `code`를 `exchangeCodeForSession`으로 세션 교환 → 쿠키 저장 후 `next`로 redirect |
 | `/api/auth/signout` | POST | (세션) | `signOut()` 후 홈으로 303 redirect |
 
-**provider 값:** `google`(구현·실연동 검증 완료) / `kakao`(Supabase 네이티브 — 추후 배선만) / `naver`(**Supabase 내장 미지원 → 커스텀 OIDC 별도 구현 필요**, 버튼은 유지). 허용 목록(`AUTH_PROVIDERS`) 밖 provider는 Supabase 호출 없이 `/?auth_error=provider`로 redirect.
+**provider 값:** `google`(구현·실연동 검증 완료) / `kakao`(Supabase 네이티브 — 실연동) / `naver`(**Supabase 내장 미지원 → 커스텀 OIDC 별도 구현 필요**, 버튼은 유지). 허용 목록(`AUTH_PROVIDERS`) 밖 provider는 Supabase 호출 없이 `/?auth_error=provider`로 redirect.
 
 **signin 쿼리:** `next` = 로그인 후 복귀할 내부 경로(기본 `/`). 외부 URL·프로토콜상대(`//`)·역슬래시는 오픈 리다이렉트 가드로 `/`로 차단.
 

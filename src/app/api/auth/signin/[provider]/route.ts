@@ -23,9 +23,9 @@ export async function GET(
 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
-    // Supabase 내장 Provider 유니온에는 naver가 없다(google·kakao만 네이티브). V0 범위는
-    // Google 실연동이며, naver 호출 시 Supabase가 에러를 돌려주면 auth_error=signin으로
-    // 안전하게 떨어진다. (Naver는 추후 커스텀 OIDC로 별도 구현 — 버튼은 유지.)
+    // Supabase 내장 Provider 유니온에는 naver가 없다(google·kakao만 네이티브). google·kakao는
+    // 실연동이며, naver 호출 시 Supabase가 에러를 돌려주면 auth_error=signin으로 안전하게
+    // 떨어진다. (Naver는 추후 커스텀 OIDC로 별도 구현 — 버튼은 유지.)
     provider: provider as Provider,
     options: {
       redirectTo: `${origin}/api/auth/callback?next=${encodeURIComponent(next)}`,
