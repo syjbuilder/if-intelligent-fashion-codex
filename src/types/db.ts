@@ -81,7 +81,8 @@ export type Json = Record<string, unknown>;
 export interface UserRow {
   id: UUID;
   auth_provider: AuthProvider;
-  email: string;
+  /** nullable: Kakao 계정에 이메일이 없거나 provider별로 미제공일 수 있음 (008, ADR-019). */
+  email: string | null;
   nickname: string | null;
   plan_type: PlanCode;
   /** CHECK (token_balance >= 0) — 음수 잔액 backstop (ADR-014). */

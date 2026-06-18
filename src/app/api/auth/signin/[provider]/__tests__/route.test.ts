@@ -35,6 +35,28 @@ describe("GET /api/auth/signin/[provider]", () => {
     });
   });
 
+  it("kakao provider도 네이티브로 OAuth url로 redirect한다", async () => {
+    signInWithOAuth.mockResolvedValue({
+      data: { url: "https://kauth.kakao.com/oauth/authorize?x=1" },
+      error: null,
+    });
+    const req = new Request(
+      "http://localhost:3000/api/auth/signin/kakao?next=/studio",
+    );
+    const res = await GET(req, { params: Promise.resolve({ provider: "kakao" }) });
+    expect(res.status).toBeGreaterThanOrEqual(300);
+    expect(res.status).toBeLessThan(400);
+    expect(res.headers.get("location")).toBe(
+      "https://kauth.kakao.com/oauth/authorize?x=1",
+    );
+    expect(signInWithOAuth).toHaveBeenCalledWith({
+      provider: "kakao",
+      options: {
+        redirectTo: "http://localhost:3000/api/auth/callback?next=%2Fstudio",
+      },
+    });
+  });
+
   it("허용되지 않은 provider는 Supabase 호출 없이 에러로 redirect", async () => {
     const req = new Request("http://localhost:3000/api/auth/signin/facebook");
     const res = await GET(req, {

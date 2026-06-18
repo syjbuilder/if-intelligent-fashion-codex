@@ -35,7 +35,7 @@
 |---|---|---|---|
 | `id` | `uuid` | PK, default `gen_random_uuid()` | Supabase Auth `auth.users.id`와 1:1 |
 | `auth_provider` | `text` | not null | 'google', 'kakao', 'naver' |
-| `email` | `text` | unique, not null | OAuth로부터 |
+| `email` | `text` | unique, nullable | OAuth로부터. Kakao 등 이메일 미보유 시 null 가능 (008) |
 | `nickname` | `text` | nullable | 사용자 설정 |
 | `plan_type` | `text` | not null, default 'free' | 'free', 'pro' 등 (`plans.code` 참조) |
 | `token_balance` | `int` | not null, default 0, **CHECK (`token_balance >= 0`)** | 현재 토큰 잔액. CHECK는 음수 잔액 backstop (ADR-014) |
@@ -48,6 +48,7 @@
 **제약·컬럼 보강 (ADR-014·ADR-016):**
 - `CHECK (token_balance >= 0)` — 동시 요청·더블클릭으로 RPC 잠금이 뚫리는 극단 경우를 위한 DB 레벨 backstop. 1차 방어는 `consume_tokens()` RPC의 행 잠금(§007). 위반 시 트랜잭션이 롤백되어 음수 잔액이 절대 커밋되지 않음.
 - `role` 컬럼 — JWT `app_metadata.role=admin` 클레임과 동기화되는 어드민 식별자. `/api/admin/*` 라우트 가드 + 운영자 전용 쿼리(RLS service_role 경계)와 함께 사용. 기본값 `'user'`, 운영자만 `'admin'`.
+- `email` nullable (008 마이그레이션, ADR-019) — Kakao 로그인은 비즈앱 전환으로 `account_email`을 수집하지만, 계정에 이메일이 없거나 provider별로 미제공일 수 있어 방어적으로 nullable. NOT NULL을 완화하고 unique는 유지(Postgres는 null을 서로 구별 → 무이메일 가입 다건 허용). 가입 trigger(`handle_new_user`)가 빈 문자열을 null로 정규화.
 
 ---
 

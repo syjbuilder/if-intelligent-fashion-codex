@@ -97,13 +97,13 @@
 | `/api/auth/callback` | GET | 불필요 | provider→Supabase→앱 복귀 `code`를 `exchangeCodeForSession`으로 세션 교환 → 쿠키 저장 후 `next`로 redirect |
 | `/api/auth/signout` | POST | (세션) | `signOut()` 후 홈으로 303 redirect |
 
-**provider 값:** `google`(구현·실연동 검증 완료) / `kakao`(Supabase 네이티브 — 추후 배선만) / `naver`(**Supabase 내장 미지원 → 커스텀 OIDC 별도 구현 필요**, 버튼은 유지). 허용 목록(`AUTH_PROVIDERS`) 밖 provider는 Supabase 호출 없이 `/?auth_error=provider`로 redirect.
+**provider 값:** `google`(구현·실연동 검증 완료) / `kakao`(Supabase 네이티브 — 실연동) / `naver`(**Supabase 내장 미지원 → 커스텀 OIDC 별도 구현 필요**, 버튼은 유지). 허용 목록(`AUTH_PROVIDERS`) 밖 provider는 Supabase 호출 없이 `/?auth_error=provider`로 redirect.
 
 **signin 쿼리:** `next` = 로그인 후 복귀할 내부 경로(기본 `/`). 외부 URL·프로토콜상대(`//`)·역슬래시는 오픈 리다이렉트 가드로 `/`로 차단.
 
 **응답 계약:** 라우트 핸들러라 JSON 대신 **HTTP redirect**. 성공 = signin→provider url, callback→`next`, signout→`/`. 실패 = `/?auth_error=provider|signin|callback` 쿼리 플래그로 홈 복귀(클라이언트가 토스트 등으로 처리).
 
-**가입 grant:** 신규 가입 시 Supabase Auth trigger(`handle_new_user`)가 `users.token_balance=10`을 멱등(`ON CONFLICT DO NOTHING`)으로 지급(ADR-016). 현재 `token_transactions` grant 행은 미기록 — generation 토큰 차감 배선 시 마이그레이션 008로 보강 예정(`docs/DATA_MODEL.md` §15.8).
+**가입 grant:** 신규 가입 시 Supabase Auth trigger(`handle_new_user`)가 `users.token_balance=10`을 멱등(`ON CONFLICT DO NOTHING`)으로 지급(ADR-016). 현재 `token_transactions` grant 행은 미기록 — generation 토큰 차감 배선 시 후속 마이그레이션으로 보강 예정(`docs/DATA_MODEL.md` §15.8). (008은 `users.email` nullable 완화에 사용됨)
 
 **대시보드 설정(코드 밖, 1회):** Google Cloud OAuth 클라이언트(Web) + Supabase Authentication → Providers(Google) + URL Configuration(Site URL·Redirect URLs). Google의 Authorized redirect URI는 **앱이 아니라 Supabase 콜백**(`https://<project-ref>.supabase.co/auth/v1/callback`).
 
