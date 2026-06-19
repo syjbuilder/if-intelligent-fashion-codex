@@ -89,7 +89,7 @@ per-user 토큰 차감(ADR-012)은 한 사용자만 막으므로, 전역 상한�
 ## 환경/마이그레이션 절차
 
 - **환경 분리**: local / staging / production. production DB 직접 쿼리 금지. 마이그레이션은 local·staging 검증 후 반영.
-- **마이그레이션 순서**: `001`~`008`을 순서대로 적용한다. `006_rls_policies.sql`(전 테이블 RLS, ADR-016)·`007_token_rpc.sql`(`consume_tokens()`/`refund_tokens()`, ADR-014)·`008_users_email_nullable.sql`(Kakao 비-비즈앱 무이메일 대응, ADR-019)을 포함한다. 상세 스키마·정책은 `docs/DATA_MODEL.md` 참조.
+- **마이그레이션 순서**: `001`~`008`을 순서대로 적용한다. `006_rls_policies.sql`(전 테이블 RLS, ADR-016)·`007_token_rpc.sql`(`consume_tokens()`/`refund_tokens()`, ADR-014)·`008_users_email_nullable.sql`(`users.email` nullable — 이메일 미보유 대비, ADR-019)을 포함한다. 상세 스키마·정책은 `docs/DATA_MODEL.md` 참조.
 - **env 환경변수 목록** (시크릿은 절대 커밋하지 않는다, CLAUDE.md CRITICAL):
 
 | 변수 | 용도 | 비고 |
