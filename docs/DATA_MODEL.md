@@ -17,7 +17,7 @@
 | 테이블 | 용도 | RLS 기본 정책 |
 |---|---|---|
 | `users` | 계정·플랜·토큰 잔액 | 본인만 |
-| `looks` | AI 룩(curated 500개 + 사용자 생성) | curated는 anonymous read, 사용자 생성은 본인만 |
+| `looks` | AI 룩(curated: V0 증명 ~50 → 확장 500 [ADR-020] · 사용자 생성) | curated는 anonymous read, 사용자 생성은 본인만 |
 | `products` | 상품 카탈로그 | anonymous read (운영자 어드민만 write) |
 | `look_products` | 룩 ↔ 상품 매핑 | look 정책 상속 |
 | `saved_looks` | 사용자 저장 룩 (히스토리) | 본인만 |

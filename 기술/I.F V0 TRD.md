@@ -31,7 +31,7 @@ I.F. V0는 Next.js 기반 웹 MVP로 시작한다. 데이터베이스, 인증, �
 - Deployment: Vercel + Supabase
 - AI API: V0에서는 Next.js 서버 영역 중심으로 시작하고, 필요 시 FastAPI로 분리
 - App strategy: 웹 MVP 우선, React Native/Expo 전환 가능성 유지
-- Data strategy: curated look DB 500개를 사람이 선별하고 어드민에서 관리
+- Data strategy: curated look DB(V0 증명 ~50 → 확장 500, ADR-020)를 사람이 선별하고 어드민에서 관리
 - AI strategy: 사전 생성/검수 룩 + 실시간 생성의 하이브리드 방식
 
 ## 2.1 Confirmed Decisions
@@ -54,7 +54,7 @@ I.F. V0는 Next.js 기반 웹 MVP로 시작한다. 데이터베이스, 인증, �
 - 기본 생성 결과는 한국 또는 동아시아권 모델, 서울/국내 일상 배경, 국내 패션 커머스 맥락을 우선한다.
 - 저장/히스토리는 V0 필수 기능으로 확정한다.
 - 공개 룩 탐색 피드는 V0에서 제외한다.
-- curated look DB 500개는 사람이 선별하고 어드민으로 관리한다.
+- curated look DB(V0 증명 ~50 → 확장 500, ADR-020)는 사람이 선별하고 어드민으로 관리한다.
 - 상품 링크는 V0에서 수동 입력/제휴/API 우선으로 가고, 크롤링은 후순위로 둔다.
 
 주의:
@@ -544,7 +544,7 @@ QA 체크:
 
 ### 11.1 Curated Look DB
 
-V0는 curated look DB 500개로 시작한다.
+V0는 curated look DB로 시작한다 — **첫 증명은 ~50 규모, 500은 증명 후 확장**(ADR-020).
 
 운영 방식:
 
@@ -1047,6 +1047,7 @@ TRD 이후 개발 전 확정해야 할 질문:
 - **docs ADR-017 (신규, 2026-06-01)**: 이미지 생성 모델 build-vs-buy — V0는 OpenAI GPT Image 2(ADR-003) API 사용(**buy**) 유지, 자체/파인튜닝 모델은 V0 범위 밖 V1+ 후보. 이유: 처음부터 자체 학습은 비현실(수백만 $·GPU·ML 팀), 저볼륨에선 API(월 약 22만 원)가 자체 GPU 호스팅(월 40만~200만+원)보다 쌈, 해자는 모델이 아니라 데이터(AI_PIPELINE 데이터 레버), 전환 경로는 관리형 GPU(Replicate·fal.ai)+LoRA/ControlNet을 ADR-007 `src/services` 래퍼로 격리. 재검토 트리거: ① 자체 호스팅 손익분기 초과 ② 파인튜닝 품질 우위 입증 ③ 벤더 리스크(가격 인상·deprecation), ADR-003 트리거와 연동. 정석 논의는 "자체 모델=차별화"지만 V0는 속도·비용·해자 측면에서 buy가 정답. 세부는 `docs/ADR.md` 참조.
 - **docs ADR-018 (신규, 2026-06-11)**: 정적 마네킹 룩 실사 이미지 도입 — 랜딩 히어로에 얼굴 없는 3D 마네킹 전신 룩 실사(사전 생성 정적 자산)를 도입. `scripts/build-look-images.mjs`로 840px WebP(q80, 장당 20-40KB) 변환 → `public/looks/` git 커밋 → `next/image` 서빙. 적용 범위는 브랜드 표면(히어로 로테이션)에 한정, 룩 카드는 tone 그라디언트+가먼트 SVG 유지. 얼굴 없는 마네킹은 ADR-006 금지(사람 사진·인종/지역 마커·초상권) 경계 안의 선택. 재검토 트리거: 정적 룩 수십 장+ 확대 또는 AI 생성 이미지(Supabase Storage)와 합류 시 Storage/CDN 일원화. 세부는 `docs/ADR.md`·`docs/UI_GUIDE.md` 참조.
 - **docs ADR-019 (신규, 2026-06-17)**: OAuth 로그인 구현 — `@supabase/ssr` 쿠키 기반 SSR 세션 + `middleware.ts` 요청별 갱신, **서버 개시 OAuth**(클라는 우리 라우트로 이동만 — CLAUDE.md 무-클라-Supabase 준수): `/api/auth/signin/[provider]`·`/api/auth/callback`(GET, exchangeCodeForSession)·`/api/auth/signout`. provider 순서 Google(실연동 검증 완료)→Kakao(Supabase 네이티브)→**Naver(내장 미지원 → 커스텀 OIDC 필요)**. 가입 grant의 `token_transactions` 기록은 후속 마이그레이션(generation 차감 시; 008은 `users.email` nullable 완화에 사용 — Kakao 등 이메일 미보유 대비). 구현=PR #34, 문서=PR #35. 세부는 `docs/ADR.md`·`docs/API_CONTRACTS.md` §0 참조.
+- **docs ADR-020 (신규, 2026-06-21)**: V0 첫 마일스톤을 "500 적재"에서 **"핵심 루프 소량 end-to-end 증명"**(룩 ~50 + 실상품 ~50 + 자유 프롬프트 평가셋 ~25)으로 전환. Human 평가셋 V0 승격(자유 프롬프트 ~25 "맞음/안맞음" 라벨로 0.70 임계값·가중치 튜닝), A-path 상품 **텍스트(태그·캡션) 검색 V0**(이미지 임베딩 정밀판 V0.5 유지), 규칙 기반 의도해석+매칭기 **V0 1급 컴포넌트**. 빌드 순서 = 키0 매칭 슬라이스 → 평가셋 측정 → A-path(OpenAI 키) 점등(키는 3단계만, 슬라이스 데이터는 in-repo 시드로 시작). 500은 증명 후 확장(ADR-005 룩 단위·수동 큐레이션 원칙 유지·V0 분량만 축소). 세부는 `docs/ADR.md` ADR-020·`docs/AI_PIPELINE.md` §4/§8/§9 참조.
 
 ## 22. Development Readiness Criteria
 
