@@ -62,3 +62,11 @@ venv/
 # Harness phase 실행 산출물
 phases/**/phase*-output.json
 phases/**/step*-output.json
+
+# slice-15 큐레이션 작업 산출물 — 재검토 시 재생성. 원칙(_curation-principles.md)·워크시트만 추적.
+data/curated/slice-15-products-fill_v1_*.csv
+data/curated/slice-15-tagged.json
+data/curated/slice-15-tagged-SAMPLE.md
+data/curated/_image-manifest.tsv
+data/curated/_tag-input.json
+public/curated/
